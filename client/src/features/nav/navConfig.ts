@@ -129,23 +129,6 @@ export const MOBILE_TITLE_KEYS: Record<PageId, string> = {
   profile: 'profile.title',
 };
 
-/**
- * NAV_SECTIONS filtered for the current user — hides the Dieta item while
- * it's in beta for a single account (see AuthUser.dietEnabled). Temporary:
- * remove this filtering once the feature ships to everyone
- */
-export function getNavSections(dietEnabled: boolean): NavSection[] {
-  if (dietEnabled) return NAV_SECTIONS;
-  return NAV_SECTIONS.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => item.id !== 'diet'),
-  }));
-}
-
-export function isDietPage(page: PageId): boolean {
-  return page.startsWith('diet/');
-}
-
 /** id of the section-parent whose subs should be revealed, given the active page */
 export function activeParentId(page: PageId): string | null {
   for (const section of NAV_SECTIONS) {

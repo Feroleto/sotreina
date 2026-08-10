@@ -6,7 +6,7 @@ import { avatarMediumUrl } from '@/lib/avatarUrl';
 import { useAuth } from '@/features/auth/AuthContext';
 import {
   MOBILE_TITLE_KEYS,
-  getNavSections,
+  NAV_SECTIONS,
   type NavItem,
   type PageId,
 } from './navConfig';
@@ -159,7 +159,7 @@ export default function MobileChrome({
             </div>
 
             <nav className="mt-5 flex flex-col gap-5">
-              {getNavSections(user?.dietEnabled ?? false).flatMap((section, si) => {
+              {NAV_SECTIONS.flatMap((section, si) => {
                 const groups = [];
                 // an item with sub-pages becomes its own titled group
                 for (const item of section.items) {

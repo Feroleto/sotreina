@@ -9,7 +9,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useAppLanguage } from '@/i18n/useAppLanguage';
 import {
   activeParentId,
-  getNavSections,
+  NAV_SECTIONS,
   type NavItem,
   type NavSubItem,
   type PageId,
@@ -213,7 +213,7 @@ export default function Sidebar({
         </div>
 
         <nav className="mt-6 flex flex-col gap-4">
-          {getNavSections(user?.dietEnabled ?? false).map((section, i) => (
+          {NAV_SECTIONS.map((section, i) => (
             <div key={i}>
               {section.titleKey && (
                 <SidebarLabel

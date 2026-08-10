@@ -52,7 +52,7 @@ describe('StravaConnectController', () => {
 
   describe('disconnect', () => {
     it('disconnects the Strava account for the current user', async () => {
-      await controller.disconnect({ id: USER_ID, dietEnabled: false });
+      await controller.disconnect({ id: USER_ID });
 
       expect(stravaAuth.disconnectAccount).toHaveBeenCalledWith(USER_ID);
     });

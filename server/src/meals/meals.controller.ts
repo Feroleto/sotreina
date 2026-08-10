@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } fro
 import { MealsService } from './meals.service';
 import { parseCreateMealInput, parseReorderMealsInput, parseUpdateMealInput } from './dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { DietEnabledGuard } from '../auth/diet-enabled.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/current-user.decorator';
 
@@ -11,7 +10,7 @@ import type { AuthenticatedUser } from '../auth/current-user.decorator';
 // nothing else's numbering, so the client would have to refetch anyway (same
 // convention as WorkoutsService returning the whole WorkoutDetail)
 @Controller('meals')
-@UseGuards(AuthGuard, DietEnabledGuard)
+@UseGuards(AuthGuard)
 export class MealsController {
   constructor(private readonly service: MealsService) {}
 

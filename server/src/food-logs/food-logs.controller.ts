@@ -7,12 +7,11 @@ import {
   parseUpdateFoodLogInput,
 } from './food-logs.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { DietEnabledGuard } from '../auth/diet-enabled.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/current-user.decorator';
 
 @Controller('food-logs')
-@UseGuards(AuthGuard, DietEnabledGuard)
+@UseGuards(AuthGuard)
 export class FoodLogsController {
   constructor(private readonly service: FoodLogsService) {}
 

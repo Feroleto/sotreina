@@ -20,7 +20,6 @@ export interface MeResponse {
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
-  dietEnabled: boolean;
 }
 
 @Injectable()
@@ -49,7 +48,6 @@ export class AuthService {
       where: { id: session.userId },
       select: {
         id: true,
-        email: true,
         firstName: true,
         profileImgUrl: true,
         maxHr: true,
@@ -64,31 +62,13 @@ export class AuthService {
       tokenVersion: _tokenVersion,
       passwordHash,
       stravaAccount,
-      email,
       ...rest
     } = user;
     return {
       ...rest,
       hasStravaAccount: !!stravaAccount,
       hasPassword: !!passwordHash,
-      dietEnabled: this.isDietBetaEmail(email),
     };
-  }
-
-  // temporary beta gate for the Dieta module — email-keyed so it can be
-  // lifted by just unsetting the env var (or removing this check) once
-  // the feature is ready for everyone. Accepts a comma-separated list, so
-  // adding another beta tester is just editing the env var (no deploy)
-  private isDietBetaEmail(email: string | null): boolean {
-    if (!email) return false;
-    const raw = this.config.get<string>('DIET_BETA_USER_EMAIL');
-    if (!raw) return false;
-    // env var is hand-typed; stored emails are already trim+lowercase (parseEmail)
-    return raw
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean)
-      .includes(email.toLowerCase());
   }
 
   async invalidateSessions(userId: string): Promise<void> {

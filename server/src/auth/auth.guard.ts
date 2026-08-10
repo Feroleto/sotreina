@@ -16,7 +16,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    req.user = { id: user.id, dietEnabled: user.dietEnabled };
+    req.user = { id: user.id };
     return true;
   }
 }

@@ -17,7 +17,6 @@ import {
 import {
   ACTIVE_PAGE_KEY,
   DEFAULT_PAGE,
-  isDietPage,
   isKnownPage,
   isPageDisabled,
   type PageId,
@@ -150,15 +149,6 @@ function App() {
     };
   }, [user]);
 
-  // catches a stale `diet/*` value left in localStorage from before the
-  // beta gate existed (or from a previous session on a non-beta account) —
-  // temporary, remove alongside the rest of the Dieta beta gate
-  useEffect(() => {
-    if (user && isDietPage(page) && !user.dietEnabled) {
-      setPage(DEFAULT_PAGE);
-    }
-  }, [user, page]);
-
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
@@ -207,7 +197,6 @@ function App() {
 
   const navigate = (next: PageId, opts?: { collapse?: boolean }) => {
     if (isPageDisabled(next)) return;
-    if (isDietPage(next) && !user?.dietEnabled) return;
     setPage(next);
     if (opts?.collapse) setCollapsed(true);
   };

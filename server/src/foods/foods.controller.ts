@@ -2,12 +2,11 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/co
 import { FoodsService } from './foods.service';
 import { parseCreateCustomFoodInput, parseSearchQuery } from './foods.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { DietEnabledGuard } from '../auth/diet-enabled.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/current-user.decorator';
 
 @Controller('foods')
-@UseGuards(AuthGuard, DietEnabledGuard)
+@UseGuards(AuthGuard)
 export class FoodsController {
   constructor(private readonly service: FoodsService) {}
 

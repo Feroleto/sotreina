@@ -10,7 +10,6 @@ export interface AuthUser {
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
-  dietEnabled: boolean;
 }
 
 interface AuthContextValue {
