@@ -66,6 +66,11 @@
 :root {
   --radius: 0.625rem;
   --rad: 14px;
+  /* motion tokens — mirrored in lib/motion.ts. Prefixed so they don't
+     collide with Tailwind v4's own --ease-* theme variables */
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --acc: #3987e5;
   --page-bg: #e9ecf0;
   --background: #f5f6f8;
@@ -238,9 +243,6 @@
    (staggered), the route draws like a GPS track, the area under it fades in,
    then a runner dot with a heartbeat ring travels the route on a loop.
    Reduced motion: the finished graphic simply fades in, no runner. */
-.hero-trace {
-  --hero-ease: cubic-bezier(0.23, 1, 0.32, 1);
-}
 .hero-runner {
   /* placed by offset-path (inline style); without support it would sit at
      the SVG origin, so it only exists where motion paths work */
@@ -257,12 +259,12 @@
   .hero-bar {
     transform-box: fill-box;
     transform-origin: bottom;
-    animation: hero-bar-rise 600ms var(--hero-ease) both;
+    animation: hero-bar-rise 600ms var(--motion-ease-out) both;
     animation-delay: calc(var(--i) * 35ms);
   }
   .hero-route {
     stroke-dasharray: 1;
-    animation: hero-draw 1400ms var(--hero-ease) 250ms both;
+    animation: hero-draw 1400ms var(--motion-ease-out) 250ms both;
   }
   .hero-area {
     animation: hero-fade 600ms ease-out 1100ms both;
@@ -270,7 +272,7 @@
   .hero-finish {
     transform-box: fill-box;
     transform-origin: center;
-    animation: hero-pop 300ms var(--hero-ease) 1400ms both;
+    animation: hero-pop 300ms var(--motion-ease-out) 1400ms both;
   }
 
   @supports (offset-path: path('M0 0')) {
@@ -339,4 +341,92 @@
     transform: scale(2.6);
     opacity: 0;
   }
+}
+
+/* Section switch (App.tsx navigate). Only the page panel is captured: the
+   root opts out so the sidebar/app bar/drawer keep rendering live during
+   the transition instead of crossfading with themselves. The group doesn't
+   morph size — pages have different heights and the snapshots would
+   stretch — it just snaps while old fades out fast and new rises in. */
+:root {
+  view-transition-name: none;
+}
+/* only while a section switch runs (App.tsx adds .vt-page): a lasting name
+   makes the panel a stacking context and traps the page's own fixed
+   overlays under the mobile app bar */
+.vt-page [data-vt-page] {
+  view-transition-name: page;
+}
+::view-transition-group(page) {
+  animation: none;
+}
+::view-transition-old(page) {
+  animation: vt-fade-out 120ms ease-out both;
+}
+::view-transition-new(page) {
+  animation: page-in 220ms var(--motion-ease-out) both;
+}
+/* browsers without View Transitions: same entrance on the live element.
+   fill-mode backwards (not both) so no transform lingers afterwards — a
+   leftover transform would become the containing block of every fixed
+   overlay inside the page (sheets, lap editor, scanner) */
+.page-enter {
+  animation: page-in 220ms var(--motion-ease-out) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(page),
+  .page-enter {
+    animation-name: fade-in;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Loading skeleton blocks (components/Skeleton.tsx): same bg-chip blocks as
+   the onboarding skeleton, plus a slow highlight sweep on a pseudo-element
+   (transform only, no per-frame repaint). Constant motion → linear.
+   Reduced motion: static blocks */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--chip);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--card) 55%, transparent),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: skeleton-sweep 1.4s linear infinite;
+  }
+}
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+/* LoadingSwap: real content replacing a skeleton. Opacity only, so it's
+   the same under reduced motion */
+.content-fade-in {
+  animation: fade-in 200ms ease-out backwards;
 }

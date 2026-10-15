@@ -1,8 +1,7 @@
 {
   "page": {
     "title": "Analysis",
-    "subtitle": "Run · performance and training load",
-    "loading": "Loading…"
+    "subtitle": "Run · performance and training load"
   },
   "sections": {
     "volume": "Volume",

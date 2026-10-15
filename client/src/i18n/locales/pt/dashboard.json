@@ -45,7 +45,6 @@
     "cta": "Conectar Strava"
   },
   "list": {
-    "loading": "Carregando…",
     "empty": "Nenhuma atividade com este filtro",
     "runsCount_one": "{{count}} corrida",
     "runsCount_other": "{{count}} corridas",

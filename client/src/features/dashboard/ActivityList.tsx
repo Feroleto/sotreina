@@ -8,6 +8,7 @@ import {
   formatPace,
 } from '@/lib/activityFormat';
 import type { BinWithRuns } from './bins';
+import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 
 function PeekCard({ label, value }: { label: string; value: string }) {
   return (
@@ -36,8 +37,7 @@ interface ActivityListProps {
   allModeFooter: string | null;
 }
 
-export default function ActivityList({
-  loading,
+function ActivityListBody({
   groups,
   onOpenDetail,
   currentPage,
@@ -46,17 +46,10 @@ export default function ActivityList({
   olderWeeks,
   onLoadMore,
   allModeFooter,
-}: ActivityListProps) {
+}: Omit<ActivityListProps, 'loading'>) {
   const { t } = useTranslation('dashboard');
   const [peekId, setPeekId] = useState<string | null>(null);
 
-  if (loading) {
-    return (
-      <p className="py-10 text-center text-[13.5px] text-muted-foreground">
-        {t('list.loading')}
-      </p>
-    );
-  }
   if (groups.length === 0) {
     return (
       <p className="py-10 text-center text-[13.5px] text-muted-foreground">
@@ -229,5 +222,39 @@ export default function ActivityList({
         </div>
       )}
     </>
+  );
+}
+
+// two week groups of rows, same rhythm as the loaded list
+function ActivityListSkeleton() {
+  return (
+    <>
+      {[3, 2].map((rows, w) => (
+        <div key={w} className="mb-[26px]">
+          <div className="flex items-baseline justify-between border-b border-grid-ax pb-[9px]">
+            <Skeleton className="h-[11px] w-[110px]" />
+            <Skeleton className="h-[11px] w-[80px]" />
+          </div>
+          {Array.from({ length: rows }, (_, i) => (
+            <div key={i} className="flex items-center gap-[13px] border-b border-border px-0.5 py-[15px]">
+              <Skeleton className="h-2 w-2 flex-none rounded-full" />
+              <div className="flex-1">
+                <Skeleton className="h-[13px] w-[45%]" />
+                <Skeleton className="mt-1.5 h-[10px] w-[30%] md:hidden" />
+              </div>
+              <Skeleton className="hidden h-[12px] w-[160px] flex-none md:block" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </>
+  );
+}
+
+export default function ActivityList({ loading, ...rest }: ActivityListProps) {
+  return (
+    <LoadingSwap loading={loading} skeleton={<ActivityListSkeleton />}>
+      <ActivityListBody {...rest} />
+    </LoadingSwap>
   );
 }

@@ -6,6 +6,7 @@ import type { DailyHistoryPoint } from '@/lib/types';
 import { useDietHistory } from './useDietHistory';
 import { useNutritionGoal } from './useNutritionGoal';
 import { capitalize } from './constants';
+import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
 
 const CHART_HEIGHT = 140;
 
@@ -134,6 +135,11 @@ export default function DietHistoryPage() {
             {Math.round(selected.totalProtein)}g · C {Math.round(selected.totalCarbs)}g · G{' '}
             {Math.round(selected.totalFat)}g
           </p>
+        )}
+        {loading && points.length === 0 && (
+          <DelayedSkeleton>
+            <Skeleton style={{ height: CHART_HEIGHT }} className="rounded-[10px]" />
+          </DelayedSkeleton>
         )}
         {!loading && points.length > 0 && (
           <Chart

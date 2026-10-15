@@ -11,6 +11,7 @@ import {
 import RunCalendar from './RunCalendar';
 import PersonalRecordsCard from './PersonalRecordsCard';
 import ShoesSection from './ShoesSection';
+import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 
 function MobileTotalCard({
   label,
@@ -66,9 +67,31 @@ function TotalTile({
   );
 }
 
+// mobile 2×2 cards / desktop 4 divided tiles, same footprint as the totals
+function TotalsSkeleton() {
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 md:hidden">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[92px] rounded-[14px]" />
+        ))}
+      </div>
+      <div className="mt-6 hidden grid-cols-4 md:grid">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className={`px-[22px] ${i > 0 ? 'border-l border-border' : ''}`}>
+            <Skeleton className="h-[12px] w-[60%]" />
+            <Skeleton className="mt-[9px] h-[30px] w-[75%]" />
+            <Skeleton className="mt-2 h-[12px] w-[50%]" />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function RunOverviewPage() {
   const { t } = useTranslation('overview');
-  const { activities, error } = useActivities();
+  const { activities, loading, error } = useActivities();
   // snapshot "now" once per mount rather than calling Date.now() during
   // render/useMemo (React purity rule) — a stats page doesn't need
   // second-by-second freshness here
@@ -129,72 +152,74 @@ export default function RunOverviewPage() {
         </p>
       </div>
 
-      {/* mobile totals — 2×2 cards instead of the divider-separated tiles */}
-      <div className="grid grid-cols-2 gap-3 md:hidden">
-        <MobileTotalCard
-          label={t('tiles.distance')}
-          value={`${formatKm(totals?.totalKm ?? 0)} km`}
-          sub={
-            totals
-              ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
-              : undefined
-          }
-        />
-        <MobileTotalCard
-          label={t('tiles.activities')}
-          value={String(totals?.count ?? 0)}
-          sub={totals ? t('tiles.since', { date: totals.since }) : undefined}
-        />
-        <MobileTotalCard
-          label={t('tiles.avgPaceLabel')}
-          value={formatPace(totals?.avgPaceSecKm ?? null)}
-        />
-        <MobileTotalCard
-          label={t('tiles.totalTime')}
-          value={formatDuration(totals?.totalSec ?? 0)}
-        />
-      </div>
+      <LoadingSwap loading={loading} skeleton={<TotalsSkeleton />}>
+        {/* mobile totals — 2×2 cards instead of the divider-separated tiles */}
+        <div className="grid grid-cols-2 gap-3 md:hidden">
+          <MobileTotalCard
+            label={t('tiles.distance')}
+            value={`${formatKm(totals?.totalKm ?? 0)} km`}
+            sub={
+              totals
+                ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
+                : undefined
+            }
+          />
+          <MobileTotalCard
+            label={t('tiles.activities')}
+            value={String(totals?.count ?? 0)}
+            sub={totals ? t('tiles.since', { date: totals.since }) : undefined}
+          />
+          <MobileTotalCard
+            label={t('tiles.avgPaceLabel')}
+            value={formatPace(totals?.avgPaceSecKm ?? null)}
+          />
+          <MobileTotalCard
+            label={t('tiles.totalTime')}
+            value={formatDuration(totals?.totalSec ?? 0)}
+          />
+        </div>
 
-      <div className="mt-6 hidden grid-cols-4 md:grid">
-        <TotalTile
-          label={t('tiles.totalRuns')}
-          bordered={false}
-          value={String(totals?.count ?? 0)}
-          sub={totals ? t('tiles.since', { date: totals.since }) : undefined}
-        />
-        <TotalTile
-          label={t('tiles.distance')}
-          bordered
-          value={`${formatKm(totals?.totalKm ?? 0)} km`}
-          sub={
-            totals
-              ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
-              : undefined
-          }
-        />
-        <TotalTile
-          label={t('tiles.time')}
-          bordered
-          value={formatDuration(totals?.totalSec ?? 0)}
-          sub={
-            totals
-              ? t('tiles.avgPace', { pace: formatPace(totals.avgPaceSecKm) })
-              : undefined
-          }
-        />
-        <TotalTile
-          label={t('tiles.elevation')}
-          bordered
-          value={`${formatNumber(Math.round(totals?.totalElev ?? 0))} m`}
-          sub={
-            totals
-              ? t('tiles.bestElevation', {
-                  value: formatNumber(Math.round(totals.bestElev)),
-                })
-              : undefined
-          }
-        />
-      </div>
+        <div className="mt-6 hidden grid-cols-4 md:grid">
+          <TotalTile
+            label={t('tiles.totalRuns')}
+            bordered={false}
+            value={String(totals?.count ?? 0)}
+            sub={totals ? t('tiles.since', { date: totals.since }) : undefined}
+          />
+          <TotalTile
+            label={t('tiles.distance')}
+            bordered
+            value={`${formatKm(totals?.totalKm ?? 0)} km`}
+            sub={
+              totals
+                ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
+                : undefined
+            }
+          />
+          <TotalTile
+            label={t('tiles.time')}
+            bordered
+            value={formatDuration(totals?.totalSec ?? 0)}
+            sub={
+              totals
+                ? t('tiles.avgPace', { pace: formatPace(totals.avgPaceSecKm) })
+                : undefined
+            }
+          />
+          <TotalTile
+            label={t('tiles.elevation')}
+            bordered
+            value={`${formatNumber(Math.round(totals?.totalElev ?? 0))} m`}
+            sub={
+              totals
+                ? t('tiles.bestElevation', {
+                    value: formatNumber(Math.round(totals.bestElev)),
+                  })
+                : undefined
+            }
+          />
+        </div>
+      </LoadingSwap>
 
       <div className="mt-[26px] grid grid-cols-1 items-stretch gap-3.5 md:grid-cols-[340px_1fr] md:gap-[18px]">
         <RunCalendar activities={activities} />

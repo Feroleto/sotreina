@@ -45,7 +45,6 @@
     "cta": "Connect Strava"
   },
   "list": {
-    "loading": "Loading…",
     "empty": "No activities with this filter",
     "runsCount_one": "{{count}} run",
     "runsCount_other": "{{count}} runs",

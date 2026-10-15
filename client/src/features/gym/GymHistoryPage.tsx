@@ -6,6 +6,8 @@ import { endOfWeek } from '@/features/dashboard/bins';
 import { useWorkoutHistory } from './useWorkoutHistory';
 import { aggregateWeeklyVolume, groupWorkoutsByWeek } from './historyBins';
 import WorkoutDetailPage from './WorkoutDetailPage';
+import DrillStack from '@/components/DrillStack';
+import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 import type { WorkoutHistoryItem } from '@/lib/types';
 
 const WEEKS = 12;
@@ -36,6 +38,33 @@ function KpiCard({ label, value, sub }: { label: string; value: string; sub: str
       </div>
       <div className="mt-1 text-[20px] font-bold tracking-[-.02em] text-foreground">{value}</div>
       <div className="mt-[2px] text-[11px] text-muted-foreground">{sub}</div>
+    </div>
+  );
+}
+
+// mirrors the loaded layout: KPI carousel, weekly bars card, session rows
+function HistorySkeleton() {
+  return (
+    <div className="px-5 pt-[18px] pb-[44px]">
+      <div className="-mx-5 flex gap-3 overflow-hidden px-5">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[86px] w-[150px] flex-none rounded-[14px]" />
+        ))}
+      </div>
+      <Skeleton className="mt-3 h-[178px] rounded-[14px]" />
+      <div className="mt-6">
+        <Skeleton className="mb-3 h-[11px] w-[110px]" />
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3 border-b border-border py-[14px]">
+            <Skeleton className="h-2 w-2 flex-none rounded-full" />
+            <div className="flex-1">
+              <Skeleton className="h-[13px] w-[45%]" />
+              <Skeleton className="mt-1.5 h-[10px] w-[65%]" />
+            </div>
+            <Skeleton className="h-[13px] w-[42px] flex-none" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -84,155 +113,156 @@ export default function GymHistoryPage() {
   const visibleGroups = weekGroups.slice(0, RECENT_WEEK_GROUPS);
   const olderWeekGroups = Math.max(0, weekGroups.length - RECENT_WEEK_GROUPS);
 
-  if (viewingWorkout) {
-    return (
-      <WorkoutDetailPage item={viewingWorkout} onBack={() => setViewingWorkout(null)} />
-    );
-  }
+  const list = (
+    <LoadingSwap loading={loading} skeleton={<HistorySkeleton />}>
+      <div className="px-5 pt-[18px] pb-[44px]">
+        {error && <p className="text-[12.5px] text-neg">{error}</p>}
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center text-[13px] text-muted-foreground">
-        {t('loading')}
-      </div>
-    );
-  }
+        {!error && items.length === 0 && (
+          <p className="mt-8 text-center text-[13.5px] text-muted-foreground">
+            {t('history.empty')}
+          </p>
+        )}
 
-  return (
-    <div className="px-5 pt-[18px] pb-[44px]">
-      {error && <p className="text-[12.5px] text-neg">{error}</p>}
-
-      {!error && items.length === 0 && (
-        <p className="mt-8 text-center text-[13.5px] text-muted-foreground">
-          {t('history.empty')}
-        </p>
-      )}
-
-      {items.length > 0 && (
-        <>
-          {/* KPI carousel — edge-bleed horizontal scroll */}
-          <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5">
-            <KpiCard
-              label={t('history.kpiWorkouts')}
-              value={String(count)}
-              sub={t('history.weeksCount', { count: weeks.length })}
-            />
-            <KpiCard
-              label={t('history.kpiVolume')}
-              value={`${formatTons(volumeKg)} t`}
-              sub={t('history.weeksCount', { count: weeks.length })}
-            />
-            <KpiCard
-              label={t('history.kpiTime')}
-              value={formatTotalDuration(durationSec)}
-              sub={t('history.inTraining')}
-            />
-            <KpiCard
-              label={t('history.kpiFrequency')}
-              value={frequency.toFixed(1)}
-              sub={t('history.perWeek')}
-            />
-          </div>
-
-          {/* weekly volume bars */}
-          <div className="mt-3 rounded-[14px] border border-border bg-card p-[16px]">
-            <div
-              className={`text-[12.5px] ${sel !== null ? 'text-foreground' : 'text-muted-foreground'}`}
-            >
-              {reading}
+        {items.length > 0 && (
+          <>
+            {/* KPI carousel — edge-bleed horizontal scroll */}
+            <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5">
+              <KpiCard
+                label={t('history.kpiWorkouts')}
+                value={String(count)}
+                sub={t('history.weeksCount', { count: weeks.length })}
+              />
+              <KpiCard
+                label={t('history.kpiVolume')}
+                value={`${formatTons(volumeKg)} t`}
+                sub={t('history.weeksCount', { count: weeks.length })}
+              />
+              <KpiCard
+                label={t('history.kpiTime')}
+                value={formatTotalDuration(durationSec)}
+                sub={t('history.inTraining')}
+              />
+              <KpiCard
+                label={t('history.kpiFrequency')}
+                value={frequency.toFixed(1)}
+                sub={t('history.perWeek')}
+              />
             </div>
-            <div className="mt-3 flex h-[120px] items-end gap-[4px]">
-              {weeks.map((w, i) => (
-                <button
-                  key={w.start.getTime()}
-                  type="button"
-                  onClick={() => setSelected((cur) => (cur === i ? null : i))}
-                  aria-label={`${formatDayMonth(w.start)} · ${formatTons(w.volumeKg)} t`}
-                  className="flex h-full flex-1 cursor-pointer items-end"
-                >
-                  <span
-                    className="w-full rounded-t-[4px]"
-                    style={{
-                      height: `${((w.volumeKg / maxVolume) * 100).toFixed(1)}%`,
-                      background:
-                        sel === i
-                          ? 'color-mix(in oklab, var(--acc) 70%, white)'
-                          : 'var(--acc)',
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-[4px] border-t border-border pt-1">
-              {weeks.map((w, i) => (
-                <div
-                  key={w.start.getTime()}
-                  className="flex-1 text-center text-[9.5px] text-muted-foreground"
-                >
-                  {i % 3 === 0 ? formatDayMonth(w.start) : ''}
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* recent sessions, grouped by week — same grouping pattern as
-              the run Dashboard's ActivityList.tsx */}
-          <div className="mt-6">
-            {visibleGroups.map((group) => (
-              <div key={group.start.getTime()} className="mb-[22px]">
-                <div className="flex items-baseline justify-between border-b border-border pb-[9px]">
-                  <div className="text-[11.5px] font-semibold tracking-[.05em] text-muted-foreground uppercase">
-                    {t('history.weekOf', { date: formatDayMonth(group.start) })}
-                  </div>
-                  <div className="text-[12px] text-muted-foreground">
-                    {formatTons(group.volumeKg)} t
-                  </div>
-                </div>
-                {group.workouts.map((w) => (
-                  <div
-                    key={w.id}
-                    onClick={() => setViewingWorkout(w)}
-                    className="flex cursor-pointer items-center gap-[12px] border-b border-border p-[14px_2px]"
+            {/* weekly volume bars */}
+            <div className="mt-3 rounded-[14px] border border-border bg-card p-[16px]">
+              <div
+                className={`text-[12.5px] ${sel !== null ? 'text-foreground' : 'text-muted-foreground'}`}
+              >
+                {reading}
+              </div>
+              <div className="mt-3 flex h-[120px] items-end gap-[4px]">
+                {weeks.map((w, i) => (
+                  <button
+                    key={w.start.getTime()}
+                    type="button"
+                    onClick={() => setSelected((cur) => (cur === i ? null : i))}
+                    aria-label={`${formatDayMonth(w.start)} · ${formatTons(w.volumeKg)} t`}
+                    className="flex h-full flex-1 cursor-pointer items-end"
                   >
                     <span
-                      className="h-2 w-2 flex-none rounded-full"
+                      className="w-full rounded-t-[4px]"
                       style={{
-                        background: w.templateId
-                          ? routineColorById.get(w.templateId)
-                          : 'var(--dot-easy)',
+                        height: `${((w.volumeKg / maxVolume) * 100).toFixed(1)}%`,
+                        background:
+                          sel === i
+                            ? 'color-mix(in oklab, var(--acc) 70%, white)'
+                            : 'var(--acc)',
                       }}
                     />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[14px] font-semibold text-foreground">
-                        {w.templateName ?? t('start.freeWorkout')}
-                      </div>
-                      <div className="mt-0.5 text-[11.5px] text-muted-foreground">
-                        {t('history.sessionMeta', {
-                          date: formatDayMonth(new Date(w.startedAt)),
-                          duration: Math.round(w.durationSec / 60),
-                          count: w.exerciseCount,
-                        })}
-                      </div>
-                    </div>
-                    <div className="flex-none text-[14px] font-semibold text-foreground">
-                      {formatTons(w.volumeKg)} t
-                    </div>
-                    <ChevronRight
-                      className="h-4 w-4 flex-none text-muted-foreground"
-                      strokeWidth={1.8}
-                    />
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-[4px] border-t border-border pt-1">
+                {weeks.map((w, i) => (
+                  <div
+                    key={w.start.getTime()}
+                    className="flex-1 text-center text-[9.5px] text-muted-foreground"
+                  >
+                    {i % 3 === 0 ? formatDayMonth(w.start) : ''}
                   </div>
                 ))}
               </div>
-            ))}
-            {olderWeekGroups > 0 && (
-              <div className="text-[12.5px] text-muted-foreground">
-                {t('history.olderWeeks', { count: olderWeekGroups })}
-              </div>
-            )}
-          </div>
-        </>
+            </div>
+
+            {/* recent sessions, grouped by week — same grouping pattern as
+                the run Dashboard's ActivityList.tsx */}
+            <div className="mt-6">
+              {visibleGroups.map((group) => (
+                <div key={group.start.getTime()} className="mb-[22px]">
+                  <div className="flex items-baseline justify-between border-b border-border pb-[9px]">
+                    <div className="text-[11.5px] font-semibold tracking-[.05em] text-muted-foreground uppercase">
+                      {t('history.weekOf', { date: formatDayMonth(group.start) })}
+                    </div>
+                    <div className="text-[12px] text-muted-foreground">
+                      {formatTons(group.volumeKg)} t
+                    </div>
+                  </div>
+                  {group.workouts.map((w) => (
+                    <div
+                      key={w.id}
+                      onClick={() => setViewingWorkout(w)}
+                      className="flex cursor-pointer items-center gap-[12px] border-b border-border p-[14px_2px]"
+                    >
+                      <span
+                        className="h-2 w-2 flex-none rounded-full"
+                        style={{
+                          background: w.templateId
+                            ? routineColorById.get(w.templateId)
+                            : 'var(--dot-easy)',
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[14px] font-semibold text-foreground">
+                          {w.templateName ?? t('start.freeWorkout')}
+                        </div>
+                        <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+                          {t('history.sessionMeta', {
+                            date: formatDayMonth(new Date(w.startedAt)),
+                            duration: Math.round(w.durationSec / 60),
+                            count: w.exerciseCount,
+                          })}
+                        </div>
+                      </div>
+                      <div className="flex-none text-[14px] font-semibold text-foreground">
+                        {formatTons(w.volumeKg)} t
+                      </div>
+                      <ChevronRight
+                        className="h-4 w-4 flex-none text-muted-foreground"
+                        strokeWidth={1.8}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
+              {olderWeekGroups > 0 && (
+                <div className="text-[12.5px] text-muted-foreground">
+                  {t('history.olderWeeks', { count: olderWeekGroups })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </LoadingSwap>
+  );
+
+  return (
+    <DrillStack
+      depth={viewingWorkout ? 1 : 0}
+      viewKey={viewingWorkout ? `workout:${viewingWorkout.id}` : 'list'}
+    >
+      {viewingWorkout ? (
+        <WorkoutDetailPage item={viewingWorkout} onBack={() => setViewingWorkout(null)} />
+      ) : (
+        list
       )}
-    </div>
+    </DrillStack>
   );
 }

@@ -1,8 +1,7 @@
 {
   "page": {
     "title": "Análise",
-    "subtitle": "Corrida · desempenho e carga de treino",
-    "loading": "Carregando…"
+    "subtitle": "Corrida · desempenho e carga de treino"
   },
   "sections": {
     "volume": "Volume",

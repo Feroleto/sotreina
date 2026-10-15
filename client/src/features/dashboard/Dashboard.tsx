@@ -8,6 +8,7 @@ import Rail from './Rail';
 import ActivityList from './ActivityList';
 import RangeChip from './RangeChip';
 import ActivityDetailView from '@/features/activity/ActivityDetailView';
+import DrillStack from '@/components/DrillStack';
 import { useActivities } from '@/lib/useActivities';
 import {
   CHART_MAX_WEEKS,
@@ -262,86 +263,94 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* right panel: detail view swaps in-place with the list */}
-      {detailId ? (
-        <div className="min-w-0">
-          <ActivityDetailView id={detailId} onBack={closeDetail} />
-        </div>
-      ) : (
-        <div className="min-w-0">
-          <div className="hidden md:block">
-            <WeeklyChart
-              bins={chartBins}
-              granularity={chartGranularity}
-              totalKm={totals.km}
-              period={period}
-              onPeriodChange={(p) => {
-                setPeriod(p);
-                setWeekPage(1);
-                setDateRange(null);
-              }}
-              onSelect={
-                isAll && !rangeActive
-                  ? (ms) => {
-                      const s = new Date(ms);
-                      applyRange({
-                        start: ms,
-                        end: new Date(
-                          s.getFullYear(),
-                          s.getMonth() + 1,
-                          0,
-                        ).getTime(),
-                      });
-                    }
-                  : undefined
-              }
-            >
-              <DateRangePicker
-                range={dateRange}
-                onChange={applyRange}
-                minDate={earliestDate}
+      {/* right panel: detail view swaps in-place with the list. Mobile
+          bleeds past the grid's px-5 so the push reaches the screen edge */}
+      <div className="min-w-0">
+        <DrillStack
+          depth={detailId ? 1 : 0}
+          viewKey={detailId ? `activity:${detailId}` : 'list'}
+          className="max-md:-mx-5"
+          screenClassName="max-md:px-5"
+        >
+          {detailId ? (
+            <ActivityDetailView id={detailId} onBack={closeDetail} />
+          ) : (
+            <>
+              <div className="hidden md:block">
+                <WeeklyChart
+                  bins={chartBins}
+                  granularity={chartGranularity}
+                  totalKm={totals.km}
+                  period={period}
+                  onPeriodChange={(p) => {
+                    setPeriod(p);
+                    setWeekPage(1);
+                    setDateRange(null);
+                  }}
+                  onSelect={
+                    isAll && !rangeActive
+                      ? (ms) => {
+                          const s = new Date(ms);
+                          applyRange({
+                            start: ms,
+                            end: new Date(
+                              s.getFullYear(),
+                              s.getMonth() + 1,
+                              0,
+                            ).getTime(),
+                          });
+                        }
+                      : undefined
+                  }
+                >
+                  <DateRangePicker
+                    range={dateRange}
+                    onChange={applyRange}
+                    minDate={earliestDate}
+                  />
+                </WeeklyChart>
+              </div>
+
+              <MobileWeeklySummary weeks={mobileWeeks}>
+                <DateRangePicker
+                  range={dateRange}
+                  onChange={applyRange}
+                  minDate={earliestDate}
+                  maxMonths={3}
+                />
+              </MobileWeeklySummary>
+
+              {dateRange && (
+                <RangeChip
+                  label={formatRangeLabel(dateRange)}
+                  count={totals.count}
+                  km={totals.km}
+                  days={rangeDays}
+                  onClear={() => applyRange(null)}
+                />
+              )}
+
+              <ActivityList
+                loading={loading}
+                groups={shownGroups}
+                onOpenDetail={openDetail}
+                currentPage={currentWeekPage}
+                totalPages={totalWeekPages}
+                onPageChange={setWeekPage}
+                olderWeeks={olderWeeks}
+                onLoadMore={() => setWeekPage(currentWeekPage + 1)}
+                allModeFooter={
+                  isAll && !rangeActive
+                    ? olderWeeks > 0
+                      ? `${t('list.olderWeeks', { count: olderWeeks })} · ${t('list.selectMonth')}`
+                      : t('list.selectMonth')
+                    : null
+                }
               />
-            </WeeklyChart>
-          </div>
-
-          <MobileWeeklySummary weeks={mobileWeeks}>
-            <DateRangePicker
-              range={dateRange}
-              onChange={applyRange}
-              minDate={earliestDate}
-              maxMonths={3}
-            />
-          </MobileWeeklySummary>
-
-          {dateRange && (
-            <RangeChip
-              label={formatRangeLabel(dateRange)}
-              count={totals.count}
-              km={totals.km}
-              days={rangeDays}
-              onClear={() => applyRange(null)}
-            />
+            </>
           )}
-
-          <ActivityList
-            loading={loading}
-            groups={shownGroups}
-            onOpenDetail={openDetail}
-            currentPage={currentWeekPage}
-            totalPages={totalWeekPages}
-            onPageChange={setWeekPage}
-            olderWeeks={olderWeeks}
-            onLoadMore={() => setWeekPage(currentWeekPage + 1)}
-            allModeFooter={
-              isAll && !rangeActive
-                ? olderWeeks > 0
-                  ? `${t('list.olderWeeks', { count: olderWeeks })} · ${t('list.selectMonth')}`
-                  : t('list.selectMonth')
-                : null
-            }
-          />
-        </div>
-      )}
+        </DrillStack>
+      </div>
     </div>
   );
 }

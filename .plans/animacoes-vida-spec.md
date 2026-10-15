@@ -1,6 +1,6 @@
 # Spec — Animações pra dar vida ao SoTreina
 
-Data: 2026-10-15 · Status: planejado, não iniciado
+Data: 2026-10-15 · Status: **Fase 1 implementada** (aguardando validação no celular real e commit) · Fases 2 e 3 pendentes
 Precedente: animação do hero do login (`features/auth/HeroTrace.tsx`, bloco `.hero-*` em `index.css`)
 
 ## 1. Objetivo
@@ -77,6 +77,14 @@ Destinos cobertos: atividade (`ActivityDetailView`), treino do histórico (`Work
 - O conteúdo real substitui o skeleton com crossfade (~200ms).
 - Telas-alvo (em ordem de impacto): Overview de Corrida, Activities/Dashboard, Analysis, Overview e Histórico de Academia, Overview e Histórico de Dieta, detalhe de atividade.
 - `FirstSyncPage` já tem skeleton do shell e não muda nesta fase.
+
+### 3.5 Como a Fase 1 ficou (desvios da spec, todos deliberados)
+- **Provider do Motion não fica no `App.tsx`/`main.tsx`**: `LazyMotion` (features async via `lib/motionFeatures.ts`) + `MotionConfig reducedMotion="user"` vivem dentro do `DrillStack`. No `main.tsx` puxavam o núcleo do Motion pro entry chunk (+29,5 kB gz pra quem só abre o login). Medido: entry 78,5 → 78,8 kB gz; Motion chega só com as páginas (16,7 kB gz núcleo + 17,8 kB gz features). **Fases 2/3 devem reaproveitar o mesmo padrão** (provider local, ou extrair um `MotionProvider` compartilhado), nunca subir pro entry.
+- **Fallback sem View Transitions é CSS (`.page-enter`), não Motion**: mais barato, e `animation-fill-mode: backwards` não deixa `transform` residual.
+- **`view-transition-name` só existe durante a transição** (`.vt-page` no `<html>`, adicionada/removida em `navigate()`): permanente, ele transforma o painel num stacking context e prende os overlays `fixed` da página (sheets, editor de laps, scanner) **abaixo da app bar z-40** no mobile. Pego na verificação, não na leitura.
+- **`DrillStack` limpa `transform`/`z-index` no `transitionEnd`**: o Motion grava o alvo `'none'` como `matrix(1,0,0,1,0,0)`, que ainda cria containing block pros `fixed` internos. Verificado via `getComputedStyle` após push/pop.
+- Drill-downs cobertos: atividade (Dashboard, com bleed `-mx-5` no mobile), Histórico → treino → exercício, Rotinas → rotina → exercício, Dieta → AddMeal/Meta. Skeletons: totais da Corrida e da Academia, Activities, Analysis, Histórico da Academia, Overview e Histórico da Dieta, detalhe de atividade (agora com o botão Voltar funcional durante o loading), listas de exercícios do treino/rotina, cards de rotina.
+- `useFirstVisit` já existe (com teste), mas só é consumido a partir da Fase 2.
 
 ## 4. Fase 2 — Chegada do dado
 

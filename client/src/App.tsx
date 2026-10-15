@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '@/features/nav/Sidebar';
 import MobileChrome from '@/features/nav/MobileChrome';
@@ -21,6 +22,12 @@ import {
   isPageDisabled,
   type PageId,
 } from '@/features/nav/navConfig';
+
+// section switches crossfade via the View Transitions API where it exists
+// (Chromium, Safari 18+); elsewhere the new page plays the same entrance as
+// a plain CSS animation (.page-enter in index.css)
+const supportsViewTransitions =
+  typeof document !== 'undefined' && 'startViewTransition' in document;
 
 // code-split per page: keeps Leaflet, the analysis charts and the dashboard
 // out of the entry chunk that the logged-out LoginPage visitor downloads.
@@ -126,6 +133,10 @@ function App() {
   // drawer gets its own history entry so hardware/gesture back closes it
   // instead of leaving the app (same pattern as the activity detail)
   const drawerPushedRef = useRef(false);
+  // the first page after boot appears as-is; only real navigations animate
+  const [navigated, setNavigated] = useState(false);
+  // a slow chunk for an earlier click must not land after a later one
+  const navSeqRef = useRef(0);
 
   // enabled only once auth is resolved, mirroring lib/boot.ts's has-activities
   // hint — otherwise a logged-out visitor would fire a 401 against
@@ -208,8 +219,35 @@ function App() {
 
   const navigate = (next: PageId, opts?: { collapse?: boolean }) => {
     if (isPageDisabled(next)) return;
-    setPage(next);
     if (opts?.collapse) setCollapsed(true);
+    if (next === page) return;
+    const seq = ++navSeqRef.current;
+    const commit = () => {
+      setNavigated(true);
+      setPage(next);
+    };
+    if (!supportsViewTransitions) {
+      commit();
+      return;
+    }
+    // wait for the page's chunk first: otherwise the transition's "new"
+    // snapshot is Suspense's empty fallback and the real page pops in after
+    const load = PAGE_IMPORTERS[next]?.() ?? Promise.resolve();
+    void load
+      .catch(() => {})
+      .then(() => {
+        if (seq !== navSeqRef.current) return;
+        // the panel only carries a view-transition-name while transitioning
+        // (see index.css): a permanent one makes it a stacking context, which
+        // would trap the page's own overlays (sheets, lap editor, scanner)
+        // under the z-40 mobile app bar
+        const root = document.documentElement;
+        root.classList.add('vt-page');
+        const vt = document.startViewTransition(() => flushSync(commit));
+        void vt.finished.finally(() => {
+          if (seq === navSeqRef.current) root.classList.remove('vt-page');
+        });
+      });
   };
 
   // reached only via the emailed reset link — must work regardless of
@@ -283,15 +321,23 @@ function App() {
           onThemePref={setThemePref}
         />
         <div className="min-w-0 flex-1 md:min-h-[calc(100vh-28px)] md:rounded-2xl md:border md:border-border md:bg-card md:shadow-[0_8px_24px_rgba(8,12,20,.06)]">
-          <Suspense fallback={<div className="min-h-[calc(100vh-28px)]" />}>
-            <PageContent
-              page={page}
-              themePref={themePref}
-              onThemePref={setThemePref}
-              activeWorkout={activeWorkout}
-              onOpenDrawer={openDrawer}
-            />
-          </Suspense>
+          {/* the only element captured by the section view transition —
+              chrome (sidebar, app bar, drawer) stays live, see index.css */}
+          <div
+            key={page}
+            data-vt-page
+            className={navigated && !supportsViewTransitions ? 'page-enter' : undefined}
+          >
+            <Suspense fallback={<div className="min-h-[calc(100vh-28px)]" />}>
+              <PageContent
+                page={page}
+                themePref={themePref}
+                onThemePref={setThemePref}
+                activeWorkout={activeWorkout}
+                onOpenDrawer={openDrawer}
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>

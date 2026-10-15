@@ -11,6 +11,7 @@ import {
 import { currentIntlLocale } from '@/lib/dateLocale';
 import type { ActivityDetail } from '@/lib/types';
 import { apiFetch } from '@/lib/api';
+import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
 
 // lazy so Leaflet is only fetched when a GPS activity detail is opened
 const RouteMap = lazy(() => import('./RouteMap'));
@@ -93,10 +94,29 @@ export default function ActivityDetailView({
     );
   }
   if (!activity) {
+    // same layout as the loaded view, with the real back button so the user
+    // isn't stuck while a slow detail loads
     return (
-      <p className="py-10 text-center text-[13.5px] text-muted-foreground">
-        {t('common:loading')}
-      </p>
+      <div>
+        <div className="mb-5 flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="cursor-pointer rounded-[9px] bg-chip py-[7px] pr-[13px] pl-2.5 text-[13px] font-medium text-foreground hover:bg-grid-ax"
+          >
+            {t('return')}
+          </button>
+        </div>
+        <DelayedSkeleton>
+          <Skeleton className="h-[26px] w-[55%]" />
+          <Skeleton className="mt-2 h-[13px] w-[35%]" />
+          <div className="mt-[22px] grid grid-cols-2 gap-2.5 md:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[66px] rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="mt-[22px] aspect-8/3 rounded-[var(--rad)]" />
+        </DelayedSkeleton>
+      </div>
     );
   }
 
@@ -143,7 +163,7 @@ export default function ActivityDetailView({
   ];
 
   return (
-    <div>
+    <div className="content-fade-in">
       <div className="mb-5 flex items-center justify-between">
         <button
           onClick={onBack}

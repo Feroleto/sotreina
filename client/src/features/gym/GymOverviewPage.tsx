@@ -7,6 +7,7 @@ import { formatLastPerformed } from './relativeTime';
 import { stripWorkoutPrefix } from './routineFormat';
 import GymCalendar from './GymCalendar';
 import GymPersonalRecordCard from './GymPersonalRecordCard';
+import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 
 const WEEKS = 12;
 
@@ -48,9 +49,29 @@ function TotalTile({
   );
 }
 
+// the 2×2 totals grid with its inner dividers
+function TotalsSkeleton() {
+  return (
+    <div className="grid grid-cols-2">
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className={`p-[14px] ${i % 2 ? 'border-l border-border' : ''} ${
+            i > 1 ? 'border-t border-border' : ''
+          }`}
+        >
+          <Skeleton className="h-[10px] w-[55%]" />
+          <Skeleton className="mt-2 h-[22px] w-[60%]" />
+          <Skeleton className="mt-2 h-[10px] w-[45%]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function GymOverviewPage() {
   const { t } = useTranslation('gym');
-  const { items } = useWorkoutHistory();
+  const { items, loading } = useWorkoutHistory();
   const { templates } = useWorkoutTemplates();
 
   // same 12-week window (Monday-start, current week included) used by the
@@ -90,36 +111,38 @@ export default function GymOverviewPage() {
 
   return (
     <div className="px-5 pt-[18px] pb-[44px] tabular-nums">
-      <div className="grid grid-cols-2">
-        <TotalTile
-          label={t('history.kpiWorkouts')}
-          value={String(count)}
-          sub={t('history.weeksCount', { count: weeks.length })}
-          borderLeft={false}
-          borderTop={false}
-        />
-        <TotalTile
-          label={t('history.kpiVolume')}
-          value={`${formatTons(volumeKg)} t`}
-          sub={t('history.weeksCount', { count: weeks.length })}
-          borderLeft
-          borderTop={false}
-        />
-        <TotalTile
-          label={t('history.kpiTime')}
-          value={formatTotalDuration(durationSec)}
-          sub={t('history.inTraining')}
-          borderLeft={false}
-          borderTop
-        />
-        <TotalTile
-          label={t('history.kpiFrequency')}
-          value={frequency.toFixed(1)}
-          sub={t('history.perWeek')}
-          borderLeft
-          borderTop
-        />
-      </div>
+      <LoadingSwap loading={loading} skeleton={<TotalsSkeleton />}>
+        <div className="grid grid-cols-2">
+          <TotalTile
+            label={t('history.kpiWorkouts')}
+            value={String(count)}
+            sub={t('history.weeksCount', { count: weeks.length })}
+            borderLeft={false}
+            borderTop={false}
+          />
+          <TotalTile
+            label={t('history.kpiVolume')}
+            value={`${formatTons(volumeKg)} t`}
+            sub={t('history.weeksCount', { count: weeks.length })}
+            borderLeft
+            borderTop={false}
+          />
+          <TotalTile
+            label={t('history.kpiTime')}
+            value={formatTotalDuration(durationSec)}
+            sub={t('history.inTraining')}
+            borderLeft={false}
+            borderTop
+          />
+          <TotalTile
+            label={t('history.kpiFrequency')}
+            value={frequency.toFixed(1)}
+            sub={t('history.perWeek')}
+            borderLeft
+            borderTop
+          />
+        </div>
+      </LoadingSwap>
 
       <div className="mt-5">
         <GymCalendar items={items} />

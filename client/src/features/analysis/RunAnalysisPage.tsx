@@ -14,6 +14,7 @@ import AcwrChart from './AcwrChart';
 import EfficiencyFactorChart from './EfficiencyFactorChart';
 import MonotonyStrainChart from './MonotonyStrainChart';
 import DecouplingTrendChart from './DecouplingTrendChart';
+import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
 
 function SectionLabel({
   children,
@@ -130,11 +131,15 @@ export default function RunAnalysisPage() {
       <MaxHrControl maxHr={maxHr} onSave={saveMaxHr} />
 
       {loading ? (
-        <p className="p-10 text-center text-[13.5px] text-muted-foreground">
-          {t('page.loading')}
-        </p>
+        <DelayedSkeleton>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[300px] rounded-[var(--rad)]" />
+            ))}
+          </div>
+        </DelayedSkeleton>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="content-fade-in mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <SectionLabel first>{t('sections.volume')}</SectionLabel>
           <WeeklyVolumeChart weeks={completed} />
           <PaceVsVolumeChart weeks={completed} />
