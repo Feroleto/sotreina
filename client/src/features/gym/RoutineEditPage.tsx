@@ -251,7 +251,7 @@ export default function RoutineEditPage({ templateId, onDone, onCancel }: Routin
             type="button"
             onClick={handleSave}
             disabled={editor.saving || editor.name.trim().length === 0}
-            className="min-h-[52px] w-full cursor-pointer rounded-[14px] bg-acc px-6 text-[15px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="press min-h-[52px] w-full cursor-pointer rounded-[14px] bg-acc px-6 text-[15px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {editor.saving
               ? t('editor.saving')

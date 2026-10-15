@@ -160,7 +160,7 @@ export default function RoutineExercisePicker({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-[18px] pb-[calc(18px+env(safe-area-inset-bottom))]">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-[18px] pb-[calc(18px+env(safe-area-inset-bottom))]">
         {loading && (
           <p className="py-8 text-center text-[13px] text-muted-foreground">
             {t('picker.loading')}

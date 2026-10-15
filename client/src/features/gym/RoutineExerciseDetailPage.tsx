@@ -83,7 +83,7 @@ export default function RoutineExerciseDetailPage({
           <img
             src={detail.imageUrls[0]}
             alt={exercise.exerciseName}
-            className="h-[200px] w-full rounded-[16px] bg-chip object-cover"
+            className="h-[200px] w-full rounded-[16px] bg-chip object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
             onError={() => setImageFailed(true)}
           />
         ) : (

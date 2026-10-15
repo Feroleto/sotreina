@@ -117,7 +117,7 @@ export default function LapEditorToolbar({
           <button
             type="button"
             onClick={submitLap}
-            className="ml-auto cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
+            className="press ml-auto cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
           >
             {t('laps.confirm')}
           </button>
@@ -174,7 +174,7 @@ export default function LapEditorToolbar({
             <button
               type="button"
               onClick={submitReps}
-              className="cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
+              className="press cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
             >
               {t('laps.confirm')}
             </button>

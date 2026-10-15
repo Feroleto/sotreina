@@ -105,7 +105,7 @@ export default function MobileChrome({
       alt=""
       width={30}
       height={30}
-      className="h-[30px] w-[30px] flex-none rounded-full object-cover"
+      className="h-[30px] w-[30px] flex-none rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
     />
   ) : (
     <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-chip text-[11px] font-semibold text-foreground">
@@ -141,85 +141,102 @@ export default function MobileChrome({
         </div>
       </header>
 
-      {/* drawer */}
-      {open && (
-        <div className="fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-[rgba(8,12,20,.35)] dark:bg-[rgba(4,7,12,.55)]"
-            onClick={closeDrawer}
-          />
-          <div className="drawer-panel absolute inset-y-0 left-0 flex w-[288px] flex-col border-r border-border bg-card px-3.5 pt-[calc(max(12px,env(safe-area-inset-top))_+_10px)] pb-[30px] shadow-[24px_0_60px_rgba(4,8,16,.3)]">
-            <div className="flex items-center gap-[10px] px-3">
-              <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-white">
-                ST
-              </div>
-              <span className="text-[14.5px] font-semibold text-foreground">
-                SoTreina
-              </span>
+      {/* drawer — always mounted so closing can transition out (and reverse mid-flight);
+          `invisible` + `inert` take it out of the tab order/hit testing once
+          the exit finishes — visibility flips only at the end of its transition */}
+      <div
+        inert={!open}
+        className={cn(
+          'fixed inset-0 z-50 transition-[visibility]',
+          open ? 'visible duration-200' : 'invisible duration-150',
+        )}
+      >
+        <div
+          className={cn(
+            'absolute inset-0 bg-[rgba(8,12,20,.35)] transition-[opacity] ease-out dark:bg-[rgba(4,7,12,.55)]',
+            open ? 'opacity-100 duration-200' : 'opacity-0 duration-150',
+          )}
+          onClick={closeDrawer}
+        />
+        <div
+          className={cn(
+            'absolute inset-y-0 left-0 flex w-[288px] flex-col border-r border-border bg-card px-3.5 pt-[calc(max(12px,env(safe-area-inset-top))_+_10px)] pb-[30px] shadow-[24px_0_60px_rgba(4,8,16,.3)] ease-out',
+            'motion-safe:transition-[translate] motion-reduce:transition-[opacity]',
+            open
+              ? 'translate-x-0 opacity-100 duration-200'
+              : 'duration-150 motion-safe:-translate-x-full motion-reduce:opacity-0',
+          )}
+        >
+          <div className="flex items-center gap-[10px] px-3">
+            <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-white">
+              ST
             </div>
-
-            <nav className="mt-5 flex flex-col gap-5">
-              {NAV_SECTIONS.flatMap((section, si) => {
-                const groups = [];
-                // an item with sub-pages becomes its own titled group
-                for (const item of section.items) {
-                  if (!item.subs) continue;
-                  groups.push(
-                    <DrawerGroup key={item.id} title={t(item.labelKey)}>
-                      {item.subs.map((sub) => (
-                        <DrawerItem
-                          key={sub.id}
-                          label={t(sub.labelKey)}
-                          active={sub.id === activePage}
-                          disabled={sub.disabled}
-                          onPick={() => pick(sub.id, sub.disabled)}
-                        />
-                      ))}
-                    </DrawerGroup>,
-                  );
-                }
-                const rest = section.items.filter((i) => !i.subs);
-                if (rest.length > 0) {
-                  groups.push(
-                    <DrawerGroup
-                      key={`rest-${si}`}
-                      title={section.titleKey ? t(section.titleKey) : undefined}
-                    >
-                      {rest.map((item) => (
-                        <DrawerItem
-                          key={item.id}
-                          label={t(item.labelKey)}
-                          icon={item.icon}
-                          active={item.page === activePage}
-                          disabled={item.disabled}
-                          badge={item.badgeKey ? t(item.badgeKey) : undefined}
-                          onPick={() => item.page && pick(item.page)}
-                        />
-                      ))}
-                    </DrawerGroup>,
-                  );
-                }
-                return groups;
-              })}
-            </nav>
-
-            <button
-              onClick={() => pick('profile')}
-              className="mt-auto flex min-h-[44px] w-full cursor-pointer items-center gap-2.5 border-t border-border px-3 pt-3 text-left"
-            >
-              {avatar}
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12.5px] font-semibold text-foreground">
-                  {user?.firstName ?? t('runnerFallback')}
-                </span>
-                <span className="block text-[11px] text-muted-foreground">
-                  {t('yourProfile')}
-                </span>
-              </span>
-            </button>
+            <span className="text-[14.5px] font-semibold text-foreground">
+              SoTreina
+            </span>
           </div>
+
+          <nav className="mt-5 flex flex-col gap-5">
+            {NAV_SECTIONS.flatMap((section, si) => {
+              const groups = [];
+              // an item with sub-pages becomes its own titled group
+              for (const item of section.items) {
+                if (!item.subs) continue;
+                groups.push(
+                  <DrawerGroup key={item.id} title={t(item.labelKey)}>
+                    {item.subs.map((sub) => (
+                      <DrawerItem
+                        key={sub.id}
+                        label={t(sub.labelKey)}
+                        active={sub.id === activePage}
+                        disabled={sub.disabled}
+                        onPick={() => pick(sub.id, sub.disabled)}
+                      />
+                    ))}
+                  </DrawerGroup>,
+                );
+              }
+              const rest = section.items.filter((i) => !i.subs);
+              if (rest.length > 0) {
+                groups.push(
+                  <DrawerGroup
+                    key={`rest-${si}`}
+                    title={section.titleKey ? t(section.titleKey) : undefined}
+                  >
+                    {rest.map((item) => (
+                      <DrawerItem
+                        key={item.id}
+                        label={t(item.labelKey)}
+                        icon={item.icon}
+                        active={item.page === activePage}
+                        disabled={item.disabled}
+                        badge={item.badgeKey ? t(item.badgeKey) : undefined}
+                        onPick={() => item.page && pick(item.page)}
+                      />
+                    ))}
+                  </DrawerGroup>,
+                );
+              }
+              return groups;
+            })}
+          </nav>
+
+          <button
+            onClick={() => pick('profile')}
+            className="mt-auto flex min-h-[44px] w-full cursor-pointer items-center gap-2.5 border-t border-border px-3 pt-3 text-left"
+          >
+            {avatar}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12.5px] font-semibold text-foreground">
+                {user?.firstName ?? t('runnerFallback')}
+              </span>
+              <span className="block text-[11px] text-muted-foreground">
+                {t('yourProfile')}
+              </span>
+            </span>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

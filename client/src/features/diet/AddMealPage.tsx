@@ -504,7 +504,7 @@ export default function AddMealPage({ meal, existingLogs, onBack, onSaved }: Add
           type="button"
           onClick={() => void handleSave()}
           disabled={saving}
-          className="cursor-pointer rounded-[11px] bg-acc px-5 py-2.5 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+          className="press cursor-pointer rounded-[11px] bg-acc px-5 py-2.5 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
         >
           {saving ? t('addMeal.saving') : t('addMeal.save')}
         </button>

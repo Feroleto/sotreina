@@ -152,7 +152,7 @@ export default function AddManualFoodPage({
         <button
           type="submit"
           disabled={submitting}
-          className="mt-1 cursor-pointer rounded-[11px] bg-acc px-4 py-3 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+          className="press mt-1 cursor-pointer rounded-[11px] bg-acc px-4 py-3 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
         >
           {submitting ? t('manual.saving') : t('manual.save')}
         </button>

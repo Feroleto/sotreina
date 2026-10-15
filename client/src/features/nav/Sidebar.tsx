@@ -36,7 +36,7 @@ function SidebarLabel({
   return (
     <span
       className={cn(
-        'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out',
+        'overflow-hidden whitespace-nowrap duration-200 ease-in-out motion-safe:transition-[max-width,opacity] motion-reduce:transition-[opacity]',
         collapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100',
         className,
       )}
@@ -179,7 +179,7 @@ export default function Sidebar({
   return (
     <div
       className={cn(
-        'sticky top-3.5 h-[calc(100vh-28px)] flex-none rounded-2xl border border-border bg-card transition-[width] duration-[280ms] ease-in-out max-md:hidden',
+        'sticky top-3.5 h-[calc(100vh-28px)] flex-none rounded-2xl border border-border bg-card ease-in-out motion-safe:transition-[width] motion-safe:duration-[280ms] max-md:hidden',
         collapsed ? 'w-[66px]' : 'w-[226px]',
       )}
       style={{ boxShadow: '0 8px 24px rgba(8,12,20,.08)' }}
@@ -192,7 +192,7 @@ export default function Sidebar({
       >
         <ChevronLeft
           className={cn(
-            'h-3.5 w-3.5 text-muted-foreground transition-transform duration-[280ms]',
+            'h-3.5 w-3.5 text-muted-foreground motion-safe:transition-transform motion-safe:duration-[280ms]',
             collapsed && 'rotate-180',
           )}
           strokeWidth={1.7}
@@ -280,7 +280,7 @@ export default function Sidebar({
                 alt=""
                 width={30}
                 height={30}
-                className="h-[30px] w-[30px] flex-none rounded-full object-cover"
+                className="h-[30px] w-[30px] flex-none rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
               />
             ) : (
               <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-chip text-[12px] font-semibold text-foreground">

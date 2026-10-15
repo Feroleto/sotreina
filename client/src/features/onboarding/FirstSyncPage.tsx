@@ -256,7 +256,7 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
       : null;
 
   const primaryButton =
-    'w-full cursor-pointer rounded-[12px] bg-acc py-[15px] text-[15px] font-semibold text-white hover:brightness-[.93] md:rounded-[11px] md:py-[13px] md:text-[14.5px]';
+    'press w-full cursor-pointer rounded-[12px] bg-acc py-[15px] text-[15px] font-semibold text-white hover:brightness-[.93] md:rounded-[11px] md:py-[13px] md:text-[14.5px]';
 
   return (
     <div className="relative flex min-h-screen bg-page-bg">

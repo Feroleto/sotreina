@@ -123,7 +123,7 @@ export default function LapEditorPanel({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-5 py-3">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-3">
           {editor.streamLoading && (
             <p className="py-10 text-center text-[13.5px] text-muted-foreground">
               {t('laps.streamLoading')}
@@ -246,7 +246,7 @@ export default function LapEditorPanel({
               type="button"
               onClick={handleSave}
               disabled={!editor.canSave}
-              className="cursor-pointer rounded-[9px] bg-acc px-4 py-2 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="press cursor-pointer rounded-[9px] bg-acc px-4 py-2 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {editor.saving ? t('laps.saving') : t('laps.save')}
             </button>

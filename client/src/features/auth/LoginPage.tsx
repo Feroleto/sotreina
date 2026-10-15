@@ -384,7 +384,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white transition-colors disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
+                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
               >
                 {submitting ? (
                   <>
@@ -429,7 +429,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               <button
                 type="submit"
                 disabled={forgotSubmitting}
-                className="mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white transition-colors disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
+                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
               >
                 {forgotSubmitting ? (
                   <>

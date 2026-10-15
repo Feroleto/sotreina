@@ -141,7 +141,7 @@ export default function ProfilePage({
             alt=""
             width={52}
             height={52}
-            className="h-[52px] w-[52px] flex-none rounded-full object-cover"
+            className="h-[52px] w-[52px] flex-none rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
           />
         ) : (
           <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-full bg-chip text-[17px] font-semibold text-foreground">
@@ -282,7 +282,7 @@ export default function ProfilePage({
                 <button
                   type="submit"
                   disabled={pwSubmitting}
-                  className="cursor-pointer rounded-[9px] bg-acc px-[13px] py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+                  className="press cursor-pointer rounded-[9px] bg-acc px-[13px] py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
                 >
                   {pwSubmitting
                     ? t('profile.addPasswordSubmitting')

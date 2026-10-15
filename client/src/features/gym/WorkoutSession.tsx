@@ -296,7 +296,7 @@ export default function WorkoutSession({
                   onFinish(true);
                 }}
                 disabled={busy}
-                className="flex-1 cursor-pointer rounded-[8px] bg-acc px-2.5 py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="press flex-1 cursor-pointer rounded-[8px] bg-acc px-2.5 py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t('session.syncTemplateUpdate')}
               </button>
@@ -329,7 +329,7 @@ export default function WorkoutSession({
               type="button"
               onClick={handleFinishClick}
               disabled={busy || finishStep === 'checking'}
-              className="min-h-[56px] flex-[2] cursor-pointer rounded-[14px] bg-acc px-6 text-[16px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="press min-h-[56px] flex-[2] cursor-pointer rounded-[14px] bg-acc px-6 text-[16px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('session.finish')}
             </button>

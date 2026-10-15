@@ -98,7 +98,7 @@ export default function LapEditorRow({
           <button
             type="button"
             onClick={commit}
-            className="cursor-pointer rounded-[8px] bg-acc px-2.5 py-1 text-[12px] font-medium text-white"
+            className="press cursor-pointer rounded-[8px] bg-acc px-2.5 py-1 text-[12px] font-medium text-white"
           >
             {t('laps.confirm')}
           </button>

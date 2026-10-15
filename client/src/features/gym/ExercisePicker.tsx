@@ -82,7 +82,7 @@ export default function ExercisePicker({ onClose, onPick }: ExercisePickerProps)
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-2">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-2 py-2">
           {loading && (
             <p className="py-8 text-center text-[13px] text-muted-foreground">
               {t('picker.loading')}

@@ -142,7 +142,7 @@ export default function ActivityList({
                       e.stopPropagation();
                       setPeekId(peek ? null : a.id);
                     }}
-                    className="ml-1 hidden h-[38px] w-[38px] cursor-pointer rounded-[9px] text-[15px] text-muted-foreground transition-transform duration-150 hover:bg-chip md:block"
+                    className="ml-1 hidden h-[38px] w-[38px] cursor-pointer rounded-[9px] text-[15px] text-muted-foreground hover:bg-chip motion-safe:transition-transform motion-safe:duration-150 md:block"
                     style={{
                       transform: peek ? 'rotate(90deg)' : 'rotate(0deg)',
                     }}

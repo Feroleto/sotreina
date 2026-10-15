@@ -249,7 +249,7 @@ export default function SavedMealEditPage({
           type="button"
           onClick={() => void handleSave()}
           disabled={editor.saving || !editor.name.trim()}
-          className="cursor-pointer rounded-[11px] bg-acc px-5 py-2.5 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+          className="press cursor-pointer rounded-[11px] bg-acc px-5 py-2.5 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
         >
           {editor.saving ? t('savedMeals.saving') : t('savedMeals.save')}
         </button>

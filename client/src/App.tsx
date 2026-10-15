@@ -157,7 +157,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const root = document.documentElement;
+    const dark = theme === 'dark';
+    // already applied pre-paint by index.html's inline script on first run
+    if (root.classList.contains('dark') === dark) return;
+    // freeze every transition for the swap, otherwise each surface's own
+    // color/background transition fires at once and the switch smears
+    const freeze = document.createElement('style');
+    freeze.textContent = '*,*::before,*::after{transition:none!important}';
+    document.head.appendChild(freeze);
+    root.classList.toggle('dark', dark);
+    void window.getComputedStyle(document.body).backgroundColor; // force style flush
+    requestAnimationFrame(() => freeze.remove());
   }, [theme]);
 
   useEffect(() => {

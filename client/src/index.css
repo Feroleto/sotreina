@@ -160,21 +160,18 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-/* mobile nav drawer slide-in (MobileChrome.tsx) */
-@keyframes drawer-in {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-.drawer-panel {
-  animation: drawer-in 200ms ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .drawer-panel {
-    animation: none;
+/* pressed feedback for primary buttons: scale to .96, never when disabled,
+   only when motion is allowed. Owns transition-property (also covering the
+   color/brightness hovers these buttons already had) so it must not be mixed
+   with transition-colors on the same element */
+@utility press {
+  transition-property: scale, background-color, color, filter;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+  @media (prefers-reduced-motion: no-preference) {
+    &:not(:disabled):active {
+      scale: 0.96;
+    }
   }
 }
 
@@ -193,6 +190,9 @@
   body {
     @apply bg-background text-foreground;
     transition: background 0.25s;
+    /* controls draw their own pressed state (active:bg-chip) — drop the
+       default gray tap flash so the two don't stack */
+    -webkit-tap-highlight-color: transparent;
   }
   html {
     @apply font-sans;

@@ -177,7 +177,7 @@ function RecordCell({
         </div>
         {runnersUp.length > 0 && (
           <span
-            className="flex-none text-[13px] text-muted-foreground transition-transform duration-150"
+            className="flex-none text-[13px] text-muted-foreground motion-safe:transition-transform motion-safe:duration-150"
             style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
           >
             ›
@@ -369,7 +369,7 @@ export default function PersonalRecordsCard({
             onClick={() => setShowAll(false)}
           />
           <div
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-[20px] border bg-card p-5 pb-[calc(20px+env(safe-area-inset-bottom))] md:hidden"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto overscroll-contain rounded-t-[20px] border bg-card p-5 pb-[calc(20px+env(safe-area-inset-bottom))] md:hidden"
             style={{
               borderColor: 'var(--grid-ax)',
               boxShadow: '0 12px 32px rgba(8,12,20,.16)',

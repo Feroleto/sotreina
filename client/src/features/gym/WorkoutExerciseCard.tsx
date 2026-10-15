@@ -89,7 +89,7 @@ function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowPro
         onClick={onUncheck}
         disabled={busy}
         aria-label={t('train.markUndone')}
-        className="flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-full bg-acc text-white disabled:cursor-not-allowed disabled:opacity-50"
+        className="press flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded-full bg-acc text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Check className="h-3.5 w-3.5" strokeWidth={2.2} />
       </button>
