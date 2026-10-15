@@ -140,9 +140,10 @@ export default function SyncPanel({ onSynced }: SyncPanelProps) {
             {total == null ? (
               <div className="h-full w-1/3 animate-pulse rounded-full bg-acc" />
             ) : (
+              // progress → linear; clip-path reveal instead of width (layout)
               <div
-                className="h-full rounded-full bg-acc transition-[width] duration-700"
-                style={{ width: `${percent}%` }}
+                className="h-full bg-acc ease-linear motion-safe:transition-[clip-path] motion-safe:duration-700"
+                style={{ clipPath: `inset(0 ${100 - percent}% 0 0 round 999px)` }}
               />
             )}
           </div>

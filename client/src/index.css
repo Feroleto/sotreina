@@ -430,3 +430,99 @@
 .content-fade-in {
   animation: fade-in 200ms ease-out backwards;
 }
+
+/* the ring's over-goal color swap is a color change, not motion: kept
+   under reduced motion too (the media block below adds the fill sweep) */
+.ring-fill {
+  transition: stroke 200ms ease;
+}
+
+/* Data entrances (Phase 2 of .plans/animacoes-vida-spec.md). Inert unless an
+   ancestor carries data-enter from lib/useEntrance.ts: once per session per
+   block, only while that hook's short "run" window lasts — so a period
+   switch or month change later renders instantly. Reduced motion: the hook
+   never arms (state stays idle), and these rules are gated anyway.
+   --i on an element = its index, for the stagger (capped so long lists
+   don't keep trickling in) */
+@media (prefers-reduced-motion: no-preference) {
+  [data-enter='pending'] :is(.enter-rise, .enter-fade, .chart-fade, .chart-bar) {
+    opacity: 0;
+  }
+  [data-enter='pending'] .chart-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  [data-enter='run'] .enter-rise {
+    animation: enter-rise 300ms var(--motion-ease-out) backwards;
+    animation-delay: calc(min(var(--i, 0), 7) * 35ms);
+  }
+  [data-enter='run'] .enter-fade {
+    animation: fade-in 300ms ease-out backwards;
+    animation-delay: calc(min(var(--i, 0), 6) * 40ms);
+  }
+  /* data lines carry pathLength=1, so a dash of 1 is the whole line */
+  [data-enter='run'] .chart-line {
+    stroke-dasharray: 1;
+    animation: chart-draw 700ms var(--motion-ease-out) both;
+  }
+  /* areas, points, trend lines: after the line has mostly drawn */
+  [data-enter='run'] .chart-fade {
+    animation: fade-in 350ms ease-out 450ms backwards;
+  }
+  [data-enter='run'] .chart-bar {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: bar-grow 450ms var(--motion-ease-out) backwards;
+    animation-delay: calc(min(var(--i, 0), 12) * 30ms);
+  }
+  [data-enter='run'] .ring-fill {
+    animation: ring-fill 700ms var(--motion-ease-out) backwards;
+  }
+  [data-enter='run'] .macro-fill {
+    animation: macro-fill 600ms var(--motion-ease-out) 150ms backwards;
+  }
+
+  /* value changes after the entrance (a food added/removed): transitions
+     retarget from wherever the fill is, so a quick second change never
+     restarts the way a keyframe would */
+  .ring-fill {
+    transition:
+      stroke-dashoffset 500ms var(--motion-ease-out),
+      stroke 200ms ease;
+  }
+  .macro-fill {
+    transition: clip-path 500ms var(--motion-ease-out);
+  }
+}
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes chart-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes bar-grow {
+  from {
+    opacity: 0;
+    transform: scaleY(0.1);
+  }
+}
+/* --ring-empty = the ring's circumference (an empty ring), set inline */
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-empty);
+  }
+}
+@keyframes macro-fill {
+  from {
+    clip-path: inset(0 100% 0 0 round 999px);
+  }
+}

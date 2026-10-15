@@ -110,6 +110,8 @@ export default function EfficiencyFactorChart({
           <ChartGrid width={VB_W} top={TOP_Y} bottom={AXIS_Y} />
           {paths.map((d, k) => (
             <path
+              className="chart-line"
+              pathLength={1}
               key={k}
               d={d}
               fill="none"
@@ -123,6 +125,7 @@ export default function EfficiencyFactorChart({
             (w, i) =>
               values[i] !== null && (
                 <circle
+                  className="chart-fade"
                   key={w.start.getTime()}
                   cx={x(i)}
                   cy={y(values[i] as number)}

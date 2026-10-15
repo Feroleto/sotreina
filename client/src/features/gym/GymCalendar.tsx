@@ -1,8 +1,10 @@
+import type { CSSProperties } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutHistoryItem } from '@/lib/types';
 import { formatMonthDay } from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
+import { useEntrance } from '@/lib/useEntrance';
 
 interface GymCalendarProps {
   items: WorkoutHistoryItem[];
@@ -47,6 +49,9 @@ function formatTons(kg: number): string {
 // scoped to gym.json's own i18n keys instead of reaching into 'overview'
 export default function GymCalendar({ items }: GymCalendarProps) {
   const { t } = useTranslation('gym');
+  // training days fade in week by week, once per session; month navigation
+  // afterwards is instant
+  const { attach: enterRef, state: enterState } = useEntrance('gym/overview:calendar', { ready: items.length > 0 });
   const weekdays = t('overview.calendar.weekdaysMin', { returnObjects: true }) as string[];
 
   const earliestDate = useMemo(
@@ -132,7 +137,7 @@ export default function GymCalendar({ items }: GymCalendarProps) {
       });
 
   return (
-    <div className="rounded-[14px] border border-border bg-card p-[16px]">
+    <div ref={enterRef} data-enter={enterState} className="rounded-[14px] border border-border bg-card p-[16px]">
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">{monthLabel}</div>
         <div className="flex gap-1">
@@ -200,13 +205,14 @@ export default function GymCalendar({ items }: GymCalendarProps) {
               <div
                 className={`flex h-[28px] w-[28px] items-center justify-center rounded-full text-[12.5px] ${
                   hasWorkout
-                    ? 'bg-acc font-semibold text-white'
+                    ? 'enter-fade bg-acc font-semibold text-white'
                     : isToday
                       ? 'border-[1.5px] border-acc text-foreground'
                       : isFuture
                         ? 'text-muted-foreground opacity-40'
                         : 'font-normal text-foreground'
                 }`}
+                style={{ '--i': Math.floor(i / 7) } as CSSProperties}
               >
                 {day}
               </div>

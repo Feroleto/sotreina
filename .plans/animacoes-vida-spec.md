@@ -1,6 +1,6 @@
 # Spec — Animações pra dar vida ao SoTreina
 
-Data: 2026-10-15 · Status: **Fase 1 implementada** (aguardando validação no celular real e commit) · Fases 2 e 3 pendentes
+Data: 2026-10-15 · Status: **Fase 1 commitada** (`92b19c7`) · **Fase 2 implementada** (aguardando validação e commit) · Fase 3 pendente
 Precedente: animação do hero do login (`features/auth/HeroTrace.tsx`, bloco `.hero-*` em `index.css`)
 
 ## 1. Objetivo
@@ -109,6 +109,17 @@ Todas as entradas desta fase são **uma vez por sessão por página** (`useFirst
 ### 4.4 KPIs e calendários
 - KPIs do dia a dia (totais da Overview, carrossel do Histórico): **fade simples, sem count-up**. O count-up é exclusivo de telas de resumo/celebração.
 - `RunCalendar`/`GymCalendar`: os pontos de dias com treino entram em fade com stagger por semana (curto). Navegar entre meses é instantâneo.
+
+### 4.5 Como a Fase 2 ficou
+- **Ferramenta: só CSS animation, zero Motion.** Toda entrada é predeterminada, e CSS roda fora da main thread enquanto a página ainda está carregando. Entry chunk inalterado.
+- **`lib/useEntrance.ts`**: `useEntrance(key, { ready, inView })` devolve `{ attach, state }`. O `state` vai em `data-enter` do container, e as classes de `index.css` (`chart-line`, `chart-fade`, `chart-bar`, `enter-rise`, `enter-fade`, `ring-fill`, `macro-fill`) só animam sob `[data-enter='run']`. Ciclo: `pending` (esperando dado ou viewport, com os alvos em opacity 0) → `run` (janela de 1,4s) → `idle`. Depois da janela, trocar período ou mês renderiza instantâneo, porque nada fica preso a "entrada". Com movimento reduzido nunca arma.
+  - `attach` é um callback ref guardado em estado, e não `useRef`: o container costuma montar só depois do loading (ex.: `ShoesSection`), e o IntersectionObserver precisa ligar quando ele aparece.
+  - Os call sites **desestruturam** (`const { attach: enterRef, state: enterState } = useEntrance(...)`). Com `entrance.attach`/`entrance.state`, o lint `react-hooks/refs` trata o objeto inteiro como ref e acusa a leitura de `state` no render.
+- **Barras de progresso (`MacroBar`, `SyncPanel`, `LapEditorPanel`, `FirstSyncPage`)**: `width` virou `clip-path: inset(0 X% 0 0 round …)`, e não `scaleX`. O `scaleX` achataria a ponta arredondada, e o `inset … round` mantém o raio em qualquer largura. As transições ficaram atrás de `motion-safe:`.
+- **`NutritionRing`**: fica `--neg` quando `value > max`, mesma regra estrita do `DietHistoryPage` (sem faixa de ±3–5%; questão aberta da §8 resolvida assim). A troca de cor transiciona mesmo com movimento reduzido (é cor, não movimento); o preenchimento só transiciona sob `no-preference`.
+- **Calendários**: o "ponto" é o próprio círculo preenchido com o número do dia, então o círculo inteiro faz fade, com stagger por semana.
+- **Analysis**: a `AnalysisCard` dispara por viewport. **Não verificado visualmente**, porque `run/analysis` está desabilitada no menu (`disabled: true`) e o app cai pra Activities. Typecheck e lint ok, e as classes seguem o mesmo padrão verificado no `WeeklyChart`.
+- Verificado no navegador, com `page.route` simulando dados (só GET, nada gravado): anel, macros e caso acima da meta (Dieta Overview), barras do histórico da Dieta, linha+área do `WeeklyChart`, grupos de semana, recordes, tênis (`pending` até rolar), calendário. Sob `--reduced-motion`, o estado fica `idle` desde o início.
 
 ## 5. Fase 3 — Conquistas
 

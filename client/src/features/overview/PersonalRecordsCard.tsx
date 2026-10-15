@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { List, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Activity, PersonalBestRecord } from '@/lib/types';
@@ -10,6 +11,7 @@ import {
   formatPace,
 } from '@/lib/activityFormat';
 import { apiFetch } from '@/lib/api';
+import { useEntrance } from '@/lib/useEntrance';
 
 interface PersonalRecordsCardProps {
   activities: Activity[];
@@ -240,6 +242,9 @@ export default function PersonalRecordsCard({
   const [records, setRecords] = useState<PersonalBestRecord[]>([]);
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  // rows rise in once the records are in, once per session
+  const { attach: enterRef, state: enterState } = useEntrance('run/overview:records', { ready: loaded });
 
   useEffect(() => {
     apiFetch('/personal-bests')
@@ -248,7 +253,8 @@ export default function PersonalRecordsCard({
         return res.json();
       })
       .then(setRecords)
-      .catch(() => setRecords([]));
+      .catch(() => setRecords([]))
+      .finally(() => setLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -283,7 +289,11 @@ export default function PersonalRecordsCard({
   );
 
   return (
-    <div className="rounded-[12px] border border-border bg-card p-[18px_20px]">
+    <div
+      ref={enterRef}
+      data-enter={enterState}
+      className="rounded-[12px] border border-border bg-card p-[18px_20px]"
+    >
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
           {t('records.title')}
@@ -303,19 +313,24 @@ export default function PersonalRecordsCard({
 
       {/* mobile — headline distances only, single column */}
       <div className="mt-1 md:hidden">
-        {DISTANCES.filter((d) => MOBILE_KEYS.includes(d.key)).map((def) => (
-          <MobileRecordRow
-            key={def.key}
-            def={def}
-            best={byName.get(def.key)?.[0]}
-            activityById={activityById}
-          />
+        {DISTANCES.filter((d) => MOBILE_KEYS.includes(d.key)).map((def, i) => (
+          <div key={def.key} className="enter-rise" style={{ '--i': i } as CSSProperties}>
+            <MobileRecordRow
+              def={def}
+              best={byName.get(def.key)?.[0]}
+              activityById={activityById}
+            />
+          </div>
         ))}
       </div>
 
       <div className="mt-1 hidden grid-cols-3 gap-x-5 md:grid">
         {columns.map((defs, c) => (
-          <div key={c} className={c > 0 ? 'border-l border-border pl-5' : ''}>
+          <div
+            key={c}
+            className={`enter-rise ${c > 0 ? 'border-l border-border pl-5' : ''}`}
+            style={{ '--i': c } as CSSProperties}
+          >
             {defs.map((def, i) => (
               <RecordCell
                 key={def.key}

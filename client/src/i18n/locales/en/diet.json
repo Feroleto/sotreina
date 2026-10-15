@@ -3,6 +3,7 @@
     "title": "Diet",
     "ofGoal": "of {{kcal}} kcal",
     "remaining": "{{kcal}} kcal remaining",
+    "overGoal": "{{kcal}} kcal over goal",
     "editGoal": "Edit daily goal",
     "mealsTitle": "Today's meals",
     "items": "{{count}} item",

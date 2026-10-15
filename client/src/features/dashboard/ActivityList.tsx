@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -60,8 +61,12 @@ function ActivityListBody({
 
   return (
     <>
-      {groups.map((week) => (
-        <div key={week.start.getTime()} className="mb-[26px]">
+      {groups.map((week, wi) => (
+        <div
+          key={week.start.getTime()}
+          className="enter-rise mb-[26px]"
+          style={{ '--i': wi } as CSSProperties}
+        >
           <div className="flex items-baseline justify-between border-b border-grid-ax pb-[9px]">
             <div className="text-xs font-semibold tracking-[.04em] uppercase text-muted-foreground">
               {formatDayMonth(week.start)} –{' '}

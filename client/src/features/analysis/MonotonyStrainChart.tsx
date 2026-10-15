@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDayMonth } from '@/lib/activityFormat';
@@ -80,6 +81,8 @@ export default function MonotonyStrainChart({ weeks }: { weeks: WeekMetrics[] })
 
           {visible.map((w, i) => (
             <rect
+              className="chart-bar"
+              style={{ '--i': i } as CSSProperties}
               key={w.start.getTime()}
               x={x(i) - barW / 2}
               y={yBar(w.strain)}
@@ -116,6 +119,8 @@ export default function MonotonyStrainChart({ weeks }: { weeks: WeekMetrics[] })
 
           {linePath && (
             <path
+              className="chart-line"
+              pathLength={1}
               d={linePath}
               fill="none"
               stroke="var(--acc)"
@@ -126,6 +131,7 @@ export default function MonotonyStrainChart({ weeks }: { weeks: WeekMetrics[] })
           )}
           {visible.map((w, i) => (
             <circle
+              className="chart-fade"
               key={w.start.getTime()}
               cx={x(i)}
               cy={yLine(w.monotony)}

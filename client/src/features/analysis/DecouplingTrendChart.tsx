@@ -116,6 +116,8 @@ export default function DecouplingTrendChart({
 
               {linePath && (
                 <path
+                  className="chart-line"
+                  pathLength={1}
                   d={linePath}
                   fill="none"
                   stroke="var(--acc)"
@@ -126,6 +128,7 @@ export default function DecouplingTrendChart({
               )}
               {visible.map((p, i) => (
                 <circle
+                  className="chart-fade"
                   key={p.activityId}
                   cx={x(i)}
                   cy={y(p.decouplingPct)}

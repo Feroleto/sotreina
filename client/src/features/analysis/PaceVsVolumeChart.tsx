@@ -96,6 +96,7 @@ export default function PaceVsVolumeChart({ weeks }: { weeks: WeekMetrics[] }) {
 
           {n >= 2 && (
             <line
+              className="chart-fade"
               x1={x(minKm)}
               y1={regY1}
               x2={x(maxKm)}
@@ -112,6 +113,7 @@ export default function PaceVsVolumeChart({ weeks }: { weeks: WeekMetrics[] }) {
             const isHover = hov === i;
             return (
               <circle
+                className="chart-fade"
                 key={w.start.getTime()}
                 cx={x(w.km)}
                 cy={y(w.pace)}

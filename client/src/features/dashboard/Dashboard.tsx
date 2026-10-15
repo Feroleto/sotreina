@@ -9,6 +9,7 @@ import ActivityList from './ActivityList';
 import RangeChip from './RangeChip';
 import ActivityDetailView from '@/features/activity/ActivityDetailView';
 import DrillStack from '@/components/DrillStack';
+import { useEntrance } from '@/lib/useEntrance';
 import { useActivities } from '@/lib/useActivities';
 import {
   CHART_MAX_WEEKS,
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [weekPage, setWeekPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
   const { activities, loading, error } = useActivities(refreshKey);
+  const { attach: enterRef, state: enterState } = useEntrance('run/activities', { ready: !loading });
   const isMobile = useIsMobile();
 
   // mobile: the detail view is pushed onto browser history so the hardware /
@@ -275,7 +277,8 @@ export default function Dashboard() {
           {detailId ? (
             <ActivityDetailView id={detailId} onBack={closeDetail} />
           ) : (
-            <>
+            // chart line draws / bars grow / week groups rise, once per session
+            <div ref={enterRef} data-enter={enterState}>
               <div className="hidden md:block">
                 <WeeklyChart
                   bins={chartBins}
@@ -347,7 +350,7 @@ export default function Dashboard() {
                     : null
                 }
               />
-            </>
+            </div>
           )}
         </DrillStack>
       </div>

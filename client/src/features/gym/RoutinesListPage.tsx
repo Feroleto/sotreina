@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
@@ -7,6 +8,7 @@ import { formatLastPerformed } from './relativeTime';
 import RoutineWorkoutToggleButton from './RoutineWorkoutToggleButton';
 import RoutineDetailPage from './RoutineDetailPage';
 import DrillStack from '@/components/DrillStack';
+import { useEntrance } from '@/lib/useEntrance';
 import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
 
 interface RoutinesListPageProps {
@@ -22,6 +24,8 @@ export default function RoutinesListPage({
 }: RoutinesListPageProps) {
   const { t } = useTranslation('gym');
   const { templates, loading, error, remove } = useWorkoutTemplates();
+  // routine cards rise in, once per session
+  const { attach: enterRef, state: enterState } = useEntrance('gym/workouts', { ready: !loading });
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   // read-only routine detail, opened by tapping a card (see the card's
   // onClick below) — holds the already-fetched summary so the detail screen
@@ -42,7 +46,7 @@ export default function RoutinesListPage({
           }}
         />
       ) : (
-        <div className="px-5 pt-[18px] pb-[44px]">
+        <div ref={enterRef} data-enter={enterState} className="px-5 pt-[18px] pb-[44px]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[12.5px] font-medium text-muted-foreground">
               {t('start.savedRoutinesCount', { count: templates.length })}
@@ -73,11 +77,12 @@ export default function RoutinesListPage({
             </p>
           )}
 
-          {templates.map((tpl) => (
+          {templates.map((tpl, i) => (
             <div
               key={tpl.id}
               onClick={() => setViewingTemplate(tpl)}
-              className="mt-4 cursor-pointer rounded-[14px] border border-border bg-card p-[16px]"
+              style={{ '--i': i } as CSSProperties}
+              className="enter-rise mt-4 cursor-pointer rounded-[14px] border border-border bg-card p-[16px]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="text-[15px] font-semibold tracking-[-.01em] text-foreground">

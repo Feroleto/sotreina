@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Gear } from '@/lib/types';
 import { formatKm, formatMonthShortYear } from '@/lib/activityFormat';
 import { apiFetch } from '@/lib/api';
+import { useEntrance } from '@/lib/useEntrance';
 
 // TODO: Strava's Gear API exposes no per-shoe mileage goal at all — this is a
 // fixed placeholder until there's a real, user-settable goal field.
@@ -12,6 +14,8 @@ export default function ShoesSection() {
   const { t } = useTranslation('overview');
   const [gear, setGear] = useState<Gear[]>([]);
   const [loading, setLoading] = useState(true);
+  // below the fold on mobile: the cards rise when the section scrolls in
+  const { attach: enterRef, state: enterState } = useEntrance('run/overview:shoes', { ready: !loading, inView: true });
 
   useEffect(() => {
     apiFetch('/gear')
@@ -30,7 +34,7 @@ export default function ShoesSection() {
   const retiredCount = gear.filter((g) => g.retired).length;
 
   return (
-    <div>
+    <div ref={enterRef} data-enter={enterState}>
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
           {t('shoes.title')}
@@ -45,8 +49,8 @@ export default function ShoesSection() {
 
       {/* mobile: edge-bleed horizontal carousel; desktop: 3-col grid */}
       <div className="no-scrollbar -mx-5 mt-3 flex gap-[14px] overflow-x-auto px-5 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
-        {gear.map((g) => (
-          <ShoeCard key={g.id} gear={g} />
+        {gear.map((g, i) => (
+          <ShoeCard key={g.id} gear={g} index={i} />
         ))}
         {gear.length === 0 && (
           <p className="w-full py-6 text-center text-[12.5px] text-muted-foreground md:col-span-3">
@@ -58,7 +62,7 @@ export default function ShoesSection() {
   );
 }
 
-function ShoeCard({ gear }: { gear: Gear }) {
+function ShoeCard({ gear, index }: { gear: Gear; index: number }) {
   const { t } = useTranslation('overview');
   const pct = Math.min(100, (gear.computedDistanceM / SHOE_LIFESPAN_M) * 100);
   const barColor = gear.retired
@@ -90,9 +94,10 @@ function ShoeCard({ gear }: { gear: Gear }) {
 
   return (
     <div
-      className={`flex w-[230px] flex-none flex-col gap-[10px] rounded-[12px] border border-border bg-card p-4 md:w-auto ${
+      className={`enter-rise flex w-[230px] flex-none flex-col gap-[10px] rounded-[12px] border border-border bg-card p-4 md:w-auto ${
         gear.retired ? 'opacity-60' : ''
       }`}
+      style={{ '--i': index } as CSSProperties}
     >
       <div className="flex items-center justify-between">
         <div className="text-[10px] font-semibold tracking-[.08em] text-muted-foreground uppercase">

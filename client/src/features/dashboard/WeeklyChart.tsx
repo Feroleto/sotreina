@@ -136,9 +136,13 @@ export default function WeeklyChart({
           <text x="4" y="106" fontSize="10.5" fill="var(--muted-foreground)">
             {Math.round(maxKm / 2)} km
           </text>
-          {areaPath && <path d={areaPath} fill="url(#weekly-grad)" />}
+          {areaPath && (
+            <path className="chart-fade" d={areaPath} fill="url(#weekly-grad)" />
+          )}
           {linePath && (
             <path
+              className="chart-line"
+              pathLength={1}
               d={linePath}
               fill="none"
               stroke="var(--acc)"

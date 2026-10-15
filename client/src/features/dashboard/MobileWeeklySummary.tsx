@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -111,14 +112,17 @@ export default function MobileWeeklySummary({
               className="flex h-full flex-1 cursor-pointer items-end"
             >
               <span
-                className="w-full rounded-t-[4px]"
-                style={{
-                  height: `${((w.km / maxKm) * 100).toFixed(1)}%`,
-                  background:
-                    sel === i
-                      ? 'color-mix(in oklab, var(--acc) 70%, white)'
-                      : 'var(--acc)',
-                }}
+                className="chart-bar w-full rounded-t-[4px]"
+                style={
+                  {
+                    '--i': i,
+                    height: `${((w.km / maxKm) * 100).toFixed(1)}%`,
+                    background:
+                      sel === i
+                        ? 'color-mix(in oklab, var(--acc) 70%, white)'
+                        : 'var(--acc)',
+                  } as CSSProperties
+                }
               />
             </button>
           ))}

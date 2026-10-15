@@ -73,9 +73,11 @@ export default function TrainingLoadChart({ weeks }: { weeks: WeekMetrics[] }) {
             </linearGradient>
           </defs>
           <ChartGrid width={VB_W} top={TOP_Y} bottom={AXIS_Y} />
-          {areaPath && <path d={areaPath} fill="url(#load-grad)" />}
+          {areaPath && <path className="chart-fade" d={areaPath} fill="url(#load-grad)" />}
           {linePath && (
             <path
+              className="chart-line"
+              pathLength={1}
               d={linePath}
               fill="none"
               stroke="var(--acc)"
@@ -86,6 +88,7 @@ export default function TrainingLoadChart({ weeks }: { weeks: WeekMetrics[] }) {
           )}
           {visible.map((w, i) => (
             <circle
+              className="chart-fade"
               key={w.start.getTime()}
               cx={x(i)}
               cy={y(w.load)}

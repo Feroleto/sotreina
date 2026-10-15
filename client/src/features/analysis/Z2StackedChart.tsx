@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDayMonth, formatKm } from '@/lib/activityFormat';
@@ -108,6 +109,8 @@ export default function Z2StackedChart({
             return (
               <g key={w.start.getTime()}>
                 <rect
+                  className="chart-bar"
+                  style={{ '--i': i } as CSSProperties}
                   x={x(i) - barW / 2}
                   y={z2Top}
                   width={barW}
@@ -115,6 +118,8 @@ export default function Z2StackedChart({
                   fill="var(--pos)"
                 />
                 <rect
+                  className="chart-bar"
+                  style={{ '--i': i } as CSSProperties}
                   x={x(i) - barW / 2}
                   y={totalTop}
                   width={barW}

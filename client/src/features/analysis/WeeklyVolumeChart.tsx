@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDayMonth } from '@/lib/activityFormat';
@@ -75,6 +76,7 @@ export default function WeeklyVolumeChart({ weeks }: { weeks: WeekMetrics[] }) {
           <ChartGrid width={VB_W} top={TOP_Y} bottom={AXIS_Y} />
           {trendPath && (
             <path
+              className="chart-fade"
               d={trendPath}
               fill="none"
               stroke="var(--neg)"
@@ -86,6 +88,8 @@ export default function WeeklyVolumeChart({ weeks }: { weeks: WeekMetrics[] }) {
           )}
           {visible.map((w, i) => (
             <rect
+              className="chart-bar"
+              style={{ '--i': i } as CSSProperties}
               key={w.start.getTime()}
               x={x(i) - barW / 2}
               y={y(w.km)}

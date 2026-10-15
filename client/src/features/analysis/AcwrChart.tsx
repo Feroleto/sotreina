@@ -111,6 +111,8 @@ export default function AcwrChart({ weeks }: { weeks: WeekMetrics[] }) {
           />
           {paths.map((d, k) => (
             <path
+              className="chart-line"
+              pathLength={1}
               key={k}
               d={d}
               fill="none"
@@ -124,6 +126,7 @@ export default function AcwrChart({ weeks }: { weeks: WeekMetrics[] }) {
             (w, i) =>
               values[i] !== null && (
                 <circle
+                  className="chart-fade"
                   key={w.start.getTime()}
                   cx={x(i)}
                   cy={y(values[i] as number)}

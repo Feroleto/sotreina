@@ -332,8 +332,8 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                     <div className="h-full w-1/3 animate-pulse rounded-full bg-acc" />
                   ) : (
                     <div
-                      className="h-full rounded-full bg-acc transition-[width] duration-[120ms] ease-linear"
-                      style={{ width: `${percent}%` }}
+                      className="h-full bg-acc ease-linear motion-safe:transition-[clip-path] motion-safe:duration-[120ms]"
+                      style={{ clipPath: `inset(0 ${100 - percent}% 0 0 round 999px)` }}
                     />
                   )}
                 </div>

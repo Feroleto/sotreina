@@ -3,6 +3,7 @@
     "title": "Dieta",
     "ofGoal": "de {{kcal}} kcal",
     "remaining": "{{kcal}} kcal restantes",
+    "overGoal": "{{kcal}} kcal acima da meta",
     "editGoal": "Editar meta diária",
     "mealsTitle": "Refeições de hoje",
     "items": "{{count}} item",

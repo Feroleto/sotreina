@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 interface NutritionRingProps {
   value: number;
@@ -8,8 +8,11 @@ interface NutritionRingProps {
   children?: ReactNode;
 }
 
-// pure SVG ring — track in --chip, fill in --acc; caller supplies the
-// centered content (kcal readout) via children so this stays diet-agnostic
+// pure SVG ring — track in --chip, fill in --acc (--neg once value passes
+// max, same "over" rule as DietHistoryPage's bars); caller supplies the
+// centered content (kcal readout) via children so this stays diet-agnostic.
+// Fill motion lives in index.css (.ring-fill): sweeps in under a
+// data-enter ancestor, transitions on later value changes
 export default function NutritionRing({
   value,
   max,
@@ -21,6 +24,7 @@ export default function NutritionRing({
   const circumference = 2 * Math.PI * radius;
   const progress = max > 0 ? Math.min(1, value / max) : 0;
   const offset = circumference * (1 - progress);
+  const over = max > 0 && value > max;
   const center = size / 2;
 
   return (
@@ -44,12 +48,13 @@ export default function NutritionRing({
           cy={center}
           r={radius}
           fill="none"
-          stroke="var(--acc)"
+          className="ring-fill"
+          stroke={over ? 'var(--neg)' : 'var(--acc)'}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset .3s ease' }}
+          style={{ '--ring-empty': circumference } as CSSProperties}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

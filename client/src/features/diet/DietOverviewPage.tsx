@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronDown, ChevronUp, Pencil, Plus, Settings, Trash2 } from 'lucide-react';
 import type { Meal, MealType } from '@/lib/types';
@@ -13,6 +14,7 @@ import MealTypePicker from './components/MealTypePicker';
 import AddMealPage from './AddMealPage';
 import GoalPage from './GoalPage';
 import DrillStack from '@/components/DrillStack';
+import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 
 type View = { name: 'overview' } | { name: 'addMeal'; meal: Meal } | { name: 'goal' };
@@ -81,6 +83,9 @@ export default function DietOverviewPage() {
   const totalKcal = summary?.totalKcal ?? 0;
   const kcalGoal = goal?.dailyKcalGoal ?? 2000;
   const remaining = Math.round(kcalGoal - totalKcal);
+  // same "over" rule as NutritionRing (value > max) — not remaining < 0,
+  // whose rounding would disagree with the ring right at the goal
+  const overGoal = totalKcal > kcalGoal;
 
   // the server derives `order` from array position, so moving one meal means
   // sending the whole reordered list, not a delta
@@ -94,6 +99,8 @@ export default function DietOverviewPage() {
   // first load only — refreshes after a save keep the current numbers on
   // screen instead of flashing the skeleton again
   const firstLoad = (loading && summary == null) || (mealsLoading && meals.length === 0);
+  // ring/macro fills sweep in and the meal rows rise, once per session
+  const { attach: enterRef, state: enterState } = useEntrance('diet/overview', { ready: !firstLoad });
 
   const kcalOf = (mealId: string) =>
     Math.round(
@@ -133,7 +140,7 @@ export default function DietOverviewPage() {
       viewKey={view.name === 'addMeal' ? `addMeal:${view.meal.id}` : detail ? view.name : 'overview'}
     >
       {detail ?? (
-        <div className="px-5 pt-[76px] pb-8">
+        <div ref={enterRef} data-enter={enterState} className="px-5 pt-[76px] pb-8">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-[25px] font-bold tracking-[-.02em] text-foreground">
@@ -161,8 +168,12 @@ export default function DietOverviewPage() {
                   {t('overview.ofGoal', { kcal: kcalGoal })}
                 </span>
               </NutritionRing>
-              <p className="mt-3 text-[13px] font-semibold text-acc">
-                {t('overview.remaining', { kcal: remaining })}
+              <p
+                className={`mt-3 text-[13px] font-semibold ${overGoal ? 'text-neg' : 'text-acc'}`}
+              >
+                {overGoal
+                  ? t('overview.overGoal', { kcal: Math.ceil(totalKcal - kcalGoal) })
+                  : t('overview.remaining', { kcal: remaining })}
               </p>
 
               <div className="mt-5 flex w-full flex-col gap-3">
@@ -221,7 +232,8 @@ export default function DietOverviewPage() {
                         key={meal.id}
                         type="button"
                         onClick={() => setView({ name: 'addMeal', meal })}
-                        className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-chip ${divider}`}
+                        className={`enter-rise flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-chip ${divider}`}
+                        style={{ '--i': i } as CSSProperties}
                       >
                         <div className="min-w-0 flex-1">
                           <div className="text-[14px] font-semibold text-foreground">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import SegmentedControl from '@/components/SegmentedControl';
 import { currentIntlLocale } from '@/lib/dateLocale';
@@ -7,6 +8,7 @@ import { useDietHistory } from './useDietHistory';
 import { useNutritionGoal } from './useNutritionGoal';
 import { capitalize } from './constants';
 import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
+import { useEntrance } from '@/lib/useEntrance';
 
 const CHART_HEIGHT = 140;
 
@@ -49,7 +51,7 @@ function Chart({
           style={{ bottom: `${goalPct}%`, borderColor: 'var(--muted-foreground)' }}
         />
         <div className="flex h-full items-end gap-1.5">
-          {points.map((p) => {
+          {points.map((p, i) => {
             const isSelected = p.date === selectedDate;
             const heightPct = Math.max(2, (p.totalKcal / maxValue) * 100);
             const color = isSelected
@@ -66,8 +68,10 @@ function Chart({
                 className="h-full flex-1 cursor-pointer"
               >
                 <span
-                  className="block w-full rounded-t-[4px]"
-                  style={{ height: `${heightPct}%`, backgroundColor: color }}
+                  className="chart-bar block w-full rounded-t-[4px]"
+                  style={
+                    { height: `${heightPct}%`, backgroundColor: color, '--i': i } as CSSProperties
+                  }
                 />
               </button>
             );
@@ -96,6 +100,8 @@ export default function DietHistoryPage() {
   const { points, loading } = useDietHistory(days);
   const { goal } = useNutritionGoal();
   const kcalGoal = goal?.dailyKcalGoal ?? 2000;
+  // bars grow in once per session; switching 7/14 days afterwards is instant
+  const { attach: enterRef, state: enterState } = useEntrance('diet/history', { ready: !loading && points.length > 0 });
 
   useEffect(() => {
     if (points.length > 0) {
@@ -128,7 +134,11 @@ export default function DietHistoryPage() {
         />
       </div>
 
-      <div className="mt-5 rounded-[16px] border border-border bg-card p-[20px]">
+      <div
+        ref={enterRef}
+        data-enter={enterState}
+        className="mt-5 rounded-[16px] border border-border bg-card p-[20px]"
+      >
         {selected && (
           <p className="text-[13px] font-medium text-foreground">
             {longLabel(selected.date)} · {Math.round(selected.totalKcal)} {t('history.kcal')} · P{' '}

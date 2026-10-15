@@ -1,8 +1,10 @@
+import type { CSSProperties } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Activity } from '@/lib/types';
 import { formatKm, formatMonthDay, formatPace } from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
+import { useEntrance } from '@/lib/useEntrance';
 
 interface RunCalendarProps {
   activities: Activity[];
@@ -39,6 +41,9 @@ function dayKey(d: Date): string {
 
 export default function RunCalendar({ activities }: RunCalendarProps) {
   const { t } = useTranslation('overview');
+  // training days fade in week by week, once per session; month navigation
+  // afterwards is instant
+  const { attach: enterRef, state: enterState } = useEntrance('run/overview:calendar', { ready: activities.length > 0 });
   const weekdays = t('calendar.weekdaysMin', {
     returnObjects: true,
   }) as string[];
@@ -131,7 +136,7 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
       });
 
   return (
-    <div className="rounded-[12px] border border-border bg-card p-[18px]">
+    <div ref={enterRef} data-enter={enterState} className="rounded-[12px] border border-border bg-card p-[18px]">
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
           {monthLabel}
@@ -203,13 +208,14 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-[13px] md:h-[30px] md:w-[30px] md:text-[12.5px] ${
                   hasActivity
-                    ? 'bg-acc font-semibold text-white'
+                    ? 'enter-fade bg-acc font-semibold text-white'
                     : isToday
                       ? 'border-[1.5px] border-acc text-foreground'
                       : isFuture
                         ? 'text-muted-foreground opacity-40'
                         : 'font-normal text-foreground'
                 }`}
+                style={{ '--i': Math.floor(i / 7) } as CSSProperties}
               >
                 {day}
               </div>

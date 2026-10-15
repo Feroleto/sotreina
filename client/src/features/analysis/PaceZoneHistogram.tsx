@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ActivityLapPoint } from '@/lib/types';
@@ -99,6 +100,8 @@ export default function PaceZoneHistogram({
           {BINS.map((bin, i) => (
             <g key={bin.label}>
               <rect
+                className="chart-bar"
+                style={{ '--i': i } as CSSProperties}
                 x={x(i) - barW / 2}
                 y={y(kmPerBin[i])}
                 width={barW}

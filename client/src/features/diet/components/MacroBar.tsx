@@ -17,9 +17,14 @@ export default function MacroBar({ label, value, max, color }: MacroBarProps) {
         </span>
       </div>
       <div className="mt-1.5 h-[7px] w-full overflow-hidden rounded-full bg-chip">
+        {/* full width, revealed by clip-path rather than animating width
+            (layout) or scaleX (would squash the rounded end) */}
         <div
-          className="h-full rounded-full transition-[width] duration-300"
-          style={{ width: `${pct}%`, backgroundColor: color }}
+          className="macro-fill h-full"
+          style={{
+            clipPath: `inset(0 ${100 - pct}% 0 0 round 999px)`,
+            backgroundColor: color,
+          }}
         />
       </div>
     </div>

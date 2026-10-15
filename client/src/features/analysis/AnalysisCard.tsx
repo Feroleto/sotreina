@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import SegmentedControl from '@/components/SegmentedControl';
+import { useEntrance } from '@/lib/useEntrance';
 import { PERIOD_OPTIONS, type AnalysisPeriod } from './period';
 
 interface AnalysisCardProps {
@@ -23,8 +24,13 @@ export default function AnalysisCard({
   fullWidth = false,
   children,
 }: AnalysisCardProps) {
+  // each card's chart draws in when the card scrolls into view, once per
+  // session — the grid is long, most of it starts below the fold
+  const { attach: enterRef, state: enterState } = useEntrance(`run/analysis:${title}`, { inView: true });
   return (
     <div
+      ref={enterRef}
+      data-enter={enterState}
       className={`flex flex-col rounded-[12px] border border-border bg-card px-[18px] pt-4 pb-[10px] ${
         fullWidth ? 'md:col-span-2' : ''
       }`}

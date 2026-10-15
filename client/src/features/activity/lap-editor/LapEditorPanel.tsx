@@ -217,10 +217,11 @@ export default function LapEditorPanel({
             </span>
           </div>
           <div className="mb-3 h-1.5 overflow-hidden rounded-[3px] bg-chip">
+            {/* clip-path reveal instead of width: no layout per edit */}
             <div
-              className="h-full rounded-[3px] transition-[width]"
+              className="h-full ease-[var(--motion-ease-out)] motion-safe:transition-[clip-path] motion-safe:duration-150"
               style={{
-                width: `${progressPct}%`,
+                clipPath: `inset(0 ${100 - progressPct}% 0 0 round 3px)`,
                 background: editor.progress.isComplete
                   ? 'var(--pos)'
                   : 'var(--acc)',

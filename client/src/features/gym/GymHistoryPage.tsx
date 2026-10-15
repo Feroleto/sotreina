@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import { formatDayMonth } from '@/lib/activityFormat';
@@ -7,6 +8,7 @@ import { useWorkoutHistory } from './useWorkoutHistory';
 import { aggregateWeeklyVolume, groupWorkoutsByWeek } from './historyBins';
 import WorkoutDetailPage from './WorkoutDetailPage';
 import DrillStack from '@/components/DrillStack';
+import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 import type { WorkoutHistoryItem } from '@/lib/types';
 
@@ -110,12 +112,14 @@ export default function GymHistoryPage() {
   }, [items]);
 
   const weekGroups = useMemo(() => groupWorkoutsByWeek(items), [items]);
+  // volume bars grow and the week groups rise, once per session
+  const { attach: enterRef, state: enterState } = useEntrance('gym/history', { ready: !loading });
   const visibleGroups = weekGroups.slice(0, RECENT_WEEK_GROUPS);
   const olderWeekGroups = Math.max(0, weekGroups.length - RECENT_WEEK_GROUPS);
 
   const list = (
     <LoadingSwap loading={loading} skeleton={<HistorySkeleton />}>
-      <div className="px-5 pt-[18px] pb-[44px]">
+      <div ref={enterRef} data-enter={enterState} className="px-5 pt-[18px] pb-[44px]">
         {error && <p className="text-[12.5px] text-neg">{error}</p>}
 
         {!error && items.length === 0 && (
@@ -167,14 +171,15 @@ export default function GymHistoryPage() {
                     className="flex h-full flex-1 cursor-pointer items-end"
                   >
                     <span
-                      className="w-full rounded-t-[4px]"
+                      className="chart-bar w-full rounded-t-[4px]"
                       style={{
+                        '--i': i,
                         height: `${((w.volumeKg / maxVolume) * 100).toFixed(1)}%`,
                         background:
                           sel === i
                             ? 'color-mix(in oklab, var(--acc) 70%, white)'
                             : 'var(--acc)',
-                      }}
+                      } as CSSProperties}
                     />
                   </button>
                 ))}
@@ -194,8 +199,12 @@ export default function GymHistoryPage() {
             {/* recent sessions, grouped by week — same grouping pattern as
                 the run Dashboard's ActivityList.tsx */}
             <div className="mt-6">
-              {visibleGroups.map((group) => (
-                <div key={group.start.getTime()} className="mb-[22px]">
+              {visibleGroups.map((group, gi) => (
+                <div
+                  key={group.start.getTime()}
+                  className="enter-rise mb-[22px]"
+                  style={{ '--i': gi } as CSSProperties}
+                >
                   <div className="flex items-baseline justify-between border-b border-border pb-[9px]">
                     <div className="text-[11.5px] font-semibold tracking-[.05em] text-muted-foreground uppercase">
                       {t('history.weekOf', { date: formatDayMonth(group.start) })}
