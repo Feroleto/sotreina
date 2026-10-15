@@ -232,3 +232,111 @@
 .leaflet-control-attribution a {
   color: var(--muted-foreground);
 }
+
+/* Login hero graphic (HeroTrace.tsx). Rare, first-impression screen — the
+   one place the app spends a delight budget. Sequence: volume bars rise
+   (staggered), the route draws like a GPS track, the area under it fades in,
+   then a runner dot with a heartbeat ring travels the route on a loop.
+   Reduced motion: the finished graphic simply fades in, no runner. */
+.hero-trace {
+  --hero-ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+.hero-runner {
+  /* placed by offset-path (inline style); without support it would sit at
+     the SVG origin, so it only exists where motion paths work */
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-trace {
+    animation: hero-fade 400ms ease both;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bar {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: hero-bar-rise 600ms var(--hero-ease) both;
+    animation-delay: calc(var(--i) * 35ms);
+  }
+  .hero-route {
+    stroke-dasharray: 1;
+    animation: hero-draw 1400ms var(--hero-ease) 250ms both;
+  }
+  .hero-area {
+    animation: hero-fade 600ms ease-out 1100ms both;
+  }
+  .hero-finish {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: hero-pop 300ms var(--hero-ease) 1400ms both;
+  }
+
+  @supports (offset-path: path('M0 0')) {
+    .hero-runner {
+      display: inline;
+      offset-rotate: 0deg;
+      transform-box: view-box;
+      transform-origin: 0 0;
+      /* constant motion → linear; fades at both ends so the loop restart
+         never teleports */
+      animation: hero-run 10s linear 1800ms infinite both;
+    }
+    .hero-pulse {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: hero-pulse 1100ms ease-out infinite;
+    }
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hero-bar-rise {
+  from {
+    transform: scaleY(0.1);
+    opacity: 0;
+  }
+}
+@keyframes hero-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hero-pop {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+}
+@keyframes hero-run {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  5%,
+  93% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+@keyframes hero-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}

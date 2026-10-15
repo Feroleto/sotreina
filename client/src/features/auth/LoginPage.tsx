@@ -9,6 +9,7 @@ import PasswordInput from '@/components/PasswordInput';
 import { useAppLanguage } from '@/i18n/useAppLanguage';
 import { useAuth } from '@/features/auth/AuthContext';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
+import HeroTrace from '@/features/auth/HeroTrace';
 
 type Mode = 'login' | 'register';
 type View = 'main' | 'form' | 'forgot';
@@ -221,28 +222,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
           </p>
         </div>
 
-        <svg
-          viewBox="0 0 720 120"
-          className="mt-auto w-full"
-          fill="none"
-          aria-hidden="true"
-        >
-          <line
-            x1="0"
-            y1="110"
-            x2="720"
-            y2="110"
-            stroke="rgba(255,255,255,.14)"
-            strokeWidth="1"
-          />
-          <path
-            d="M8 96 C 80 88 130 60 200 64 C 270 68 310 36 380 42 C 450 48 510 80 570 54 C 620 32 675 26 712 30"
-            stroke="var(--acc)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            opacity=".55"
-          />
-        </svg>
+        <HeroTrace />
       </div>
 
       {/* Sign-in — mobile: bottom sheet anchored under the hero; desktop:
