@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { List, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Activity, PersonalBestRecord } from '@/lib/types';
@@ -12,6 +12,10 @@ import {
 } from '@/lib/activityFormat';
 import { apiFetch } from '@/lib/api';
 import { useEntrance } from '@/lib/useEntrance';
+import { useAuth } from '@/features/auth/AuthContext';
+import { newRecordKeys, readPrSnapshot, topRecordIdentities, writePrSnapshot } from './prSnapshot';
+
+const RecordCelebration = lazy(() => import('./RecordCelebration'));
 
 interface PersonalRecordsCardProps {
   activities: Activity[];
@@ -60,34 +64,64 @@ function Chip({ label, muted }: { label: string; muted?: boolean }) {
   );
 }
 
+// a distance whose top-1 changed since the user's last visit: the chip pops
+// with a glow (Motion, lazy — only downloaded when there's something new)
+// and a "New" badge stays next to the title for this visit
+function CelebratedChip({ isNew, children }: { isNew: boolean; children: ReactNode }) {
+  if (!isNew) return <>{children}</>;
+  return (
+    <Suspense fallback={children}>
+      <RecordCelebration>{children}</RecordCelebration>
+    </Suspense>
+  );
+}
+
+function NewBadge() {
+  const { t } = useTranslation('overview');
+  return (
+    <span
+      className="flex-none rounded-[6px] bg-acc px-[5px] py-[1px] text-[9.5px] font-bold text-white"
+      title={t('records.newBadgeTitle')}
+    >
+      {t('records.newBadge')}
+    </span>
+  );
+}
+
 function MobileRecordRow({
   def,
   best,
   activityById,
+  isNew,
 }: {
   def: (typeof DISTANCES)[number];
   best: PersonalBestRecord | undefined;
   activityById: Map<string, Activity>;
+  isNew: boolean;
 }) {
   const { t } = useTranslation('overview');
   const bestActivity = best ? activityById.get(best.activityId) : undefined;
+  const chip = (
+    <div
+      className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] text-[10.5px] font-bold ${
+        best ? 'text-acc' : 'bg-chip text-muted-foreground'
+      }`}
+      style={
+        best
+          ? { background: 'color-mix(in oklab, var(--acc) 10%, transparent)' }
+          : undefined
+      }
+    >
+      {def.chip}
+    </div>
+  );
   return (
     <div className="flex items-center gap-3 border-b border-border py-[11px]">
-      <div
-        className={`flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] text-[10.5px] font-bold ${
-          best ? 'text-acc' : 'bg-chip text-muted-foreground'
-        }`}
-        style={
-          best
-            ? { background: 'color-mix(in oklab, var(--acc) 10%, transparent)' }
-            : undefined
-        }
-      >
-        {def.chip}
-      </div>
+      <CelebratedChip isNew={isNew}>{chip}</CelebratedChip>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13.5px] font-semibold text-foreground">
+        <div className="flex items-center gap-1.5 truncate text-[13.5px] font-semibold text-foreground">
           {t(def.titleKey)}
+          {isNew && <NewBadge />}
         </div>
         <div className="mt-[1px] truncate text-[11.5px] text-muted-foreground">
           {best
@@ -118,6 +152,7 @@ function RecordCell({
   expanded,
   onToggle,
   last,
+  isNew,
 }: {
   def: (typeof DISTANCES)[number];
   records: PersonalBestRecord[];
@@ -125,6 +160,7 @@ function RecordCell({
   expanded: boolean;
   onToggle: () => void;
   last: boolean;
+  isNew: boolean;
 }) {
   const { t } = useTranslation('overview');
   const best = records[0];
@@ -140,10 +176,13 @@ function RecordCell({
         }`}
         aria-expanded={runnersUp.length > 0 ? expanded : undefined}
       >
-        <Chip label={def.chip} muted={!best} />
+        <CelebratedChip isNew={isNew}>
+          <Chip label={def.chip} muted={!best} />
+        </CelebratedChip>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[12.5px] font-semibold text-foreground">
+          <div className="flex items-center gap-1.5 truncate text-[12.5px] font-semibold text-foreground">
             {t(def.titleKey)}
+            {isNew && <NewBadge />}
           </div>
           {/* name and date on separate lines — the narrow cell can't fit
               both inline, and the date must never be the part that truncates */}
@@ -243,6 +282,9 @@ export default function PersonalRecordsCard({
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [newKeys, setNewKeys] = useState<string[]>([]);
+  const { user } = useAuth();
+  const userId = user?.id;
   // rows rise in once the records are in, once per session
   const { attach: enterRef, state: enterState } = useEntrance('run/overview:records', { ready: loaded });
 
@@ -252,10 +294,21 @@ export default function PersonalRecordsCard({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then(setRecords)
+      .then((data: PersonalBestRecord[]) => {
+        setRecords(data);
+        // only a successful fetch moves the snapshot — writing the empty
+        // list from a failed one would make every record "new" next time
+        if (!userId) return;
+        const next = topRecordIdentities(data);
+        const keys = newRecordKeys(readPrSnapshot(userId), next);
+        writePrSnapshot(userId, next);
+        // StrictMode's second fetch reads the snapshot the first one just
+        // wrote and finds nothing new — keep what the first one found
+        setNewKeys((cur) => (keys.length > 0 ? keys : cur));
+      })
       .catch(() => setRecords([]))
       .finally(() => setLoaded(true));
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!showAll) return;
@@ -319,6 +372,7 @@ export default function PersonalRecordsCard({
               def={def}
               best={byName.get(def.key)?.[0]}
               activityById={activityById}
+              isNew={newKeys.includes(def.key)}
             />
           </div>
         ))}
@@ -342,6 +396,7 @@ export default function PersonalRecordsCard({
                   setExpandedKey(expandedKey === def.key ? null : def.key)
                 }
                 last={i === defs.length - 1}
+                isNew={newKeys.includes(def.key)}
               />
             ))}
           </div>
@@ -413,6 +468,7 @@ export default function PersonalRecordsCard({
                   setExpandedKey(expandedKey === def.key ? null : def.key)
                 }
                 last={i === DISTANCES.length - 1}
+                isNew={newKeys.includes(def.key)}
               />
             ))}
           </div>

@@ -6,6 +6,17 @@
     "savedRoutinesCount_other": "{{count}} rotinas salvas",
     "starting": "Iniciando…"
   },
+  "summary": {
+    "title": "Treino concluído",
+    "duration": "Duração",
+    "volume": "Volume",
+    "sets": "Séries",
+    "prTitle_one": "Recorde pessoal",
+    "prTitle_other": "Recordes pessoais",
+    "prBadge": "PR",
+    "prFrom": "antes: {{previous}}",
+    "done": "Concluir"
+  },
   "session": {
     "title": "Treino atual",
     "empty": "Adicione um exercício para começar.",

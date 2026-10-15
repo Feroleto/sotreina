@@ -1,23 +1,11 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import {
-  AnimatePresence,
-  LazyMotion,
-  MotionConfig,
-  m,
-  useReducedMotion,
-} from 'motion/react';
+import { AnimatePresence, m, useReducedMotion } from 'motion/react';
 import type { TargetAndTransition } from 'motion/react';
 import { useIsMobile } from '@/lib/useIsMobile';
 import { DUR, EASE_DRAWER, EASE_OUT } from '@/lib/motion';
 import { cn } from '@/lib/utils';
-
-// Motion is only ever used inside lazy page chunks, so its provider lives
-// here rather than in main.tsx — there it would drag Motion's core into the
-// entry chunk the logged-out LoginPage visitor downloads. The animation
-// features load async on top (lib/motionFeatures.ts)
-const loadMotionFeatures = () =>
-  import('@/lib/motionFeatures').then((mod) => mod.default);
+import MotionProvider from '@/components/MotionProvider';
 
 type Mode = 'push' | 'fade' | 'reduce';
 type Custom = { dir: 1 | -1; mode: Mode };
@@ -119,25 +107,23 @@ export default function DrillStack({
   return (
     // clip, not hidden: no scroll container, so sticky headers inside keep
     // working while the off-screen half of a push stays invisible
-    <LazyMotion features={loadMotionFeatures} strict>
-      <MotionConfig reducedMotion="user">
-        <div className={cn('relative overflow-x-clip', className)}>
-          <AnimatePresence initial={false} mode="popLayout" custom={custom}>
-            <m.div
-              key={viewKey}
-              custom={custom}
-              variants={variants}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-              // opaque on mobile so the receding screen doesn't show through
-              className={cn('relative max-md:bg-page-bg', screenClassName)}
-            >
-              {children}
-            </m.div>
-          </AnimatePresence>
-        </div>
-      </MotionConfig>
-    </LazyMotion>
+    <MotionProvider>
+      <div className={cn('relative overflow-x-clip', className)}>
+        <AnimatePresence initial={false} mode="popLayout" custom={custom}>
+          <m.div
+            key={viewKey}
+            custom={custom}
+            variants={variants}
+            initial="initial"
+            animate="enter"
+            exit="exit"
+            // opaque on mobile so the receding screen doesn't show through
+            className={cn('relative max-md:bg-page-bg', screenClassName)}
+          >
+            {children}
+          </m.div>
+        </AnimatePresence>
+      </div>
+    </MotionProvider>
   );
 }

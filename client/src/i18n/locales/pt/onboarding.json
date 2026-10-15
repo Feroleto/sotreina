@@ -22,8 +22,8 @@
   },
   "done": {
     "title": "Tudo pronto",
-    "activityCount_one": "{{count}} atividade",
-    "activityCount_other": "{{count}} atividades",
+    "importedLabel_one": "atividade importada",
+    "importedLabel_other": "atividades importadas",
     "distanceKm": "{{km}} km",
     "cta": "Abrir painel"
   }

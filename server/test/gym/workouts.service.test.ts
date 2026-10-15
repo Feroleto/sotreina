@@ -129,7 +129,10 @@ function templateStub(
 
 describe('WorkoutsService', () => {
   let service: WorkoutsService;
-  let exercisesService: { findById: ReturnType<typeof vi.fn> };
+  let exercisesService: {
+    findById: ReturnType<typeof vi.fn>;
+    personalRecord: ReturnType<typeof vi.fn>;
+  };
   let templatesService: {
     findById: ReturnType<typeof vi.fn>;
     syncFromWorkout: ReturnType<typeof vi.fn>;
@@ -138,7 +141,7 @@ describe('WorkoutsService', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockPrisma.workoutTemplateExercise.findMany.mockResolvedValue([]);
-    exercisesService = { findById: vi.fn() };
+    exercisesService = { findById: vi.fn(), personalRecord: vi.fn() };
     templatesService = { findById: vi.fn(), syncFromWorkout: vi.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -589,6 +592,112 @@ describe('WorkoutsService', () => {
       await service.finish(USER_ID, 'w1', true);
 
       expect(templatesService.syncFromWorkout).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('finish summary', () => {
+    const set = (id: string, weightKg: number | null, reps: number | null) => ({
+      id,
+      setNumber: 1,
+      weightKg,
+      reps,
+      rpe: null,
+      setType: 'NORMAL',
+      completedAt: new Date('2026-07-20T10:10:00Z'),
+    });
+    const WORKOUT_WITH_SETS = {
+      ...DETAIL_STUB,
+      exercises: [
+        {
+          id: 'we1',
+          order: 1,
+          supersetGroupId: null,
+          exerciseId: 'bench',
+          exercise: { name: 'Bench Press', namePt: 'Supino' },
+          sets: [set('s1', 80, 8), set('s2', 85, 5)],
+        },
+        {
+          id: 'we2',
+          order: 2,
+          supersetGroupId: null,
+          exerciseId: 'squat',
+          exercise: { name: 'Squat', namePt: null },
+          sets: [set('s3', 100, 5)],
+        },
+        {
+          id: 'we3',
+          order: 3,
+          supersetGroupId: null,
+          exerciseId: 'pullup',
+          exercise: { name: 'Pull-up', namePt: null },
+          sets: [set('s4', null, 10)], // bodyweight: no load, never a PR
+        },
+      ],
+    };
+
+    it('reports volume, sets, exercises and duration', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({ id: 'w1' }); // ownership
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(WORKOUT_WITH_SETS); // pre-finish read
+      exercisesService.personalRecord.mockResolvedValue(null);
+      mockPrisma.workout.update.mockResolvedValueOnce({ ...WORKOUT_WITH_SETS, finishedAt: new Date() });
+
+      const { summary } = await service.finish(USER_ID, 'w1');
+
+      expect(summary.volumeKg).toBe(80 * 8 + 85 * 5 + 100 * 5);
+      expect(summary.setCount).toBe(4);
+      expect(summary.exerciseCount).toBe(3);
+      expect(summary.durationSec).toBeGreaterThan(0);
+    });
+
+    it('flags an exercise whose best set beats the previous finished record', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({ id: 'w1' });
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(WORKOUT_WITH_SETS);
+      exercisesService.personalRecord.mockImplementation(async (_u: string, exerciseId: string) =>
+        exerciseId === 'bench'
+          ? { weightKg: 82.5, reps: 6, workoutId: 'old', startedAt: new Date(), templateName: null }
+          : { weightKg: 120, reps: 3, workoutId: 'old', startedAt: new Date(), templateName: null },
+      );
+      mockPrisma.workout.update.mockResolvedValueOnce({ ...WORKOUT_WITH_SETS, finishedAt: new Date() });
+
+      const { summary } = await service.finish(USER_ID, 'w1', false, 'pt');
+
+      // bench: 85 > 82.5 → PR (localized name); squat: 100 < 120 → not
+      expect(summary.personalRecords).toEqual([
+        {
+          exerciseId: 'bench',
+          exerciseName: 'Supino',
+          weightKg: 85,
+          reps: 5,
+          previousWeightKg: 82.5,
+          previousReps: 6,
+        },
+      ]);
+      // weightless exercises are never even looked up
+      expect(exercisesService.personalRecord).not.toHaveBeenCalledWith(USER_ID, 'pullup');
+    });
+
+    it('does not celebrate the first time an exercise is ever done', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({ id: 'w1' });
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(WORKOUT_WITH_SETS);
+      exercisesService.personalRecord.mockResolvedValue(null); // no finished history
+      mockPrisma.workout.update.mockResolvedValueOnce({ ...WORKOUT_WITH_SETS, finishedAt: new Date() });
+
+      const { summary } = await service.finish(USER_ID, 'w1');
+
+      expect(summary.personalRecords).toEqual([]);
+    });
+
+    it('checks records before marking the workout finished (so it never compares against itself)', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({ id: 'w1' });
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(WORKOUT_WITH_SETS);
+      exercisesService.personalRecord.mockResolvedValue(null);
+      mockPrisma.workout.update.mockResolvedValueOnce({ ...WORKOUT_WITH_SETS, finishedAt: new Date() });
+
+      await service.finish(USER_ID, 'w1');
+
+      const recordCall = exercisesService.personalRecord.mock.invocationCallOrder[0];
+      const updateCall = mockPrisma.workout.update.mock.invocationCallOrder[0];
+      expect(recordCall).toBeLessThan(updateCall);
     });
   });
 

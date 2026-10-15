@@ -22,8 +22,8 @@
   },
   "done": {
     "title": "All set",
-    "activityCount_one": "{{count}} activity",
-    "activityCount_other": "{{count}} activities",
+    "importedLabel_one": "activity imported",
+    "importedLabel_other": "activities imported",
     "distanceKm": "{{km}} km",
     "cta": "Open dashboard"
   }

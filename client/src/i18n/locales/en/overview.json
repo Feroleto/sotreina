@@ -29,6 +29,8 @@
     "subtitle": "top 3 · all time",
     "noRecordYet": "no record yet",
     "prBadge": "PR",
+    "newBadge": "New",
+    "newBadgeTitle": "New record since your last visit",
     "prBadgeTitle": "PR at the time it was run",
     "longestRun": "Longest run",
     "max": "MAX",

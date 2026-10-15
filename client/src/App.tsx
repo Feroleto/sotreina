@@ -29,6 +29,40 @@ import {
 const supportsViewTransitions =
   typeof document !== 'undefined' && 'startViewTransition' in document;
 
+/**
+ * Runs `commit` inside a view transition once `page`'s chunk is loaded
+ * (otherwise the "new" snapshot is Suspense's empty fallback and the real
+ * page pops in after). `scope` is the <html> class that names what gets
+ * captured, only for the transition's lifetime (see index.css): 'vt-page' =
+ * just the page panel, 'vt-root' = the whole screen. A lasting name would
+ * make the element a stacking context and trap the page's own overlays
+ * (sheets, lap editor, scanner) under the z-40 mobile app bar.
+ * `isCurrent` lets a newer call supersede a slower one.
+ */
+function runViewTransition(
+  page: PageId,
+  scope: 'vt-page' | 'vt-root',
+  commit: () => void,
+  isCurrent: () => boolean = () => true,
+) {
+  if (!supportsViewTransitions) {
+    commit();
+    return;
+  }
+  const load = PAGE_IMPORTERS[page]?.() ?? Promise.resolve();
+  void load
+    .catch(() => {})
+    .then(() => {
+      if (!isCurrent()) return;
+      const root = document.documentElement;
+      root.classList.add(scope);
+      const vt = document.startViewTransition(() => flushSync(commit));
+      void vt.finished.finally(() => {
+        if (isCurrent()) root.classList.remove(scope);
+      });
+    });
+}
+
 // code-split per page: keeps Leaflet, the analysis charts and the dashboard
 // out of the entry chunk that the logged-out LoginPage visitor downloads.
 // Importers are shared with lib/boot.ts, which preloads the active page's
@@ -222,32 +256,15 @@ function App() {
     if (opts?.collapse) setCollapsed(true);
     if (next === page) return;
     const seq = ++navSeqRef.current;
-    const commit = () => {
-      setNavigated(true);
-      setPage(next);
-    };
-    if (!supportsViewTransitions) {
-      commit();
-      return;
-    }
-    // wait for the page's chunk first: otherwise the transition's "new"
-    // snapshot is Suspense's empty fallback and the real page pops in after
-    const load = PAGE_IMPORTERS[next]?.() ?? Promise.resolve();
-    void load
-      .catch(() => {})
-      .then(() => {
-        if (seq !== navSeqRef.current) return;
-        // the panel only carries a view-transition-name while transitioning
-        // (see index.css): a permanent one makes it a stacking context, which
-        // would trap the page's own overlays (sheets, lap editor, scanner)
-        // under the z-40 mobile app bar
-        const root = document.documentElement;
-        root.classList.add('vt-page');
-        const vt = document.startViewTransition(() => flushSync(commit));
-        void vt.finished.finally(() => {
-          if (seq === navSeqRef.current) root.classList.remove('vt-page');
-        });
-      });
+    runViewTransition(
+      next,
+      'vt-page',
+      () => {
+        setNavigated(true);
+        setPage(next);
+      },
+      () => seq === navSeqRef.current,
+    );
   };
 
   // reached only via the emailed reset link — must work regardless of
@@ -286,11 +303,15 @@ function App() {
     return (
       <Suspense fallback={<BootSplash />}>
         <FirstSyncPage
-          onDone={() => {
-            recordHasActivities(true);
-            setHasActivities(true);
-            setOnboardingDone(true);
-          }}
+          // onboarding → app shell crossfades as a whole screen (the
+          // dashboard's own first-visit entrances then play on top)
+          onDone={() =>
+            runViewTransition(page, 'vt-root', () => {
+              recordHasActivities(true);
+              setHasActivities(true);
+              setOnboardingDone(true);
+            })
+          }
         />
       </Suspense>
     );

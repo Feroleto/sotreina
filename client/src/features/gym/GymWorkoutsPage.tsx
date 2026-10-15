@@ -4,6 +4,7 @@ import type { useActiveWorkout } from './useActiveWorkout';
 import RoutinesListPage from './RoutinesListPage';
 import RoutineEditPage from './RoutineEditPage';
 import WorkoutSession from './WorkoutSession';
+import WorkoutSummaryPage from './WorkoutSummaryPage';
 
 type View = 'list' | 'edit';
 
@@ -41,6 +42,8 @@ export default function GymWorkoutsPage({
     checkTemplateDrift,
     finish,
     discard,
+    lastFinished,
+    dismissSummary,
   } = activeWorkout;
   const [view, setView] = useState<View>('list');
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
@@ -51,6 +54,12 @@ export default function GymWorkoutsPage({
         {t('loading')}
       </div>
     );
+  }
+
+  // just finished: the summary takes over until dismissed (an open workout
+  // can't coexist — finishing is what produced lastFinished)
+  if (lastFinished && !workout) {
+    return <WorkoutSummaryPage workout={lastFinished} onDone={dismissSummary} />;
   }
 
   if (workout) {

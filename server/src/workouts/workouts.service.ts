@@ -7,6 +7,13 @@ import { WorkoutTemplatesService } from '../workout-templates/workout-templates.
 import type { AddExerciseInput, SetInput, StartWorkoutInput } from './dto';
 import type { TemplateSyncExercise } from '../workout-templates/workout-templates.service';
 import { localizedName, type Lang } from '../common/lang';
+import {
+  beatsRecord,
+  bestSet,
+  summarizeWorkout,
+  type WorkoutFinishSummary,
+  type WorkoutPersonalRecord,
+} from './workout-summary';
 
 export interface WorkoutSetItem {
   id: string;
@@ -44,6 +51,11 @@ export interface WorkoutDetail {
   templateId: string | null;
   templateName: string | null;
   exercises: WorkoutExerciseDetail[];
+}
+
+/** finish's response: the usual detail plus the post-workout summary */
+export interface FinishedWorkout extends WorkoutDetail {
+  summary: WorkoutFinishSummary;
 }
 
 export interface WorkoutSummary {
@@ -363,32 +375,65 @@ export class WorkoutsService {
     return structureChanged || setsChanged;
   }
 
+  // per exercise in this workout: its best set vs the best set of every
+  // *other finished* workout (ExercisesService.personalRecord only counts
+  // finished ones, and this workout isn't yet — so this must run before
+  // finishedAt is set). No previous record = first time doing the exercise,
+  // which isn't celebrated as a PR
+  private async detectPersonalRecords(
+    userId: string,
+    workout: WorkoutDetail,
+  ): Promise<WorkoutPersonalRecord[]> {
+    const candidates = workout.exercises
+      .map((we) => ({ we, best: bestSet(we.sets) }))
+      .filter((c) => c.best !== null);
+
+    const results = await Promise.all(
+      candidates.map(async ({ we, best }) => {
+        const previous = await this.exercisesService.personalRecord(userId, we.exerciseId);
+        if (!previous || !beatsRecord(best!, previous)) return null;
+        return {
+          exerciseId: we.exerciseId,
+          exerciseName: we.exerciseName,
+          weightKg: best!.weightKg,
+          reps: best!.reps,
+          previousWeightKg: previous.weightKg,
+          previousReps: previous.reps,
+        };
+      }),
+    );
+    return results.filter((r): r is WorkoutPersonalRecord => r !== null);
+  }
+
   async finish(
     userId: string,
     id: string,
     syncTemplate = false,
     lang: Lang = 'en',
-  ): Promise<WorkoutDetail> {
+  ): Promise<FinishedWorkout> {
     await this.assertOwnedWorkout(userId, id);
 
-    if (syncTemplate) {
-      const current = await this.findById(userId, id);
-      if (current?.templateId) {
-        const syncExercises: TemplateSyncExercise[] = current.exercises.map((we) => ({
-          exerciseId: we.exerciseId,
-          order: we.order,
-          targetSets: we.sets.length,
-        }));
-        await this.templatesService.syncFromWorkout(userId, current.templateId, syncExercises);
-      }
+    // one read, shared by the template sync and the PR check
+    const current = await this.findById(userId, id, lang);
+    const personalRecords = current ? await this.detectPersonalRecords(userId, current) : [];
+
+    if (syncTemplate && current?.templateId) {
+      const syncExercises: TemplateSyncExercise[] = current.exercises.map((we) => ({
+        exerciseId: we.exerciseId,
+        order: we.order,
+        targetSets: we.sets.length,
+      }));
+      await this.templatesService.syncFromWorkout(userId, current.templateId, syncExercises);
     }
 
+    const finishedAt = new Date();
     const workout = await this.prisma.workout.update({
       where: { id },
-      data: { finishedAt: new Date() },
+      data: { finishedAt },
       select: WORKOUT_DETAIL_SELECT,
     });
-    return this.buildDetail(workout, lang);
+    const detail = await this.buildDetail(workout, lang);
+    return { ...detail, summary: summarizeWorkout(detail, finishedAt, personalRecords) };
   }
 
   // discards an in-progress workout entirely (not just marking it finished)

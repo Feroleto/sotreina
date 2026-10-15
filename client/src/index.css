@@ -357,6 +357,17 @@
 .vt-page [data-vt-page] {
   view-transition-name: page;
 }
+/* whole-screen swap (onboarding → app shell): App.tsx adds .vt-root for the
+   transition's lifetime. Opacity only, so reduced motion keeps it as is */
+:root.vt-root {
+  view-transition-name: root;
+}
+::view-transition-old(root) {
+  animation: vt-fade-out 200ms ease-out both;
+}
+::view-transition-new(root) {
+  animation: fade-in 300ms ease-out both;
+}
 ::view-transition-group(page) {
   animation: none;
 }

@@ -226,6 +226,29 @@ export interface WorkoutDetail {
   exercises: WorkoutExercise[];
 }
 
+// PATCH /workouts/:id/finish — server/src/workouts/workout-summary.ts
+export interface WorkoutPersonalRecord {
+  exerciseId: string;
+  exerciseName: string;
+  weightKg: number;
+  reps: number | null;
+  /** always present: a first-ever session for an exercise isn't a PR */
+  previousWeightKg: number;
+  previousReps: number | null;
+}
+
+export interface WorkoutFinishSummary {
+  durationSec: number;
+  volumeKg: number;
+  setCount: number;
+  exerciseCount: number;
+  personalRecords: WorkoutPersonalRecord[];
+}
+
+export interface FinishedWorkout extends WorkoutDetail {
+  summary: WorkoutFinishSummary;
+}
+
 export interface WorkoutHistoryItem {
   id: string;
   startedAt: string;

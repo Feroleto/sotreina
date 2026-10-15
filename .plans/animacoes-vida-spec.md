@@ -1,6 +1,6 @@
 # Spec — Animações pra dar vida ao SoTreina
 
-Data: 2026-10-15 · Status: **Fase 1 commitada** (`92b19c7`) · **Fase 2 implementada** (aguardando validação e commit) · Fase 3 pendente
+Data: 2026-10-15 · Status: Fases 1 e 2 commitadas (`92b19c7`, `214cae9`) · **Fase 3 implementada** (aguardando validação e commit)
 Precedente: animação do hero do login (`features/auth/HeroTrace.tsx`, bloco `.hero-*` em `index.css`)
 
 ## 1. Objetivo
@@ -147,6 +147,22 @@ Hoje `finish()` em `useActiveWorkout.ts` faz `setWorkout(null)` e o app volta pr
 ### 5.3 Primeiro sync (onboarding)
 - `FirstSyncPage`, estado `done`: o contador de atividades importadas conta até o total, com count-up + pop do número final. Depois, transição pro dashboard: o card sai e o shell real entra no lugar do skeleton com crossfade, aproveitando a VT se houver suporte.
 - O sync manual do rail (`SyncPanel`) **não** celebra. Mantém o feedback atual, só com a barra migrada pra `scaleX` (§4.2).
+
+### 5.4 Como a Fase 3 ficou
+- **Backend** (`server/src/workouts/workout-summary.ts` + `WorkoutsService.finish`): a resposta do `PATCH /workouts/:id/finish` continua sendo o `WorkoutDetail`, agora **com um campo `summary` a mais** (`FinishedWorkout`) em vez de trocar o formato. O PR reaproveita `ExercisesService.personalRecord`, que só conta treinos finalizados, chamado **antes** de gravar `finishedAt`, então nunca compara o treino consigo mesmo. "Melhor série" = maior peso, desempate por mais reps; série sem peso nunca conta. **Questão da §8 resolvida pela sugestão: a primeira vez num exercício não é PR** (`previousWeightKg` é sempre presente). O `finish` lê o treino uma vez só e reaproveita a leitura entre o sync da rotina e o PR. Testes: funções puras (`test/gym/workout-summary.test.ts`) e o `finish` (com PR, sem PR, primeira vez, ordem antes do update).
+- **Frontend**:
+  - `useActiveWorkout` guarda `lastFinished` até `dismissSummary()`; o `GymWorkoutsPage` mostra `WorkoutSummaryPage` enquanto ele existir.
+  - **Tolerante à ordem de deploy**: uma resposta sem `summary` (backend antigo) pula a tela e volta pras rotinas, como antes.
+  - Volume no resumo em **toneladas** (mesmo formato do Histórico), porque "1.880 kg" quebrava na grade de 3 colunas do celular.
+  - A chave `celebrated:workout:<id>` faz quem sair e voltar com o resumo aberto vê-lo já assentado.
+- **PR de corrida**: snapshot por usuário em `localStorage` (`pr-snapshot:<userId>`, `features/overview/prSnapshot.ts`, com teste). Só um fetch **bem-sucedido** move o snapshot; gravar a lista vazia de um erro tornaria tudo "novo" depois.
+  - O "selo" que comemora é o **chip da distância** (o selo "PR" do card só existe nos vices).
+  - Aparece um badge "Novo" ao lado do nome durante aquela visita.
+  - A mola usa Motion, carregado via `React.lazy` (`RecordCelebration.tsx`) **só quando há algo novo**.
+- **Primeiro sync**: o total importado vira um número grande com count-up + pop (`components/CountUp.tsx`, compartilhado com o resumo). "Abrir painel" faz crossfade da **tela inteira** por View Transition (`runViewTransition(page, 'vt-root', …)` no `App.tsx`, mesma função da troca de seção, que agora é um helper).
+- **Infra**: `components/MotionProvider.tsx` extraído (`LazyMotion` async + `MotionConfig reducedMotion="user"`), usado pelo `DrillStack`, pelo resumo, pelo primeiro sync e pela celebração de PR. O Motion continua fora do entry.
+  - Sobre o "entry subiu pra 109 kB gz": isso é só reorganização de chunks. O chunk `api` (i18n + api.ts, ~31 kB gz), que o entry já importava estaticamente no boot, foi incorporado a ele. O download inicial real foi de 108,5 → 109,0 kB.
+- Verificado no navegador sem gravar nada no banco, com `page.route` respondendo `/workouts/*` e o status do sync. Resumo: KPIs contando, PRs com selo/brilho, "Concluir". PR de corrida: 1ª visita só grava, snapshot alterado celebra o 5K, visita seguinte não repete. Primeiro sync: count-up e crossfade com a classe `vt-root` limpa no fim.
 
 ## 6. Escopo por exclusão (decidido)
 

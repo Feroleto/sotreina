@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import type { SetInput, WorkoutDetail } from '@/lib/types';
+import type { FinishedWorkout, SetInput, WorkoutDetail } from '@/lib/types';
 
 // mirrors the /auth/me empty-200 contract (lib/boot.ts): an empty body means
 // "no active workout", not an error
@@ -22,6 +22,10 @@ export function useActiveWorkout(enabled: boolean) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // the workout that was just finished, with its summary — drives the
+  // post-workout screen (WorkoutSummaryPage) until the user dismisses it.
+  // Lives here, next to `workout`, so it survives navigating away and back
+  const [lastFinished, setLastFinished] = useState<FinishedWorkout | null>(null);
   // mirrors useRoutineEditor's exercisesRef — commitReorderExercises is
   // invoked from WorkoutSession's pointerup handler, bound once per drag
   // gesture, and would otherwise close over the pre-drag workout state
@@ -234,6 +238,10 @@ export function useActiveWorkout(enabled: boolean) {
           body: JSON.stringify({ syncTemplate }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const finished = (await res.json()) as Partial<FinishedWorkout>;
+        // a backend older than the summary (deploy order) just skips the
+        // post-workout screen — straight back to the routines, as before
+        if (finished.summary) setLastFinished(finished as FinishedWorkout);
         setWorkout(null);
       } catch (e) {
         setError(String(e));
@@ -243,6 +251,8 @@ export function useActiveWorkout(enabled: boolean) {
     },
     [workout],
   );
+
+  const dismissSummary = useCallback(() => setLastFinished(null), []);
 
   // deletes the workout outright (not a finish) — every logged set is gone,
   // not just marked done
@@ -277,5 +287,7 @@ export function useActiveWorkout(enabled: boolean) {
     checkTemplateDrift,
     finish,
     discard,
+    lastFinished,
+    dismissSummary,
   };
 }

@@ -6,6 +6,17 @@
     "savedRoutinesCount_other": "{{count}} saved routines",
     "starting": "Starting…"
   },
+  "summary": {
+    "title": "Workout complete",
+    "duration": "Duration",
+    "volume": "Volume",
+    "sets": "Sets",
+    "prTitle_one": "Personal record",
+    "prTitle_other": "Personal records",
+    "prBadge": "PR",
+    "prFrom": "was {{previous}}",
+    "done": "Done"
+  },
   "session": {
     "title": "Current workout",
     "empty": "Add an exercise to get started.",

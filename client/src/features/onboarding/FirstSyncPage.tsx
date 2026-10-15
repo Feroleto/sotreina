@@ -5,6 +5,10 @@ import { formatKm } from '@/lib/activityFormat';
 import type { ActivitiesResponse, SyncStatus } from '@/lib/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FIRST_SYNC_FLAG } from './firstSyncFlag';
+import { useReducedMotion } from 'motion/react';
+import MotionProvider from '@/components/MotionProvider';
+import CountUp from '@/components/CountUp';
+import { currentIntlLocale } from '@/lib/dateLocale';
 
 const POLL_MS = 2000;
 
@@ -132,6 +136,7 @@ interface FirstSyncPageProps {
 
 export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
   const { t } = useTranslation('onboarding');
+  const reduceMotion = useReducedMotion() ?? false;
   const { user } = useAuth();
   // null while the initial status check resolves (card hidden until then)
   const [step, setStep] = useState<Step | null>(null);
@@ -389,10 +394,22 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                 <h2 className="mt-[18px] text-[21px] font-semibold tracking-[-.01em] text-foreground">
                   {t('done.title')}
                 </h2>
-                <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground tabular-nums">
-                  {summary
-                    ? [
-                        t('done.activityCount', { count: summary.count }),
+                {summary ? (
+                  // the one-time payoff of onboarding: the imported count
+                  // runs up and settles with a spring pop
+                  <MotionProvider>
+                    <div className="mt-4 text-[44px] leading-none font-bold tracking-[-.03em] text-foreground tabular-nums">
+                      <CountUp
+                        value={summary.count}
+                        format={(v) => Math.round(v).toLocaleString(currentIntlLocale())}
+                        delay={0.2}
+                        celebrate={!reduceMotion}
+                        pop
+                      />
+                    </div>
+                    <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground tabular-nums">
+                      {[
+                        t('done.importedLabel', { count: summary.count }),
                         t('done.distanceKm', { km: formatKm(summary.km) }),
                         summary.firstYear != null
                           ? summary.firstYear === summary.lastYear
@@ -401,9 +418,12 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                           : null,
                       ]
                         .filter(Boolean)
-                        .join(' · ')
-                    : ' '}
-                </p>
+                        .join(' · ')}
+                    </p>
+                  </MotionProvider>
+                ) : (
+                  <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground">{'\u00a0'}</p>
+                )}
                 <button
                   type="button"
                   onClick={openDashboard}
