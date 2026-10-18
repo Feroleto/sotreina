@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- PWA: "Adicionar à Tela de Início". iOS ignores the manifest icons for
+         the home screen, hence the separate apple-touch-icon (180x180, full
+         bleed — iOS applies its own mask). Icons are the Sidebar "ST" mark -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="SoTreina" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- "default", not "black-translucent": translucent forces white status
+         bar text, unreadable over the light-theme app bar (bg-card) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta
+      name="theme-color"
+      content="#f5f6f8"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0b0f17"
+      media="(prefers-color-scheme: dark)"
+    />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
