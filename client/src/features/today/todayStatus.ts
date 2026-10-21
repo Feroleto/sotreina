@@ -1,5 +1,6 @@
 import type {
   Activity,
+  Area,
   DailyHistoryPoint,
   FoodLogItem,
   Meal,
@@ -64,6 +65,48 @@ export function buildDays(input: {
       gym: gymDays.has(date),
       diet: isDietDone(kcalByDay.get(date) ?? 0, input.kcalGoal),
     };
+  });
+}
+
+const AREA_KEY = { RUN: 'run', GYM: 'gym', DIET: 'diet' } as const;
+
+/** how many of the user's enabled areas were completed that day */
+export function countDone(day: DayStatus, areas: readonly Area[]): number {
+  return areas.filter((a) => day[AREA_KEY[a]]).length;
+}
+
+export interface DayValue {
+  /** local YYYY-MM-DD */
+  date: string;
+  value: number;
+}
+
+/**
+ * one number per local day for the single-area Hoje (Redesign 21c): km run,
+ * workouts finished, or kcal eaten — the last `n` days, oldest first
+ */
+export function buildDailyValues(input: {
+  area: Area;
+  activities: Activity[];
+  workouts: WorkoutHistoryItem[];
+  dietPoints: DailyHistoryPoint[];
+  now: Date;
+  n?: number;
+}): DayValue[] {
+  const byDay = new Map<string, number>();
+  const add = (date: string, v: number) =>
+    byDay.set(date, (byDay.get(date) ?? 0) + v);
+  if (input.area === 'RUN') {
+    for (const a of input.activities)
+      add(toISODate(new Date(a.startDate)), a.distanceKm ?? 0);
+  } else if (input.area === 'GYM') {
+    for (const w of input.workouts) add(toISODate(new Date(w.startedAt)), 1);
+  } else {
+    for (const p of input.dietPoints) add(p.date, p.totalKcal);
+  }
+  return lastNDays(input.now, input.n ?? 7).map((d) => {
+    const date = toISODate(d);
+    return { date, value: byDay.get(date) ?? 0 };
   });
 }
 
@@ -140,6 +183,8 @@ export function buildFeed(input: {
   workouts: WorkoutHistoryItem[];
   meals: Meal[];
   todayLogs: FoodLogItem[];
+  /** only these areas contribute (default: all three) */
+  areas?: readonly Area[];
   limit?: number;
 }): FeedItem[] {
   const items: FeedItem[] = [];
@@ -180,7 +225,11 @@ export function buildFeed(input: {
       ),
     });
   }
+  const kinds = new Set(
+    (input.areas ?? (['RUN', 'GYM', 'DIET'] as const)).map((a) => AREA_KEY[a]),
+  );
   return items
+    .filter((item) => kinds.has(item.kind))
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, input.limit ?? 5);
 }

@@ -26,5 +26,17 @@
     "importedLabel_other": "activities imported",
     "distanceKm": "{{km}} km",
     "cta": "Open dashboard"
+  },
+  "areas": {
+    "title": "What do you want to track?",
+    "subtitle": "Pick one or more areas. You can change this later in Profile without losing history.",
+    "runDesc": "Distance, pace and weekly goals",
+    "gymDesc": "Routines, sets and volume",
+    "dietDesc": "Calories, macros and meals",
+    "countNone": "Pick at least one area",
+    "count_one": "{{count}} area selected",
+    "count_other": "{{count}} areas selected",
+    "continue": "Continue",
+    "error": "Couldn't save. Please try again."
   }
 }

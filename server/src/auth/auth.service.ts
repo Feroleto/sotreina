@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, type Area } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { randomBytes, createHash } from 'node:crypto';
 import { hashPassword, verifyPassword } from './password';
@@ -15,11 +15,14 @@ const PASSWORD_RESET_TTL_MS = 30 * 60 * 1000;
 
 export interface MeResponse {
   id: string;
+  email: string | null;
   firstName: string | null;
   profileImgUrl: string | null;
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
+  /** empty = not chosen yet (new account) → the client shows the area picker */
+  enabledAreas: Area[];
 }
 
 @Injectable()
@@ -48,9 +51,11 @@ export class AuthService {
       where: { id: session.userId },
       select: {
         id: true,
+        email: true,
         firstName: true,
         profileImgUrl: true,
         maxHr: true,
+        enabledAreas: true,
         tokenVersion: true,
         passwordHash: true,
         stravaAccount: { select: { id: true } },

@@ -6,6 +6,8 @@ import {
   MOBILE_TABS,
   activeParentId,
   mobileSubPages,
+  mobileTabsFor,
+  type MobileTab,
   type MobileTabId,
   type PageId,
 } from './navConfig';
@@ -16,10 +18,18 @@ interface MobileChromeProps {
 }
 
 function activeTab(page: PageId): MobileTabId | null {
+  if (page === 'profile') return 'profile';
   const parent = activeParentId(page);
   return MOBILE_TABS.some((tab) => tab.id === parent)
     ? (parent as MobileTabId)
     : null;
+}
+
+/** the pill tab to light up: an area page reached from a single-area Hoje
+    has no tab of its own (see mobileTabsFor), so Hoje stays lit */
+function litTab(page: PageId, tabs: MobileTab[]): MobileTabId | null {
+  const id = activeTab(page);
+  return tabs.some((tab) => tab.id === id) ? id : 'overview';
 }
 
 /**
@@ -105,7 +115,9 @@ export function MobileHeader({ activePage, onNavigate }: MobileChromeProps) {
  */
 export function MobileTabBar({ activePage, onNavigate }: MobileChromeProps) {
   const { t } = useTranslation('nav');
-  const current = activeTab(activePage);
+  const { user } = useAuth();
+  const tabs = mobileTabsFor(user?.enabledAreas ?? []);
+  const current = litTab(activePage, tabs);
 
   return (
     <div className="md:hidden">
@@ -117,7 +129,7 @@ export function MobileTabBar({ activePage, onNavigate }: MobileChromeProps) {
         aria-label={t('tabs.label')}
         className="fixed bottom-[max(20px,calc(env(safe-area-inset-bottom)+8px))] left-1/2 z-40 flex -translate-x-1/2 gap-0.5 rounded-full border border-border bg-page-bg p-[5px]"
       >
-        {MOBILE_TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = tab.id === current;
           return (
             <button

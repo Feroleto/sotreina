@@ -17,7 +17,7 @@
   "days": {
     "title": "Últimos 7 dias",
     "legend": "áreas concluídas",
-    "a11y": "{{day}}: {{count}} de 3 áreas concluídas"
+    "a11y": "{{day}}: {{count}} de {{total}} áreas concluídas"
   },
   "areas": {
     "title": "Por área",
@@ -53,5 +53,30 @@
     "save": "Salvar metas",
     "saving": "Salvando…",
     "error": "Não foi possível salvar. Tente novamente."
+  },
+  "single": {
+    "thisWeek": "Esta semana · {{range}}",
+    "today": "Hoje",
+    "recent": "Recentes",
+    "empty": "Nada registrado ainda.",
+    "runDone": "{{name}} feito",
+    "runPending": "Nenhuma corrida hoje",
+    "dietDone": "Dieta em dia",
+    "dietPending": "Dieta em andamento",
+    "goalKm": "Meta {{km}} km",
+    "leftKm": "faltam {{km}} km",
+    "goalWorkouts_one": "Meta {{count}} treino",
+    "goalWorkouts_other": "Meta {{count}} treinos",
+    "leftWorkouts_one": "falta {{count}}",
+    "leftWorkouts_other": "faltam {{count}}",
+    "workoutsUnit_one": "treino",
+    "workoutsUnit_other": "treinos",
+    "goalKcal": "Meta {{kcal}} kcal",
+    "leftKcal": "faltam {{kcal}} kcal",
+    "overKcal": "{{kcal}} kcal acima",
+    "goalReached": "meta batida",
+    "legendRun": "km por dia",
+    "legendGym": "treinos por dia",
+    "legendDiet": "kcal por dia"
   }
 }

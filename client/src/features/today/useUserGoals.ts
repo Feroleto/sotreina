@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
+import { patchMe } from '@/lib/userMe';
 import type { NutritionGoal, WeeklyGoals } from '@/lib/types';
 
-// the "Hoje" page reads both the daily kcal goal and the weekly targets off
-// the same GET /users/me snapshot, so one hook covers both instead of
-// stacking useNutritionGoal on top (two fetches of the same row). Save sends
-// only the weekly fields — the kcal goal is edited from Dieta's GoalPage
+// the "Hoje" and Perfil pages read both the daily kcal goal and the weekly
+// targets off the same GET /users/me snapshot, so one hook covers both
+// instead of stacking useNutritionGoal on top (two fetches of the same row)
 export type UserGoals = NutritionGoal & WeeklyGoals;
 
 export function useUserGoals() {
@@ -28,15 +28,12 @@ export function useUserGoals() {
   }, []);
 
   async function saveWeekly(next: WeeklyGoals): Promise<void> {
-    const res = await apiFetch('/users/me', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(next),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data: UserGoals = await res.json();
-    setGoals(data);
+    setGoals(await patchMe(next));
   }
 
-  return { goals, loading, error, saveWeekly };
+  async function saveDaily(next: NutritionGoal): Promise<void> {
+    setGoals(await patchMe(next));
+  }
+
+  return { goals, loading, error, saveWeekly, saveDaily };
 }

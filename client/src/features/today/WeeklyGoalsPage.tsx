@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, Minus, Plus } from 'lucide-react';
-import type { WeeklyGoals } from '@/lib/types';
+import type { Area, WeeklyGoals } from '@/lib/types';
 
 // ranges mirror UsersController (MIN/MAX_WEEKLY_*_GOAL)
 const RUN_KM_MIN = 1;
@@ -62,6 +62,8 @@ function GoalRow({
 
 interface WeeklyGoalsPageProps {
   goals: WeeklyGoals;
+  /** only the steppers of these areas show (both are still saved as-is) */
+  areas?: readonly Area[];
   onBack: () => void;
   onSave: (next: WeeklyGoals) => Promise<void>;
 }
@@ -69,6 +71,7 @@ interface WeeklyGoalsPageProps {
 /** steppers for the weekly targets "Por área" measures against — same shape as Dieta's GoalPage */
 export default function WeeklyGoalsPage({
   goals,
+  areas = ['RUN', 'GYM'],
   onBack,
   onSave,
 }: WeeklyGoalsPageProps) {
@@ -109,22 +112,26 @@ export default function WeeklyGoalsPage({
       </p>
 
       <div className="mt-3 border-t border-border">
-        <GoalRow
-          label={t('goals.runKm')}
-          unit={t('goals.runKmUnit')}
-          value={runKm}
-          min={RUN_KM_MIN}
-          max={RUN_KM_MAX}
-          onChange={setRunKm}
-        />
-        <GoalRow
-          label={t('goals.workouts')}
-          unit={t('goals.workoutsUnit')}
-          value={workouts}
-          min={WORKOUTS_MIN}
-          max={WORKOUTS_MAX}
-          onChange={setWorkouts}
-        />
+        {areas.includes('RUN') && (
+          <GoalRow
+            label={t('goals.runKm')}
+            unit={t('goals.runKmUnit')}
+            value={runKm}
+            min={RUN_KM_MIN}
+            max={RUN_KM_MAX}
+            onChange={setRunKm}
+          />
+        )}
+        {areas.includes('GYM') && (
+          <GoalRow
+            label={t('goals.workouts')}
+            unit={t('goals.workoutsUnit')}
+            value={workouts}
+            min={WORKOUTS_MIN}
+            max={WORKOUTS_MAX}
+            onChange={setWorkouts}
+          />
+        )}
       </div>
 
       {error && <p className="mt-3 text-[12px] text-neg">{error}</p>}

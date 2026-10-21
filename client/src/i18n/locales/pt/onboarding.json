@@ -26,5 +26,17 @@
     "importedLabel_other": "atividades importadas",
     "distanceKm": "{{km}} km",
     "cta": "Abrir painel"
+  },
+  "areas": {
+    "title": "O que você quer acompanhar?",
+    "subtitle": "Escolha uma ou mais áreas. Dá para mudar depois no Perfil, sem perder histórico.",
+    "runDesc": "Distância, pace e metas semanais",
+    "gymDesc": "Rotinas, séries e volume",
+    "dietDesc": "Calorias, macros e refeições",
+    "countNone": "Escolha pelo menos uma área",
+    "count_one": "{{count}} área selecionada",
+    "count_other": "{{count}} áreas selecionadas",
+    "continue": "Continuar",
+    "error": "Não foi possível salvar. Tente novamente."
   }
 }

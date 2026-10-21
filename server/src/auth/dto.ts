@@ -35,6 +35,20 @@ export interface ResetPasswordInput {
   newPassword: string;
 }
 
+/** shared by register and PATCH /users/me (profile edit) */
+export function parseFirstName(value: unknown): string {
+  if (
+    typeof value !== 'string' ||
+    value.trim().length === 0 ||
+    value.length > MAX_FIRST_NAME_LEN
+  ) {
+    throw new BadRequestException(
+      `firstName must be a non-empty string up to ${MAX_FIRST_NAME_LEN} characters`,
+    );
+  }
+  return value.trim();
+}
+
 export function parseRegisterInput(body: unknown): RegisterInput {
   if (typeof body !== 'object' || body === null) {
     throw new BadRequestException('Request body must be an object');
@@ -45,16 +59,7 @@ export function parseRegisterInput(body: unknown): RegisterInput {
     password: parsePassword(password, MIN_PASSWORD_LEN),
   };
   if (firstName !== undefined && firstName !== null) {
-    if (
-      typeof firstName !== 'string' ||
-      firstName.trim().length === 0 ||
-      firstName.length > MAX_FIRST_NAME_LEN
-    ) {
-      throw new BadRequestException(
-        `firstName must be a non-empty string up to ${MAX_FIRST_NAME_LEN} characters`,
-      );
-    }
-    result.firstName = firstName.trim();
+    result.firstName = parseFirstName(firstName);
   }
   return result;
 }

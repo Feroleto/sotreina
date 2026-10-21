@@ -2,14 +2,19 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { apiFetch } from '@/lib/api';
 import { authMe, clearBootHints } from '@/lib/boot';
+import type { Area } from '@/lib/types';
 
 export interface AuthUser {
   id: string;
+  /** null for a Strava-only account (Strava never shares the email) */
+  email: string | null;
   firstName: string | null;
   profileImgUrl: string | null;
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
+  /** empty = not chosen yet (new account) → App shows AreaPickerPage */
+  enabledAreas: Area[];
 }
 
 interface AuthContextValue {

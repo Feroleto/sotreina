@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
+  buildDailyValues,
   buildDays,
   buildFeed,
+  countDone,
   buildTotals,
   calendarDaysAgo,
   isDietDone,
@@ -206,6 +208,74 @@ describe('buildFeed', () => {
     });
     expect(feed).toHaveLength(3);
     expect(feed[0].at).toBe(local(17));
+  });
+
+  it('drops the areas the user turned off', () => {
+    const feed = buildFeed({
+      activities: [run(local(21, 7), 7.1)],
+      workouts: [workout(local(20, 19))],
+      meals,
+      todayLogs: [log('m1', local(21, 8), 200, 100)],
+      areas: ['RUN', 'GYM'],
+    });
+    expect(feed.map((f) => f.kind)).toEqual(['run', 'gym']);
+  });
+});
+
+describe('countDone', () => {
+  const day = { date: '2026-10-21', run: true, gym: false, diet: true };
+
+  it('counts only the enabled areas', () => {
+    expect(countDone(day, ['RUN', 'GYM', 'DIET'])).toBe(2);
+    expect(countDone(day, ['RUN', 'GYM'])).toBe(1);
+    expect(countDone(day, ['GYM'])).toBe(0);
+  });
+});
+
+describe('buildDailyValues', () => {
+  const base = { activities: [], workouts: [], dietPoints: [], now: NOW };
+
+  it('sums km per local day for Corrida, zero-filled, oldest first', () => {
+    const days = buildDailyValues({
+      ...base,
+      area: 'RUN',
+      activities: [
+        run(local(21, 7), 7.1),
+        run(local(21, 18), 2),
+        run(local(17), 16.2),
+      ],
+    });
+    expect(days).toHaveLength(7);
+    expect(days[0].date).toBe('2026-10-15');
+    expect(days[6]).toEqual({ date: '2026-10-21', value: 9.1 });
+    expect(days[2]).toEqual({ date: '2026-10-17', value: 16.2 });
+    expect(days[1].value).toBe(0);
+  });
+
+  it('counts workouts per day for Treino', () => {
+    const days = buildDailyValues({
+      ...base,
+      area: 'GYM',
+      workouts: [workout(local(20, 8)), workout(local(20, 19))],
+    });
+    expect(days[5]).toEqual({ date: '2026-10-20', value: 2 });
+  });
+
+  it('reads kcal off the diet history for Dieta', () => {
+    const days = buildDailyValues({
+      ...base,
+      area: 'DIET',
+      dietPoints: [
+        {
+          date: '2026-10-21',
+          totalKcal: 1540,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+        },
+      ],
+    });
+    expect(days[6].value).toBe(1540);
   });
 });
 

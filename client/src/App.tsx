@@ -28,9 +28,11 @@ import {
   ACTIVE_PAGE_KEY,
   DEFAULT_PAGE,
   isKnownPage,
+  isPageAllowed,
   isPageDisabled,
   type PageId,
 } from '@/features/nav/navConfig';
+import { patchMe } from '@/lib/userMe';
 import { Logo } from '@/components/Logo';
 
 // section switches crossfade via the View Transitions API where it exists
@@ -94,6 +96,7 @@ const ResetPasswordPage = lazy(
   () => import('@/features/auth/ResetPasswordPage'),
 );
 const FirstSyncPage = lazy(() => import('@/features/onboarding/FirstSyncPage'));
+const AreaPickerPage = lazy(() => import('@/features/areas/AreaPickerPage'));
 
 function PageContent({
   page,
@@ -194,7 +197,7 @@ function BootSplash() {
 }
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, setUser } = useAuth();
   // 'auto' follows the browser via prefers-color-scheme; a manual pick
   // persists and wins until the user goes back to Auto
   const [themePref, setThemePref] = useState<ThemePref>(() =>
@@ -206,7 +209,7 @@ function App() {
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('sidebar-collapsed') === 'true',
   );
-  const [page, setPage] = useState<PageId>(() => {
+  const [storedPage, setPage] = useState<PageId>(() => {
     const stored = localStorage.getItem(ACTIVE_PAGE_KEY);
     return isKnownPage(stored) && !isPageDisabled(stored)
       ? stored
@@ -239,6 +242,11 @@ function App() {
   // /workouts/active. Lives here (not GymWorkoutsPage) so an active session
   // survives navigating away from Academia and can drive ActiveWorkoutBar
   const activeWorkout = useActiveWorkout(!!user);
+
+  // a page of an area the user turned off (persisted from before, or open
+  // while the toggle flipped in Perfil) falls back to Hoje
+  const areas = user?.enabledAreas ?? [];
+  const page = isPageAllowed(storedPage, areas) ? storedPage : DEFAULT_PAGE;
 
   const theme =
     themePref === 'auto' ? (systemDark ? 'dark' : 'light') : themePref;
@@ -286,17 +294,19 @@ function App() {
     localStorage.setItem('sidebar-collapsed', String(collapsed));
   }, [collapsed]);
 
+  // the picked page, not the effective one: before /auth/me resolves `areas`
+  // is empty and would overwrite every stored area page with Hoje
   useEffect(() => {
-    localStorage.setItem(ACTIVE_PAGE_KEY, page);
-  }, [page]);
+    localStorage.setItem(ACTIVE_PAGE_KEY, storedPage);
+  }, [storedPage]);
 
   const navigate = (
     next: PageId,
     opts?: { collapse?: boolean; routinesIntent?: RoutinesIntent },
   ) => {
-    if (isPageDisabled(next)) return;
+    if (isPageDisabled(next) || !isPageAllowed(next, areas)) return;
     if (opts?.collapse) setCollapsed(true);
-    if (next === page) return;
+    if (next === storedPage) return;
     const seq = ++navSeqRef.current;
     runViewTransition(
       next,
@@ -344,14 +354,35 @@ function App() {
     );
   }
 
+  // brand-new account (Redesign 21a): pick the areas to use before anything
+  // else — the empty list is the server's "not chosen yet" marker. Comes
+  // before the first-sync gate so a Strava signup chooses first and only
+  // imports if it kept Corrida
+  if (user.enabledAreas.length === 0) {
+    return (
+      <Suspense fallback={<BootSplash />}>
+        <AreaPickerPage
+          onConfirm={async (picked) => {
+            const snap = await patchMe({ enabledAreas: picked });
+            runViewTransition(page, 'vt-root', () =>
+              setUser({ ...user, enabledAreas: snap.enabledAreas }),
+            );
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   // no imported history yet (or a first import is still running after a
   // reload) → onboarding sync screen instead of an empty dashboard. Gated on
   // hasStravaAccount too: a user who registered via email/password and never
   // connected Strava has no sync to onboard into — FirstSyncPage's calls are
-  // Strava-specific and would just fail for them
+  // Strava-specific and would just fail for them. And on Corrida: without it
+  // there's nothing to show the import in
   if (
     !onboardingDone &&
     user.hasStravaAccount &&
+    user.enabledAreas.includes('RUN') &&
     (hasActivities === false || localStorage.getItem(FIRST_SYNC_FLAG) != null)
   ) {
     return (
@@ -371,7 +402,10 @@ function App() {
     );
   }
 
-  const showWorkoutBar = !!activeWorkout.workout && page !== 'gym/workouts';
+  const showWorkoutBar =
+    !!activeWorkout.workout &&
+    page !== 'gym/workouts' &&
+    user.enabledAreas.includes('GYM');
 
   return (
     <ChromeBumpContext.Provider value={bumpChrome}>

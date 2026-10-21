@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Check, Pencil } from 'lucide-react';
 import type { PageId } from '@/features/nav/navConfig';
 import { useActivities } from '@/lib/useActivities';
-import { formatKm, formatNumber } from '@/lib/activityFormat';
+import { formatKm, formatNumber, formatPace } from '@/lib/activityFormat';
+import type { Area } from '@/lib/types';
+import { useAuth } from '@/features/auth/AuthContext';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
@@ -17,11 +19,14 @@ import { localDateString, useFoodLogs } from '@/features/diet/useFoodLogs';
 import { useMeals } from '@/features/diet/useMeals';
 import { useUserGoals } from './useUserGoals';
 import WeeklyGoalsPage from './WeeklyGoalsPage';
+import TodaySingleArea, { type TodaySingleAreaProps } from './TodaySingleArea';
 import {
+  buildDailyValues,
   buildDays,
   buildFeed,
   buildTotals,
   calendarDaysAgo,
+  countDone,
   isDietDone,
   type FeedItem,
 } from './todayStatus';
@@ -132,11 +137,16 @@ function AreaRow({
   );
 }
 
-function TodaySkeleton() {
+// static class names so Tailwind picks them up
+const GRID_COLS = ['grid-cols-1', 'grid-cols-1', 'grid-cols-2', 'grid-cols-3'];
+
+function TodaySkeleton({ cols }: { cols: number }) {
   return (
     <div>
-      <div className="mt-[22px] grid grid-cols-3 border-y border-border">
-        {[0, 1, 2].map((i) => (
+      <div
+        className={`mt-[22px] grid ${GRID_COLS[cols]} border-y border-border`}
+      >
+        {Array.from({ length: cols }, (_, i) => i).map((i) => (
           <div
             key={i}
             className={i ? 'border-l border-border py-4 pl-3.5' : 'py-4'}
@@ -180,6 +190,11 @@ export default function TodayPage({
   onNavigate,
 }: TodayPageProps) {
   const { t } = useTranslation(['today', 'diet', 'gym']);
+  const { user } = useAuth();
+  const enabledAreas = user?.enabledAreas;
+  const areas: Area[] = useMemo(() => enabledAreas ?? [], [enabledAreas]);
+  const has = (a: Area) => areas.includes(a);
+  const single = areas.length === 1 ? areas[0] : null;
   const [editingGoals, setEditingGoals] = useState(false);
   // fixed for the page's lifetime: a page left open past midnight keeps
   // describing the day it loaded, consistent with the data it fetched
@@ -212,8 +227,8 @@ export default function TodayPage({
     [activities, workouts, now],
   );
   const feed = useMemo(
-    () => buildFeed({ activities, workouts, meals, todayLogs }),
-    [activities, workouts, meals, todayLogs],
+    () => buildFeed({ activities, workouts, meals, todayLogs, areas }),
+    [activities, workouts, meals, todayLogs, areas],
   );
   const nextRoutine = useMemo(() => pickNextRoutine(templates), [templates]);
 
@@ -276,10 +291,143 @@ export default function TodayPage({
       .toLocaleDateString(currentIntlLocale(), { weekday: 'narrow' })
       .toUpperCase();
 
+  const dayValues = useMemo(
+    () =>
+      single
+        ? buildDailyValues({
+            area: single,
+            activities,
+            workouts,
+            dietPoints,
+            now,
+          })
+        : [],
+    [single, activities, workouts, dietPoints, now],
+  );
+
+  const singleProps = (area: Area): TodaySingleAreaProps => {
+    const recent = feed.map((f) => {
+      const row = feedRow(f);
+      return { key: `${f.kind}:${f.id}`, ...row };
+    });
+    const common = {
+      days: dayValues,
+      dayInitial,
+      recent,
+      onNavigate,
+    };
+    const weekRange = (() => {
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      return new Intl.DateTimeFormat(currentIntlLocale(), {
+        day: 'numeric',
+        month: 'short',
+      }).formatRange(start, end);
+    })();
+    const weekLabel = t('single.thisWeek', { range: weekRange });
+
+    if (area === 'RUN') {
+      const todayRuns = activities.filter(
+        (a) => calendarDaysAgo(a.startDate, now) === 0,
+      );
+      const latest = todayRuns[0];
+      const left = runKmGoal - totals.runKmWeek;
+      return {
+        ...common,
+        areaPage: AREA_PAGE.run,
+        status: latest
+          ? {
+              done: true,
+              title: t('single.runDone', { name: latest.name }),
+              sub: `${t('feed.minutes', { count: Math.round(latest.movingTimeSec / 60) })} · ${formatPace(latest.paceRawSecKm)} /km`,
+              value: `${formatKm(totals.runKmToday)} km`,
+            }
+          : { done: false, title: t('single.runPending'), sub: '' },
+        period: {
+          label: weekLabel,
+          value: formatKm(totals.runKmWeek),
+          unit: 'km',
+          pct: pctOf(totals.runKmWeek, runKmGoal),
+          over: false,
+          goal: t('single.goalKm', { km: runKmGoal }),
+          remaining:
+            left > 0
+              ? t('single.leftKm', { km: formatKm(left) })
+              : t('single.goalReached'),
+        },
+        daysLegend: t('single.legendRun'),
+        onEditGoal: goals ? () => setEditingGoals(true) : undefined,
+      };
+    }
+    if (area === 'GYM') {
+      const [first] = totals.workoutsToday;
+      const left = workoutsGoal - totals.workoutsWeek;
+      return {
+        ...common,
+        areaPage: AREA_PAGE.gym,
+        status: first
+          ? {
+              done: true,
+              title: gymSub,
+              sub: t('feed.exercises', { count: first.exerciseCount }),
+              value: t('feed.minutes', {
+                count: Math.round(first.durationSec / 60),
+              }),
+            }
+          : { done: false, title: gymSub, sub: '' },
+        period: {
+          label: weekLabel,
+          value: String(totals.workoutsWeek),
+          unit: t('single.workoutsUnit', { count: totals.workoutsWeek }),
+          pct: pctOf(totals.workoutsWeek, workoutsGoal),
+          over: false,
+          goal: t('single.goalWorkouts', { count: workoutsGoal }),
+          remaining:
+            left > 0
+              ? t('single.leftWorkouts', { count: left })
+              : t('single.goalReached'),
+        },
+        daysLegend: t('single.legendGym'),
+        onEditGoal: goals ? () => setEditingGoals(true) : undefined,
+      };
+    }
+    const kcal = Math.round(kcalToday);
+    const over = kcalToday > kcalGoal;
+    return {
+      ...common,
+      areaPage: AREA_PAGE.diet,
+      status: {
+        done: dietDone,
+        title: dietDone ? t('single.dietDone') : t('single.dietPending'),
+        sub: t('status.dietProgress', {
+          kcal: formatNumber(kcal),
+          goal: formatNumber(kcalGoal),
+        }),
+        value: `${pctOf(kcalToday, kcalGoal)}%`,
+      },
+      period: {
+        label: t('single.today'),
+        value: formatNumber(kcal),
+        unit: 'kcal',
+        pct: pctOf(kcalToday, kcalGoal),
+        over,
+        goal: t('single.goalKcal', { kcal: formatNumber(kcalGoal) }),
+        remaining: over
+          ? t('single.overKcal', { kcal: formatNumber(kcal - kcalGoal) })
+          : t('single.leftKcal', { kcal: formatNumber(kcalGoal - kcal) }),
+      },
+      daysLegend: t('single.legendDiet'),
+    };
+  };
+
   const detail =
     editingGoals && goals ? (
       <WeeklyGoalsPage
         goals={goals}
+        areas={areas}
         onBack={() => setEditingGoals(false)}
         onSave={async (next) => {
           await saveWeekly(next);
@@ -304,162 +452,194 @@ export default function TodayPage({
             {formatTodayHeader(now)}
           </p>
 
-          <LoadingSwap loading={firstLoad} skeleton={<TodaySkeleton />}>
-            <div className="mt-[22px] grid grid-cols-3 border-y border-border">
-              <StatusCell
-                first
-                label={t('status.run')}
-                sub={
-                  runDone
-                    ? t('status.runDone', { km: formatKm(totals.runKmToday) })
-                    : t('status.pending')
-                }
-                done={runDone}
-                onClick={() => onNavigate(AREA_PAGE.run)}
-              />
-              <StatusCell
-                label={t('status.gym')}
-                sub={gymSub}
-                done={gymDone}
-                onClick={() => onNavigate(AREA_PAGE.gym)}
-              />
-              <StatusCell
-                label={t('status.diet')}
-                sub={t('status.dietProgress', {
-                  kcal: formatNumber(Math.round(kcalToday)),
-                  goal: formatNumber(kcalGoal),
-                })}
-                done={dietDone}
-                onClick={() => onNavigate(AREA_PAGE.diet)}
-              />
-            </div>
-
-            <div className="mt-6 flex items-baseline justify-between">
-              <div className="text-[14px] font-semibold text-foreground">
-                {t('days.title')}
-              </div>
-              <div className="text-[12px] text-muted-foreground">
-                {t('days.legend')}
-              </div>
-            </div>
-            <div className="mt-3.5 flex h-[72px] items-end gap-2.5">
-              {days.map((d, i) => {
-                const count = Number(d.run) + Number(d.gym) + Number(d.diet);
-                const isToday = i === days.length - 1;
-                return (
-                  <div
-                    key={d.date}
-                    role="img"
-                    aria-label={t('days.a11y', {
-                      day: dayInitial(d.date),
-                      count,
-                    })}
-                    className="chart-bar flex h-full flex-1 flex-col justify-end gap-[3px]"
-                    style={{ '--i': i } as CSSProperties}
-                  >
-                    {/* filled segments stack from the bottom, like the design */}
-                    {[2, 1, 0].map((k) => (
-                      <div
-                        key={k}
-                        className={`h-5 rounded-[3px] ${
-                          k < count
-                            ? isToday
-                              ? 'bg-acc'
-                              : 'bg-foreground'
-                            : 'bg-border'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-2 flex gap-2.5" aria-hidden="true">
-              {days.map((d) => (
+          <LoadingSwap
+            loading={firstLoad}
+            skeleton={<TodaySkeleton cols={Math.max(1, areas.length)} />}
+          >
+            {single ? (
+              <TodaySingleArea {...singleProps(single)} />
+            ) : (
+              <>
                 <div
-                  key={d.date}
-                  className="flex-1 text-center font-mono text-[10.5px] text-muted-foreground"
+                  className={`mt-[22px] grid ${GRID_COLS[areas.length]} border-y border-border`}
                 >
-                  {dayInitial(d.date)}
+                  {has('RUN') && (
+                    <StatusCell
+                      first
+                      label={t('status.run')}
+                      sub={
+                        runDone
+                          ? t('status.runDone', {
+                              km: formatKm(totals.runKmToday),
+                            })
+                          : t('status.pending')
+                      }
+                      done={runDone}
+                      onClick={() => onNavigate(AREA_PAGE.run)}
+                    />
+                  )}
+                  {has('GYM') && (
+                    <StatusCell
+                      first={areas[0] === 'GYM'}
+                      label={t('status.gym')}
+                      sub={gymSub}
+                      done={gymDone}
+                      onClick={() => onNavigate(AREA_PAGE.gym)}
+                    />
+                  )}
+                  {has('DIET') && (
+                    <StatusCell
+                      label={t('status.diet')}
+                      sub={t('status.dietProgress', {
+                        kcal: formatNumber(Math.round(kcalToday)),
+                        goal: formatNumber(kcalGoal),
+                      })}
+                      done={dietDone}
+                      onClick={() => onNavigate(AREA_PAGE.diet)}
+                    />
+                  )}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-[14px] font-semibold text-foreground">
-                {t('areas.title')}
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingGoals(true)}
-                disabled={!goals}
-                aria-label={t('areas.editGoals')}
-                title={t('areas.editGoals')}
-                className="-mr-2 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground hover:text-foreground disabled:cursor-default disabled:opacity-40"
-              >
-                <Pencil className="h-4 w-4" strokeWidth={1.8} />
-              </button>
-            </div>
-            <div className="border-t border-border">
-              <AreaRow
-                name={t('status.run')}
-                detail={t('areas.runGoal', { km: runKmGoal })}
-                value={`${formatKm(totals.runKmWeek)} km`}
-                pct={pctOf(totals.runKmWeek, runKmGoal)}
-                onClick={() => onNavigate(AREA_PAGE.run)}
-              />
-              <AreaRow
-                name={t('status.gym')}
-                detail={t('areas.gymGoal', { count: workoutsGoal })}
-                value={`${totals.workoutsWeek} / ${workoutsGoal}`}
-                pct={pctOf(totals.workoutsWeek, workoutsGoal)}
-                onClick={() => onNavigate(AREA_PAGE.gym)}
-              />
-              <AreaRow
-                name={t('status.diet')}
-                detail={t('areas.dietGoal', { kcal: formatNumber(kcalGoal) })}
-                value={formatNumber(Math.round(kcalToday))}
-                pct={pctOf(kcalToday, kcalGoal)}
-                // strict value > goal, same rule as DietOverviewPage's bar
-                over={kcalToday > kcalGoal}
-                onClick={() => onNavigate(AREA_PAGE.diet)}
-              />
-            </div>
+                <div className="mt-6 flex items-baseline justify-between">
+                  <div className="text-[14px] font-semibold text-foreground">
+                    {t('days.title')}
+                  </div>
+                  <div className="text-[12px] text-muted-foreground">
+                    {t('days.legend')}
+                  </div>
+                </div>
+                <div className="mt-3.5 flex h-[72px] items-end gap-2.5">
+                  {days.map((d, i) => {
+                    const count = countDone(d, areas);
+                    const isToday = i === days.length - 1;
+                    return (
+                      <div
+                        key={d.date}
+                        role="img"
+                        aria-label={t('days.a11y', {
+                          day: dayInitial(d.date),
+                          count,
+                          total: areas.length,
+                        })}
+                        className="chart-bar flex h-full flex-1 flex-col justify-end gap-[3px]"
+                        style={{ '--i': i } as CSSProperties}
+                      >
+                        {/* filled segments stack from the bottom, like the design */}
+                        {Array.from(
+                          { length: areas.length },
+                          (_, k) => areas.length - 1 - k,
+                        ).map((k) => (
+                          <div
+                            key={k}
+                            className={`h-5 rounded-[3px] ${
+                              k < count
+                                ? isToday
+                                  ? 'bg-acc'
+                                  : 'bg-foreground'
+                                : 'bg-border'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-2 flex gap-2.5" aria-hidden="true">
+                  {days.map((d) => (
+                    <div
+                      key={d.date}
+                      className="flex-1 text-center font-mono text-[10.5px] text-muted-foreground"
+                    >
+                      {dayInitial(d.date)}
+                    </div>
+                  ))}
+                </div>
 
-            <div className="mt-6 text-[14px] font-semibold text-foreground">
-              {t('feed.title')}
-            </div>
-            <div className="mt-1.5">
-              {feed.map((f, i) => {
-                const row = feedRow(f);
-                return (
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-[14px] font-semibold text-foreground">
+                    {t('areas.title')}
+                  </div>
                   <button
-                    key={`${f.kind}:${f.id}`}
                     type="button"
-                    onClick={() => onNavigate(row.page)}
-                    className="enter-rise flex w-full cursor-pointer items-center gap-3 border-b border-border py-[13px] text-left"
-                    style={{ '--i': i } as CSSProperties}
+                    onClick={() => setEditingGoals(true)}
+                    disabled={!goals}
+                    aria-label={t('areas.editGoals')}
+                    title={t('areas.editGoals')}
+                    className="-mr-2 flex h-11 w-11 cursor-pointer items-center justify-center text-muted-foreground hover:text-foreground disabled:cursor-default disabled:opacity-40"
                   >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[14.5px] font-medium text-foreground">
-                        {row.name}
-                      </div>
-                      <div className="mt-0.5 truncate text-[12px] text-muted-foreground">
-                        {row.detail}
-                      </div>
-                    </div>
-                    <div className="flex-none font-mono text-[14.5px] font-medium text-foreground">
-                      {row.value}
-                    </div>
+                    <Pencil className="h-4 w-4" strokeWidth={1.8} />
                   </button>
-                );
-              })}
-              {feed.length === 0 && (
-                <p className="border-b border-border py-6 text-center text-[13px] text-muted-foreground">
-                  {t('feed.empty')}
-                </p>
-              )}
-            </div>
+                </div>
+                <div className="border-t border-border">
+                  {has('RUN') && (
+                    <AreaRow
+                      name={t('status.run')}
+                      detail={t('areas.runGoal', { km: runKmGoal })}
+                      value={`${formatKm(totals.runKmWeek)} km`}
+                      pct={pctOf(totals.runKmWeek, runKmGoal)}
+                      onClick={() => onNavigate(AREA_PAGE.run)}
+                    />
+                  )}
+                  {has('GYM') && (
+                    <AreaRow
+                      name={t('status.gym')}
+                      detail={t('areas.gymGoal', { count: workoutsGoal })}
+                      value={`${totals.workoutsWeek} / ${workoutsGoal}`}
+                      pct={pctOf(totals.workoutsWeek, workoutsGoal)}
+                      onClick={() => onNavigate(AREA_PAGE.gym)}
+                    />
+                  )}
+                  {has('DIET') && (
+                    <AreaRow
+                      name={t('status.diet')}
+                      detail={t('areas.dietGoal', {
+                        kcal: formatNumber(kcalGoal),
+                      })}
+                      value={formatNumber(Math.round(kcalToday))}
+                      pct={pctOf(kcalToday, kcalGoal)}
+                      // strict value > goal, same rule as DietOverviewPage's bar
+                      over={kcalToday > kcalGoal}
+                      onClick={() => onNavigate(AREA_PAGE.diet)}
+                    />
+                  )}
+                </div>
+
+                <div className="mt-6 text-[14px] font-semibold text-foreground">
+                  {t('feed.title')}
+                </div>
+                <div className="mt-1.5">
+                  {feed.map((f, i) => {
+                    const row = feedRow(f);
+                    return (
+                      <button
+                        key={`${f.kind}:${f.id}`}
+                        type="button"
+                        onClick={() => onNavigate(row.page)}
+                        className="enter-rise flex w-full cursor-pointer items-center gap-3 border-b border-border py-[13px] text-left"
+                        style={{ '--i': i } as CSSProperties}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[14.5px] font-medium text-foreground">
+                            {row.name}
+                          </div>
+                          <div className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                            {row.detail}
+                          </div>
+                        </div>
+                        <div className="flex-none font-mono text-[14.5px] font-medium text-foreground">
+                          {row.value}
+                        </div>
+                      </button>
+                    );
+                  })}
+                  {feed.length === 0 && (
+                    <p className="border-b border-border py-6 text-center text-[13px] text-muted-foreground">
+                      {t('feed.empty')}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </LoadingSwap>
         </div>
       )}

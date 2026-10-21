@@ -381,6 +381,9 @@ export interface NutritionGoal {
   dailyFatGoal: number;
 }
 
+/** the areas a user can turn on/off (User.enabledAreas) — Corrida, Treino, Dieta */
+export type Area = 'RUN' | 'GYM' | 'DIET';
+
 // GET/PATCH /users/me also carries the weekly targets the "Hoje" page
 // measures Corrida and Treino against — same snapshot as NutritionGoal
 export interface WeeklyGoals {
