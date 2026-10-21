@@ -1,14 +1,15 @@
 {
   "overview": {
     "title": "Diet",
-    "ofGoal": "of {{kcal}} kcal",
-    "remaining": "{{kcal}} kcal remaining",
-    "overGoal": "{{kcal}} kcal over goal",
+    "remaining": "{{kcal}} left",
+    "overGoal": "{{kcal}} over",
     "editGoal": "Edit daily goal",
     "mealsTitle": "Today's meals",
     "items": "{{count}} item",
     "items_other": "{{count}} items",
-    "addMeal": "Add to meal"
+    "addMeal": "Add to meal",
+    "goalLine": "goal {{kcal}}",
+    "noItems": "No items yet"
   },
   "meal": {
     "BREAKFAST": "Breakfast",

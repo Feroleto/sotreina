@@ -81,6 +81,44 @@ describe('SessionService', () => {
     });
   });
 
+  describe('Bearer header', () => {
+    it('extracts the session from an Authorization: Bearer header', async () => {
+      const service = await makeService('development');
+      const token = service.signToken(USER_ID, TOKEN_VERSION);
+      const req = { headers: { authorization: `Bearer ${token}` }, cookies: {} };
+
+      expect(service.extractSession(req as any)).toEqual({
+        userId: USER_ID,
+        tokenVersion: TOKEN_VERSION,
+      });
+    });
+
+    it('prefers the header over the cookie when both are present', async () => {
+      const service = await makeService('development');
+      const headerToken = service.signToken('header_user', 3);
+      const cookieToken = service.signToken('cookie_user', 1);
+      const req = {
+        headers: { authorization: `Bearer ${headerToken}` },
+        cookies: { session: cookieToken },
+      };
+
+      expect(service.extractSession(req as any)).toEqual({
+        userId: 'header_user',
+        tokenVersion: 3,
+      });
+    });
+
+    it('does not fall back to the cookie when the header is present but invalid', async () => {
+      const service = await makeService('development');
+      const cookieToken = service.signToken(USER_ID, TOKEN_VERSION);
+
+      for (const authorization of ['Bearer not-a-jwt', 'Basic abc', 'Bearer', '']) {
+        const req = { headers: { authorization }, cookies: { session: cookieToken } };
+        expect(service.extractSession(req as any)).toBeNull();
+      }
+    });
+  });
+
   describe('cookie flags by environment', () => {
     it('uses secure + sameSite=lax in production (Vercel proxies /api/* to Render, so it stays same-site)', async () => {
       const service = await makeService('production');

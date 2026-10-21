@@ -30,7 +30,7 @@
     "syncTemplateBack": "Voltar",
     "syncTemplateKeep": "Manter rotina",
     "syncTemplateUpdate": "Atualizar rotina",
-    "openMenu": "Abrir menu",
+    "minimize": "Minimizar treino",
     "discardAria": "Descartar treino"
   },
   "activeBar": {
@@ -263,5 +263,20 @@
       "workoutsLabel_other": "treinos",
       "meta": "{{volume}} t · {{when}}"
     }
+  },
+  "overviewPage": {
+    "thisWeek": "Esta semana · {{range}}",
+    "workouts_one": "treino",
+    "workouts_other": "treinos",
+    "lastWeek_one": "semana passada {{count}} treino",
+    "lastWeek_other": "semana passada {{count}} treinos",
+    "noLastWeek": "nenhum treino na semana passada",
+    "exercises": "Exercícios",
+    "next": "Próximo treino",
+    "inProgress": "Treino em andamento",
+    "start": "Iniciar",
+    "resume": "Continuar",
+    "newRoutine": "Nova",
+    "workouts_zero": "treinos"
   }
 }

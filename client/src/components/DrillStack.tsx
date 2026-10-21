@@ -6,6 +6,7 @@ import { useIsMobile } from '@/lib/useIsMobile';
 import { DUR, EASE_DRAWER, EASE_OUT } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import MotionProvider from '@/components/MotionProvider';
+import { useHideMobileChrome } from '@/features/nav/chromeVisibility';
 
 type Mode = 'push' | 'fade' | 'reduce';
 type Custom = { dir: 1 | -1; mode: Mode };
@@ -92,6 +93,8 @@ export default function DrillStack({
 }) {
   const isMobile = useIsMobile();
   const reduce = useReducedMotion();
+  // a pushed screen is full-screen on mobile: it brings its own back button
+  useHideMobileChrome(depth > 0);
   const [track, setTrack] = useState<{ depth: number; dir: 1 | -1 }>({
     depth,
     dir: 1,

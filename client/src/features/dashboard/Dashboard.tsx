@@ -32,7 +32,10 @@ export default function Dashboard() {
   const [weekPage, setWeekPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
   const { activities, loading, error } = useActivities(refreshKey);
-  const { attach: enterRef, state: enterState } = useEntrance('run/activities', { ready: !loading });
+  const { attach: enterRef, state: enterState } = useEntrance(
+    'run/activities',
+    { ready: !loading },
+  );
   const isMobile = useIsMobile();
 
   // mobile: the detail view is pushed onto browser history so the hardware /
@@ -41,8 +44,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     const onPop = () => {
-      // back may be popping the drawer's own entry (MobileChrome) while the
-      // detail entry is still on the stack — in that case the detail stays
+      // back may be popping another overlay's own entry (e.g. a sheet) while
+      // the detail entry is still on the stack — in that case the detail stays
       if (window.history.state?.activityDetail) return;
       pushedDetailRef.current = false;
       setDetailId(null);
@@ -137,6 +140,13 @@ export default function Dashboard() {
     }
     return aggregateWeeks(activities, 12, 'ALL');
   }, [dateRange, inRange, activities]);
+
+  // mobile hero: the current week against the one before, always relative
+  // to today (the custom range only drives the bars and the list)
+  const [lastWeek, thisWeek] = useMemo(
+    () => aggregateWeeks(activities, 2, 'ALL'),
+    [activities],
+  );
 
   const chartGranularity: Granularity =
     (rangeActive && rangeDays > MONTHLY_THRESHOLD_DAYS) ||
@@ -242,7 +252,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="grid grid-cols-1 px-5 pt-[18px] pb-[44px] tabular-nums md:grid-cols-[264px_1fr] md:gap-11 md:p-10">
+    <div className="grid grid-cols-1 px-[22px] pt-0 pb-[44px] tabular-nums md:grid-cols-[264px_1fr] md:gap-11 md:p-10">
       {/* the Rail (period subtitle, type filter, sync panel) is desktop-only */}
       <div className="hidden md:block">
         <Rail
@@ -271,8 +281,8 @@ export default function Dashboard() {
         <DrillStack
           depth={detailId ? 1 : 0}
           viewKey={detailId ? `activity:${detailId}` : 'list'}
-          className="max-md:-mx-5"
-          screenClassName="max-md:px-5"
+          className="max-md:-mx-[22px]"
+          screenClassName="max-md:px-[22px]"
         >
           {detailId ? (
             <ActivityDetailView id={detailId} onBack={closeDetail} />
@@ -314,7 +324,11 @@ export default function Dashboard() {
                 </WeeklyChart>
               </div>
 
-              <MobileWeeklySummary weeks={mobileWeeks}>
+              <MobileWeeklySummary
+                thisWeek={thisWeek}
+                lastWeek={lastWeek}
+                weeks={mobileWeeks}
+              >
                 <DateRangePicker
                   range={dateRange}
                   onChange={applyRange}

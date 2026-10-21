@@ -197,7 +197,7 @@ export default function RoutineExercisePicker({
                   }
                 >
                   {selected ? (
-                    <Check className="h-3.5 w-3.5 text-white" strokeWidth={2.2} />
+                    <Check className="h-3.5 w-3.5 text-acc-fg" strokeWidth={2.2} />
                   ) : (
                     <Plus className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={2.2} />
                   )}

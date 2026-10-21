@@ -7,9 +7,7 @@ import { currentIntlLocale } from '@/lib/dateLocale';
 import { useFoodLogs, localDateString } from './useFoodLogs';
 import { useNutritionGoal } from './useNutritionGoal';
 import { useMeals } from './useMeals';
-import { MACRO_COLORS, capitalize } from './constants';
-import NutritionRing from './components/NutritionRing';
-import MacroBar from './components/MacroBar';
+import { capitalize } from './constants';
 import MealTypePicker from './components/MealTypePicker';
 import AddMealPage from './AddMealPage';
 import GoalPage from './GoalPage';
@@ -32,38 +30,72 @@ function formatDayHeader(date: string): string {
   return capitalize(text);
 }
 
-// mirrors the loaded layout: ring + macro bars card, then the meals card
+// mirrors the loaded layout: kcal hero, macro strip, meal rows
 function OverviewSkeleton() {
   return (
     <>
-      <div className="mt-5 flex flex-col items-center rounded-[16px] border border-border bg-card p-[22px]">
-        <Skeleton className="h-[176px] w-[176px] rounded-full" />
-        <Skeleton className="mt-4 h-[13px] w-[120px]" />
-        <div className="mt-5 flex w-full flex-col gap-4">
-          {[0, 1, 2].map((i) => (
-            <div key={i}>
-              <Skeleton className="h-[11px] w-[30%]" />
-              <Skeleton className="mt-1.5 h-[7px] rounded-full" />
-            </div>
-          ))}
-        </div>
-      </div>
-      <Skeleton className="mt-6 mb-2 ml-1 h-[14px] w-[130px]" />
-      <div className="rounded-[14px] border border-border bg-card">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-3 px-4 py-[14px] ${i > 0 ? 'border-t border-border' : ''}`}
-          >
-            <div className="flex-1">
-              <Skeleton className="h-[13px] w-[35%]" />
-              <Skeleton className="mt-1.5 h-[10px] w-[25%]" />
-            </div>
-            <Skeleton className="h-8 w-8 flex-none rounded-full" />
+      <Skeleton className="mt-[22px] h-[64px] w-[55%]" />
+      <Skeleton className="mt-3 h-[12px] w-[60%]" />
+      <Skeleton className="mt-[7px] h-[3px]" />
+      <div className="mt-[22px] grid grid-cols-3 border-y border-border">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className={i ? 'border-l border-border py-3.5 pl-3' : 'py-3.5 pr-3'}>
+            <Skeleton className="h-[11px] w-[55%]" />
+            <Skeleton className="mt-2 h-[20px] w-[70%]" />
+            <Skeleton className="mt-2 h-[3px]" />
           </div>
         ))}
       </div>
+      <Skeleton className="mt-6 mb-2 h-[14px] w-[110px]" />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex items-center gap-3 border-b border-border py-[13px]">
+          <div className="flex-1">
+            <Skeleton className="h-[13px] w-[35%]" />
+            <Skeleton className="mt-1.5 h-[10px] w-[20%]" />
+          </div>
+          <Skeleton className="h-[30px] w-[30px] flex-none rounded-full" />
+        </div>
+      ))}
     </>
+  );
+}
+
+// one column of the macro strip — Redesign 18c: macros share the accent,
+// told apart by opacity (protein 1 → carbs .7 → fat .45), not by hue
+function MacroStat({
+  label,
+  value,
+  goal,
+  opacity,
+  position,
+}: {
+  label: string;
+  value: number;
+  goal: number;
+  opacity: number;
+  position: 'first' | 'middle' | 'last';
+}) {
+  const pct = goal > 0 ? Math.min(100, (value / goal) * 100) : 0;
+  return (
+    <div
+      className={
+        position === 'first'
+          ? 'py-3.5 pr-3'
+          : `border-l border-border py-3.5 ${position === 'middle' ? 'px-3' : 'pl-3'}`
+      }
+    >
+      <div className="text-[12px] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">
+        {Math.round(value)}
+        <span className="text-[12px] text-muted-foreground"> / {Math.round(goal)}g</span>
+      </div>
+      <div className="mt-2 h-[3px] rounded-[2px] bg-border">
+        <div
+          className="macro-fill h-full bg-acc"
+          style={{ clipPath: `inset(0 ${100 - pct}% 0 0 round 2px)`, opacity }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -74,8 +106,15 @@ export default function DietOverviewPage() {
   const date = localDateString();
   const { logs, summary, loading } = useFoodLogs(date, refreshKey);
   const { goal, save: saveGoal } = useNutritionGoal();
-  const { meals, loading: mealsLoading, reload: reloadMeals, add, rename, reorder, remove } =
-    useMeals();
+  const {
+    meals,
+    loading: mealsLoading,
+    reload: reloadMeals,
+    add,
+    rename,
+    reorder,
+    remove,
+  } = useMeals();
   const [editing, setEditing] = useState(false);
   const [picker, setPicker] = useState<Picker | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
@@ -83,9 +122,11 @@ export default function DietOverviewPage() {
   const totalKcal = summary?.totalKcal ?? 0;
   const kcalGoal = goal?.dailyKcalGoal ?? 2000;
   const remaining = Math.round(kcalGoal - totalKcal);
-  // same "over" rule as NutritionRing (value > max) — not remaining < 0,
-  // whose rounding would disagree with the ring right at the goal
+  // strict value > goal, same rule as DietHistoryPage's bars — not
+  // remaining < 0, whose rounding would disagree right at the goal
   const overGoal = totalKcal > kcalGoal;
+  const kcalPct = kcalGoal > 0 ? Math.round((totalKcal / kcalGoal) * 100) : 0;
+  const nf = new Intl.NumberFormat(currentIntlLocale());
 
   // the server derives `order` from array position, so moving one meal means
   // sending the whole reordered list, not a delta
@@ -99,8 +140,10 @@ export default function DietOverviewPage() {
   // first load only — refreshes after a save keep the current numbers on
   // screen instead of flashing the skeleton again
   const firstLoad = (loading && summary == null) || (mealsLoading && meals.length === 0);
-  // ring/macro fills sweep in and the meal rows rise, once per session
-  const { attach: enterRef, state: enterState } = useEntrance('diet/overview', { ready: !firstLoad });
+  // progress fills sweep in and the meal rows rise, once per session
+  const { attach: enterRef, state: enterState } = useEntrance('diet/overview', {
+    ready: !firstLoad,
+  });
 
   const kcalOf = (mealId: string) =>
     Math.round(
@@ -111,95 +154,111 @@ export default function DietOverviewPage() {
 
   const detail =
     view.name === 'addMeal' ? (
-        <AddMealPage
-          meal={view.meal}
-          existingLogs={logs.filter((l) => l.mealId === view.meal.id)}
-          onBack={() => setView({ name: 'overview' })}
-          onSaved={() => {
-            setRefreshKey((k) => k + 1);
-            // logCount is computed server-side at fetch time, so the delete
-            // confirmation would under-report without this
-            void reloadMeals();
-            setView({ name: 'overview' });
-          }}
-        />
+      <AddMealPage
+        meal={view.meal}
+        existingLogs={logs.filter((l) => l.mealId === view.meal.id)}
+        onBack={() => setView({ name: 'overview' })}
+        onSaved={() => {
+          setRefreshKey((k) => k + 1);
+          // logCount is computed server-side at fetch time, so the delete
+          // confirmation would under-report without this
+          void reloadMeals();
+          setView({ name: 'overview' });
+        }}
+      />
     ) : view.name === 'goal' && goal ? (
-        <GoalPage
-          goal={goal}
-          onBack={() => setView({ name: 'overview' })}
-          onSave={async (next) => {
-            await saveGoal(next);
-            setView({ name: 'overview' });
-          }}
-        />
+      <GoalPage
+        goal={goal}
+        onBack={() => setView({ name: 'overview' })}
+        onSave={async (next) => {
+          await saveGoal(next);
+          setView({ name: 'overview' });
+        }}
+      />
     ) : null;
 
   return (
     <DrillStack
       depth={detail ? 1 : 0}
-      viewKey={view.name === 'addMeal' ? `addMeal:${view.meal.id}` : detail ? view.name : 'overview'}
+      viewKey={
+        view.name === 'addMeal' ? `addMeal:${view.meal.id}` : detail ? view.name : 'overview'
+      }
     >
       {detail ?? (
-        <div ref={enterRef} data-enter={enterState} className="px-5 pt-[76px] pb-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-[25px] font-bold tracking-[-.02em] text-foreground">
-                {t('overview.title')}
-              </h1>
-              <p className="mt-0.5 text-[12.5px] text-muted-foreground">{formatDayHeader(date)}</p>
-            </div>
+        <div
+          ref={enterRef}
+          data-enter={enterState}
+          className="px-[22px] pt-3 pb-8 tabular-nums md:max-w-[640px] md:p-[30px_34px_34px]"
+        >
+          {/* on mobile the "Dieta" title lives in the header (MobileChrome) */}
+          <h1 className="hidden text-[19px] font-semibold tracking-[-.01em] text-foreground md:block">
+            {t('overview.title')}
+          </h1>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] text-muted-foreground md:mt-[2px]">{formatDayHeader(date)}</p>
             <button
               type="button"
               onClick={() => setView({ name: 'goal' })}
               aria-label={t('overview.editGoal')}
-              className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] text-muted-foreground hover:bg-chip hover:text-foreground"
+              className="-mr-2.5 flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-[10px] text-muted-foreground hover:bg-chip hover:text-foreground"
             >
               <Settings className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </button>
           </div>
 
           <LoadingSwap loading={firstLoad} skeleton={<OverviewSkeleton />}>
-            <div className="mt-5 flex flex-col items-center rounded-[16px] border border-border bg-card p-[22px]">
-              <NutritionRing value={totalKcal} max={kcalGoal}>
-                <span className="text-[30px] font-bold tabular-nums tracking-[-.02em] text-foreground">
-                  {Math.round(totalKcal)}
-                </span>
-                <span className="mt-0.5 text-[11.5px] text-muted-foreground">
-                  {t('overview.ofGoal', { kcal: kcalGoal })}
-                </span>
-              </NutritionRing>
-              <p
-                className={`mt-3 text-[13px] font-semibold ${overGoal ? 'text-neg' : 'text-acc'}`}
-              >
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="font-mono text-[64px] leading-none font-medium tracking-[-.05em] text-foreground">
+                {nf.format(Math.round(totalKcal))}
+              </span>
+              <span className="text-[17px] text-muted-foreground">{t('addMeal.kcal')}</span>
+            </div>
+            <div className="mt-3 flex justify-between gap-3 text-[12.5px] text-muted-foreground">
+              <span className={overGoal ? 'text-neg' : undefined}>
+                {t('overview.goalLine', { kcal: nf.format(kcalGoal) })} ·{' '}
                 {overGoal
-                  ? t('overview.overGoal', { kcal: Math.ceil(totalKcal - kcalGoal) })
-                  : t('overview.remaining', { kcal: remaining })}
-              </p>
+                  ? t('overview.overGoal', {
+                      kcal: nf.format(Math.ceil(totalKcal - kcalGoal)),
+                    })
+                  : t('overview.remaining', { kcal: nf.format(remaining) })}
+              </span>
+              <span className="font-medium text-foreground">{kcalPct}%</span>
+            </div>
+            <div className="mt-[7px] h-[3px] rounded-[2px] bg-border">
+              <div
+                className={`macro-fill h-full ${overGoal ? 'bg-neg' : 'bg-acc'}`}
+                style={{
+                  clipPath: `inset(0 ${100 - Math.min(100, kcalPct)}% 0 0 round 2px)`,
+                }}
+              />
+            </div>
 
-              <div className="mt-5 flex w-full flex-col gap-3">
-                <MacroBar
-                  label={t('macro.protein')}
-                  value={summary?.totalProtein ?? 0}
-                  max={goal?.dailyProteinGoal ?? 150}
-                  color={MACRO_COLORS.protein}
-                />
-                <MacroBar
-                  label={t('macro.carbs')}
-                  value={summary?.totalCarbs ?? 0}
-                  max={goal?.dailyCarbsGoal ?? 250}
-                  color={MACRO_COLORS.carbs}
-                />
-                <MacroBar
-                  label={t('macro.fat')}
-                  value={summary?.totalFat ?? 0}
-                  max={goal?.dailyFatGoal ?? 65}
-                  color={MACRO_COLORS.fat}
-                />
-              </div>
+            <div className="mt-[22px] grid grid-cols-3 border-y border-border">
+              <MacroStat
+                position="first"
+                label={t('macro.protein')}
+                value={summary?.totalProtein ?? 0}
+                goal={goal?.dailyProteinGoal ?? 150}
+                opacity={1}
+              />
+              <MacroStat
+                position="middle"
+                label={t('macro.carbs')}
+                value={summary?.totalCarbs ?? 0}
+                goal={goal?.dailyCarbsGoal ?? 250}
+                opacity={0.7}
+              />
+              <MacroStat
+                position="last"
+                label={t('macro.fat')}
+                value={summary?.totalFat ?? 0}
+                goal={goal?.dailyFatGoal ?? 65}
+                opacity={0.45}
+              />
             </div>
 
             <div className="mt-6">
-              <div className="mb-2 flex items-center justify-between px-1">
+              <div className="flex items-center justify-between">
                 <span className="text-[14px] font-semibold text-foreground">
                   {t('overview.mealsTitle')}
                 </span>
@@ -210,21 +269,21 @@ export default function DietOverviewPage() {
                     setConfirmingDeleteId(null);
                   }}
                   aria-label={editing ? t('meals.done') : t('meals.editMeals')}
-                  className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] text-muted-foreground hover:bg-chip hover:text-foreground"
+                  className="-mr-2.5 flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-[10px] text-muted-foreground hover:bg-chip hover:text-foreground"
                 >
                   {editing ? (
-                    <Check className="h-[18px] w-[18px] text-acc" strokeWidth={2} />
+                    <Check className="h-[18px] w-[18px] text-acc-tx" strokeWidth={2} />
                   ) : (
                     <Pencil className="h-[16px] w-[16px]" strokeWidth={1.8} />
                   )}
                 </button>
               </div>
 
-              <div className="rounded-[14px] border border-border bg-card">
+              <div>
                 {meals.map((meal, i) => {
                   const count = logs.filter((l) => l.mealId === meal.id).length;
                   const kcal = kcalOf(meal.id);
-                  const divider = i > 0 ? 'border-t border-border' : '';
+                  const divider = 'border-b border-border';
 
                   if (!editing) {
                     return (
@@ -232,38 +291,42 @@ export default function DietOverviewPage() {
                         key={meal.id}
                         type="button"
                         onClick={() => setView({ name: 'addMeal', meal })}
-                        className={`enter-rise flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-chip ${divider}`}
+                        className={`enter-rise flex w-full cursor-pointer items-center gap-3 py-[13px] text-left ${divider}`}
                         style={{ '--i': i } as CSSProperties}
                       >
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-semibold text-foreground">
+                          <div className="text-[14.5px] font-medium text-foreground">
                             {t(`meal.${meal.type}`)}
                           </div>
-                          <div className="text-[11.5px] text-muted-foreground">
-                            {t('overview.items', { count })} · {kcal} {t('addMeal.kcal')}
+                          <div className="mt-0.5 text-[12px] text-muted-foreground">
+                            {count > 0 ? t('overview.items', { count }) : t('overview.noItems')}
                           </div>
                         </div>
-                        <span className="text-[13px] font-semibold tabular-nums text-foreground">
-                          {kcal}
+                        <span
+                          className={`font-mono text-[14.5px] font-medium ${
+                            count > 0 ? 'text-foreground' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {count > 0 ? nf.format(kcal) : '—'}
                         </span>
                         <span
                           aria-hidden
-                          className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full bg-chip text-acc"
+                          className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-full bg-chip text-acc-tx"
                         >
-                          <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+                          <Plus className="h-3 w-3" strokeWidth={2.2} />
                         </span>
                       </button>
                     );
                   }
 
                   return (
-                    <div key={meal.id} className={`px-4 py-3 ${divider}`}>
+                    <div key={meal.id} className={`py-2.5 ${divider}`}>
                       <div className="flex items-center gap-1">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-semibold text-foreground">
+                          <div className="text-[14.5px] font-medium text-foreground">
                             {t(`meal.${meal.type}`)}
                           </div>
-                          <div className="text-[11.5px] text-muted-foreground">
+                          <div className="mt-0.5 text-[12px] text-muted-foreground">
                             {t('overview.items', { count })}
                           </div>
                         </div>
@@ -309,7 +372,9 @@ export default function DietOverviewPage() {
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-[9px] bg-chip px-3 py-2">
                           <span className="text-[12px] text-foreground">
                             {meal.logCount > 0
-                              ? t('meals.deleteConfirm', { count: meal.logCount })
+                              ? t('meals.deleteConfirm', {
+                                  count: meal.logCount,
+                                })
                               : t('meals.deleteConfirmEmpty')}
                           </span>
                           <div className="flex flex-none items-center gap-2">
@@ -338,7 +403,7 @@ export default function DietOverviewPage() {
                 })}
 
                 {!mealsLoading && meals.length === 0 && (
-                  <p className="px-4 py-6 text-center text-[13px] text-muted-foreground">
+                  <p className="border-b border-border py-6 text-center text-[13px] text-muted-foreground">
                     {t('meals.empty')}
                   </p>
                 )}
@@ -348,7 +413,7 @@ export default function DietOverviewPage() {
                 <button
                   type="button"
                   onClick={() => setPicker({ mode: 'add' })}
-                  className="mt-3 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[11px] border border-dashed border-border py-3 text-[13.5px] font-medium text-acc hover:bg-chip"
+                  className="mt-3 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[11px] border border-dashed border-border py-3 text-[13.5px] font-medium text-acc-tx hover:bg-chip"
                 >
                   <Plus className="h-4 w-4" strokeWidth={2} />
                   {t('meals.add')}

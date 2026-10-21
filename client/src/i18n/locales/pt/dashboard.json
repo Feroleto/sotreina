@@ -83,7 +83,8 @@
       "8": "8 s",
       "12": "12 s",
       "all": "Tudo"
-    }
+    },
+    "weeklyVolume": "Volume semanal"
   },
   "dateRange": {
     "thisMonth": "Este Mês",
@@ -106,5 +107,11 @@
     "runsCount_other": "{{count}} corridas",
     "daysCount_one": "{{count}} dia",
     "daysCount_other": "{{count}} dias"
+  },
+  "hero": {
+    "thisWeek": "Esta semana · {{range}}",
+    "lastWeek": "semana passada {{km}} km",
+    "noLastWeek": "nenhuma corrida na semana passada",
+    "recent": "Recentes"
   }
 }

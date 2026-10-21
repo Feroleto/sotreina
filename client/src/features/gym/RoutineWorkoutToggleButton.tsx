@@ -17,7 +17,7 @@ export default function RoutineWorkoutToggleButton({ onClick }: RoutineWorkoutTo
     <button
       type="button"
       onClick={onClick}
-      className="press mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] bg-acc p-[12px] text-[14px] font-semibold text-white"
+      className="press mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] bg-acc p-[12px] text-[14px] font-semibold text-acc-fg"
     >
       <Play className="h-4 w-4" strokeWidth={1.8} />
       {t('routines.startWorkout')}

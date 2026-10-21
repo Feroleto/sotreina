@@ -1,0 +1,11 @@
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.signature",
+  "user": {
+    "id": "cmfixture0000000000000000",
+    "firstName": "Teste",
+    "profileImgUrl": null,
+    "maxHr": 190,
+    "hasStravaAccount": true,
+    "hasPassword": true
+  }
+}

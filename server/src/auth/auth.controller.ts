@@ -67,6 +67,25 @@ export class AuthController {
     return (await this.authService.authenticate(result))!;
   }
 
+  // Native iOS app login: same credentials check as POST /login, but the JWT
+  // comes back in the body (stored in the Keychain, sent as a Bearer header)
+  // instead of a cookie. Kept separate so the web's login contract never
+  // starts leaking the session token into JS-readable responses
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('token')
+  @HttpCode(200)
+  async token(
+    @Body() body: unknown,
+  ): Promise<{ token: string; user: MeResponse }> {
+    const input = parseLoginInput(body);
+    const result = await this.authService.login(input);
+    if (!result) throw new UnauthorizedException('Invalid email or password');
+    return {
+      token: this.session.signToken(result.userId, result.tokenVersion),
+      user: (await this.authService.authenticate(result))!,
+    };
+  }
+
   // guarded + pre-auth-style throttle: this touches the same email-uniqueness
   // and password-hashing cost as register(), just for an already-logged-in
   // user adding credentials to a Strava-only account

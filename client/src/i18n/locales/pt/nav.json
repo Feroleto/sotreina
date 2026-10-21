@@ -19,7 +19,6 @@
   "badges": {
     "upcoming": "EM BREVE"
   },
-  "openMenu": "Abrir menu",
   "profile": {
     "title": "Perfil",
     "units": "Unidades",
@@ -49,5 +48,13 @@
   "expandSidebar": "Expandir barra lateral",
   "collapseSidebar": "Recolher barra lateral",
   "runnerFallback": "Corredor",
-  "comingSoon": "Em breve."
+  "comingSoon": "Em breve.",
+  "tabs": {
+    "today": "Hoje",
+    "run": "Corrida",
+    "gym": "Treino",
+    "diet": "Dieta",
+    "label": "Navegação principal",
+    "sections": "Seções"
+  }
 }

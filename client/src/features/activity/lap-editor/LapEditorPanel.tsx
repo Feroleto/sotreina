@@ -247,7 +247,7 @@ export default function LapEditorPanel({
               type="button"
               onClick={handleSave}
               disabled={!editor.canSave}
-              className="press cursor-pointer rounded-[9px] bg-acc px-4 py-2 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="press cursor-pointer rounded-[9px] bg-acc px-4 py-2 text-[13px] font-semibold text-acc-fg disabled:cursor-not-allowed disabled:opacity-40"
             >
               {editor.saving ? t('laps.saving') : t('laps.save')}
             </button>

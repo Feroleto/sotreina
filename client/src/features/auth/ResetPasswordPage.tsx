@@ -90,7 +90,7 @@ export default function ResetPasswordPage({
         </div>
 
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-white">
+          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
             ST
           </div>
           <span className="text-[14px] font-semibold text-foreground">
@@ -109,7 +109,7 @@ export default function ResetPasswordPage({
             <button
               type="button"
               onClick={backToLogin}
-              className="press mt-5 flex w-full items-center justify-center rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white md:rounded-[11px]"
+              className="press mt-5 flex w-full items-center justify-center rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg md:rounded-[11px]"
             >
               {t('login.resetBackToLogin')}
             </button>
@@ -127,7 +127,7 @@ export default function ResetPasswordPage({
             <button
               type="button"
               onClick={backToLogin}
-              className="press mt-5 flex w-full items-center justify-center rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white md:rounded-[11px]"
+              className="press mt-5 flex w-full items-center justify-center rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg md:rounded-[11px]"
             >
               {t('login.resetBackToLogin')}
             </button>
@@ -172,7 +172,7 @@ export default function ResetPasswordPage({
               <button
                 type="submit"
                 disabled={submitting}
-                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
+                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
               >
                 {submitting ? (
                   <>

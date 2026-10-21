@@ -1,6 +1,6 @@
 # Spec — SoTreina no iPhone: PWA + app nativo do treino ao vivo (via xtool, sem Mac)
 
-Data: 2026-10-18 · Status: **Fase A implementada** (aguardando deploy, cadastro do ping e validação no iPhone) · Fases 0–2 não iniciadas
+Data: 2026-10-18 · Status: **Fase A no ar** · **Fase 0 em andamento**: backend (§5.1) e projeto `ios/` escritos, aguardando setup do xtool + validação no iPhone · Fases 1–2 não iniciadas
 Ferramenta-base do nativo: [xtool](https://github.com/xtool-org/xtool), que substitui o Xcode no Linux/WSL: builda pacotes SwiftPM, assina e instala no iPhone.
 
 ## 1. Objetivo
@@ -218,7 +218,7 @@ O `clientId` da Fase 1 já é o alicerce.
 
 | Risco | Impacto | Como validar | Plano B |
 | --- | --- | --- | --- |
-| Extensão/Live Activity não funciona via xtool | O nativo perde a razão de existir | Fase 0, item 2 | Arquivar o nativo, web push no PWA |
+| Extensão/Live Activity não funciona via xtool | O nativo perde a razão de existir | Fase 0, item 2. **Risco reduzido (2026-10-18)**: o xtool 1.22 suporta extensões WidgetKit oficialmente (`extensions:` no `xtool.yml`, doc `Appex.md`, exemplo `DemoExtensions`). Falta só confirmar no device com Apple ID grátis | Arquivar o nativo, web push no PWA |
 | `LiveActivityIntent` exige desbloqueio na tela bloqueada | O `✓` custa um Face ID | Fase 2, no device | Aceitar (o Face ID é rápido) |
 | usbipd/usbmuxd instável no WSL2 | A reinstalação semanal vira sofrimento | Fase 0, item 1 | Wi-Fi. O PWA cobre a semana sem app |
 | Login "password" do xtool quebrar com mudança da Apple | Não consegue reinstalar | Acompanhar as issues do xtool | Conta paga com API key, ou ficar só no PWA |

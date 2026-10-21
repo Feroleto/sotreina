@@ -73,7 +73,7 @@ export default function MealTypePicker({
           <button
             type="button"
             onClick={() => onConfirm(selected)}
-            className="press flex-1 cursor-pointer rounded-[11px] bg-acc px-4 py-2.5 text-[14px] font-semibold text-white"
+            className="press flex-1 cursor-pointer rounded-[11px] bg-acc px-4 py-2.5 text-[14px] font-semibold text-acc-fg"
           >
             {confirmLabel}
           </button>

@@ -282,7 +282,7 @@ export default function ProfilePage({
                 <button
                   type="submit"
                   disabled={pwSubmitting}
-                  className="press cursor-pointer rounded-[9px] bg-acc px-[13px] py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+                  className="press cursor-pointer rounded-[9px] bg-acc px-[13px] py-1.5 text-[12.5px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-70"
                 >
                   {pwSubmitting
                     ? t('profile.addPasswordSubmitting')

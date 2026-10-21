@@ -185,7 +185,7 @@ export default function GoalPage({ goal, onBack, onSave }: GoalPageProps) {
         type="button"
         onClick={() => void handleSave()}
         disabled={saving}
-        className="press mt-5 w-full cursor-pointer rounded-[11px] bg-acc px-4 py-3 text-[14px] font-semibold text-white disabled:cursor-default disabled:opacity-70"
+        className="press mt-5 w-full cursor-pointer rounded-[11px] bg-acc px-4 py-3 text-[14px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-70"
       >
         {saving ? t('goal.saving') : t('goal.save')}
       </button>

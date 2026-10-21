@@ -3,44 +3,52 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   formatDayMonth,
-  formatDuration,
+  formatDurationShort,
   formatKm,
+  formatMonthShort,
   formatPace,
 } from '@/lib/activityFormat';
 import type { BinAgg } from './WeeklyChart';
 import { endOfWeek } from './bins';
 
-function KpiCard({
+interface MobileWeeklySummaryProps {
+  /** the current (partial) week — the hero number */
+  thisWeek: BinAgg;
+  /** the week before it, the hero's point of comparison */
+  lastWeek: BinAgg;
+  /** the last 12 weeks, ascending, zero-filled — or the custom range when one is set */
+  weeks: BinAgg[];
+  /** volume header slot, top-right (the custom date range trigger) */
+  children?: ReactNode;
+}
+
+function Stat({
   label,
   value,
-  sub,
+  first,
 }: {
   label: string;
   value: string;
-  sub: string;
+  first?: boolean;
 }) {
   return (
-    <div className="w-[150px] flex-none rounded-[14px] border border-border bg-card px-[15px] py-3.5">
-      <div className="text-[10.5px] font-semibold tracking-[.07em] text-muted-foreground uppercase">
-        {label}
-      </div>
-      <div className="mt-1 text-[20px] font-bold tracking-[-.02em] text-foreground">
+    <div className={first ? 'py-3.5' : 'border-l border-border py-3.5 pl-3.5'}>
+      <div className="text-[12px] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">
         {value}
       </div>
-      <div className="mt-[2px] text-[11px] text-muted-foreground">{sub}</div>
     </div>
   );
 }
 
-interface MobileWeeklySummaryProps {
-  /** the last 12 weeks, ascending, zero-filled — or the custom range when one is set */
-  weeks: BinAgg[];
-  /** header slot in the bars card, top-right (the custom date range trigger) */
-  children?: ReactNode;
-}
-
-/** mobile replacement for the area chart: KPI carousel + compact week bars */
+/**
+ * mobile replacement for the rail + area chart — Redesign Corrida 17b
+ * "Monolito": no cards, hairlines, numbers in Geist Mono, accent only on
+ * progress, the current week's bar and the active state
+ */
 export default function MobileWeeklySummary({
+  thisWeek,
+  lastWeek,
   weeks,
   children,
 }: MobileWeeklySummaryProps) {
@@ -48,12 +56,8 @@ export default function MobileWeeklySummary({
   // tap toggles the selected bar and its reading line
   const [selected, setSelected] = useState<number | null>(null);
 
-  const km = weeks.reduce((s, w) => s + w.km, 0);
-  const sec = weeks.reduce((s, w) => s + w.sec, 0);
-  const count = weeks.reduce((s, w) => s + w.count, 0);
   const maxKm = Math.max(1, ...weeks.map((w) => w.km));
-  const n = weeks.length;
-
+  const totalKm = weeks.reduce((s, w) => s + w.km, 0);
   const sel = selected !== null && weeks[selected] ? selected : null;
   const reading =
     sel !== null
@@ -61,82 +65,133 @@ export default function MobileWeeklySummary({
           range: `${formatDayMonth(weeks[sel].start)} – ${formatDayMonth(endOfWeek(weeks[sel].start))}`,
           km: formatKm(weeks[sel].km),
         })
-      : t('chart.barHint', { km: formatKm(km), count: n });
+      : t('chart.barHint', { km: formatKm(totalKm), count: weeks.length });
+
+  // progress against last week — no target exists in the data, so the
+  // previous week is the bar the current one is measured against
+  const pct =
+    lastWeek.km > 0 ? Math.round((thisWeek.km / lastWeek.km) * 100) : null;
 
   return (
     <div className="md:hidden">
-      {/* KPI carousel — edge-bleed horizontal scroll */}
-      <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5">
-        <KpiCard
-          label={t('kpis.distance')}
-          value={`${formatKm(km)} km`}
-          sub={t('kpis.weeksCount', { count: n })}
-        />
-        <KpiCard
-          label={t('kpis.avgPace')}
-          value={formatPace(km > 0 ? sec / km : null)}
-          sub={t('kpis.weeksCount', { count: n })}
-        />
-        <KpiCard
+      <div className="mt-3 text-[13px] text-muted-foreground">
+        {t('hero.thisWeek', {
+          range: `${formatDayMonth(thisWeek.start)} – ${formatDayMonth(endOfWeek(thisWeek.start))}`,
+        })}
+      </div>
+
+      <div className="mt-[22px] flex items-baseline gap-2">
+        <span className="font-mono text-[64px] leading-none font-medium tracking-[-.05em] text-foreground">
+          {formatKm(thisWeek.km)}
+        </span>
+        <span className="text-[17px] text-muted-foreground">km</span>
+      </div>
+
+      <div className="mt-3 flex justify-between text-[12.5px] text-muted-foreground">
+        <span>
+          {lastWeek.km > 0
+            ? t('hero.lastWeek', { km: formatKm(lastWeek.km) })
+            : t('hero.noLastWeek')}
+        </span>
+        {pct !== null && (
+          <span className="font-medium text-foreground">{pct}%</span>
+        )}
+      </div>
+      {pct !== null && (
+        <div className="mt-[7px] h-[3px] rounded-[2px] bg-border">
+          {/* revealed by clip-path (same as MacroBar), not width */}
+          <div
+            className="macro-fill h-full bg-acc"
+            style={{
+              clipPath: `inset(0 ${100 - Math.min(100, pct)}% 0 0 round 2px)`,
+            }}
+          />
+        </div>
+      )}
+
+      <div className="mt-[22px] grid grid-cols-3 border-y border-border">
+        <Stat
+          first
           label={t('kpis.activities')}
-          value={String(count)}
-          sub={t('kpis.perWeek', {
-            value: (count / Math.max(1, n)).toFixed(1),
-          })}
+          value={String(thisWeek.count)}
         />
-        <KpiCard
+        <Stat
+          label={t('kpis.avgPace')}
+          // the label already says pace; the unit would crowd the column
+          value={formatPace(
+            thisWeek.km > 0 ? thisWeek.sec / thisWeek.km : null,
+          ).replace(' /km', '')}
+        />
+        <Stat
           label={t('kpis.time')}
-          value={formatDuration(sec)}
-          sub={t('kpis.moving')}
+          value={formatDurationShort(thisWeek.sec)}
         />
       </div>
 
-      {/* compact week bars */}
-      <div className="mt-3 mb-5 rounded-[14px] border border-border bg-card p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div
-            className={`min-w-0 flex-1 text-[12.5px] ${
-              sel !== null ? 'text-foreground' : 'text-muted-foreground'
-            }`}
-          >
-            {reading}
-          </div>
-          <div className="flex-none">{children}</div>
+      <div className="mt-6 flex items-center justify-between gap-2">
+        <div className="text-[14px] font-semibold text-foreground">
+          {t('chart.weeklyVolume')}
         </div>
-        <div className="mt-3 flex h-[120px] items-end gap-1">
-          {weeks.map((w, i) => (
+        <div className="flex-none">{children}</div>
+      </div>
+      <div
+        className={`mt-1 text-[12px] ${
+          sel !== null ? 'text-foreground' : 'text-muted-foreground'
+        }`}
+      >
+        {reading}
+      </div>
+
+      <div className="mt-3.5 flex h-[110px] items-end gap-[7px]">
+        {weeks.map((w, i) => {
+          const isLast = i === weeks.length - 1;
+          return (
             <button
               key={w.start.getTime()}
               onClick={() => setSelected((cur) => (cur === i ? null : i))}
               aria-label={`${formatDayMonth(w.start)} · ${formatKm(w.km)} km`}
+              aria-pressed={sel === i}
               className="flex h-full flex-1 cursor-pointer items-end"
             >
               <span
-                className="chart-bar w-full rounded-t-[4px]"
+                className="chart-bar w-full rounded-[3px]"
                 style={
                   {
                     '--i': i,
-                    height: `${((w.km / maxKm) * 100).toFixed(1)}%`,
+                    // a zero week still shows a sliver, so the grid of
+                    // weeks reads as continuous
+                    height: `${Math.max(2, (w.km / maxKm) * 100).toFixed(1)}%`,
                     background:
                       sel === i
-                        ? 'color-mix(in oklab, var(--acc) 70%, white)'
-                        : 'var(--acc)',
+                        ? 'var(--foreground)'
+                        : isLast
+                          ? 'var(--acc)'
+                          : 'var(--bar)',
                   } as CSSProperties
                 }
               />
             </button>
-          ))}
-        </div>
-        <div className="mt-0 flex gap-1 border-t border-border pt-1">
-          {weeks.map((w, i) => (
+          );
+        })}
+      </div>
+      {/* month label under the first bar of each month */}
+      <div className="mt-2 flex gap-[7px]">
+        {weeks.map((w, i) => {
+          const newMonth =
+            i === 0 || w.start.getMonth() !== weeks[i - 1].start.getMonth();
+          return (
             <div
               key={w.start.getTime()}
-              className="flex-1 text-center text-[9.5px] text-muted-foreground"
+              className="min-w-0 flex-1 overflow-visible font-mono text-[10.5px] whitespace-nowrap text-muted-foreground"
             >
-              {i % 3 === 0 ? formatDayMonth(w.start) : ''}
+              {newMonth ? formatMonthShort(w.start) : ''}
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 mb-1.5 text-[14px] font-semibold text-foreground">
+        {t('hero.recent')}
       </div>
     </div>
   );

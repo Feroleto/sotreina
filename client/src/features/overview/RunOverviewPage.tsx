@@ -13,21 +13,27 @@ import PersonalRecordsCard from './PersonalRecordsCard';
 import ShoesSection from './ShoesSection';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 
+// mobile 2×2 hairline grid (Redesign Corrida 17b "Monolito": no cards,
+// numbers in Geist Mono) — right column and second row draw the dividers
 function MobileTotalCard({
   label,
   value,
   sub,
+  index,
 }: {
   label: string;
   value: string;
   sub?: string;
+  index: number;
 }) {
   return (
-    <div className="rounded-[14px] border border-border bg-card px-4 py-[15px]">
-      <div className="text-[10.5px] font-semibold tracking-[.07em] text-muted-foreground uppercase">
-        {label}
-      </div>
-      <div className="mt-1 text-[22px] font-bold tracking-[-.02em] text-foreground">
+    <div
+      className={`py-3.5 ${index % 2 === 1 ? 'border-l border-border pl-3.5' : ''} ${
+        index >= 2 ? 'border-t border-border' : ''
+      }`}
+    >
+      <div className="text-[12px] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">
         {value}
       </div>
       {sub && (
@@ -73,12 +79,15 @@ function TotalsSkeleton() {
     <>
       <div className="grid grid-cols-2 gap-3 md:hidden">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-[92px] rounded-[14px]" />
+          <Skeleton key={i} className="h-[72px]" />
         ))}
       </div>
       <div className="mt-6 hidden grid-cols-4 md:grid">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className={`px-[22px] ${i > 0 ? 'border-l border-border' : ''}`}>
+          <div
+            key={i}
+            className={`px-[22px] ${i > 0 ? 'border-l border-border' : ''}`}
+          >
             <Skeleton className="h-[12px] w-[60%]" />
             <Skeleton className="mt-[9px] h-[30px] w-[75%]" />
             <Skeleton className="mt-2 h-[12px] w-[50%]" />
@@ -141,8 +150,8 @@ export default function RunOverviewPage() {
   }
 
   return (
-    <div className="px-5 pt-[18px] pb-[44px] tabular-nums md:p-[30px_34px_34px]">
-      {/* on mobile the section title lives in the app bar (MobileChrome) */}
+    <div className="px-[22px] pt-5 pb-[44px] tabular-nums md:p-[30px_34px_34px]">
+      {/* on mobile the section title lives in the header (MobileChrome) */}
       <div className="hidden md:block">
         <h1 className="text-[19px] font-semibold tracking-[-.01em] text-foreground">
           {t('title')}
@@ -153,9 +162,10 @@ export default function RunOverviewPage() {
       </div>
 
       <LoadingSwap loading={loading} skeleton={<TotalsSkeleton />}>
-        {/* mobile totals — 2×2 cards instead of the divider-separated tiles */}
-        <div className="grid grid-cols-2 gap-3 md:hidden">
+        {/* mobile totals — 2×2 hairline grid instead of the 4 desktop tiles */}
+        <div className="grid grid-cols-2 border-y border-border md:hidden">
           <MobileTotalCard
+            index={0}
             label={t('tiles.distance')}
             value={`${formatKm(totals?.totalKm ?? 0)} km`}
             sub={
@@ -165,15 +175,18 @@ export default function RunOverviewPage() {
             }
           />
           <MobileTotalCard
+            index={1}
             label={t('tiles.activities')}
             value={String(totals?.count ?? 0)}
             sub={totals ? t('tiles.since', { date: totals.since }) : undefined}
           />
           <MobileTotalCard
+            index={2}
             label={t('tiles.avgPaceLabel')}
             value={formatPace(totals?.avgPaceSecKm ?? null)}
           />
           <MobileTotalCard
+            index={3}
             label={t('tiles.totalTime')}
             value={formatDuration(totals?.totalSec ?? 0)}
           />
@@ -221,7 +234,7 @@ export default function RunOverviewPage() {
         </div>
       </LoadingSwap>
 
-      <div className="mt-[26px] grid grid-cols-1 items-stretch gap-3.5 md:grid-cols-[340px_1fr] md:gap-[18px]">
+      <div className="mt-[26px] grid grid-cols-1 items-stretch gap-6 md:grid-cols-[340px_1fr] md:gap-[18px]">
         <RunCalendar activities={activities} />
         <PersonalRecordsCard activities={activities} />
       </div>

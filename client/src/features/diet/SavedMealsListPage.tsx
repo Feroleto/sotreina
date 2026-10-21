@@ -112,7 +112,7 @@ export default function SavedMealsListPage({
                 type="button"
                 onClick={() => onUse(meal)}
                 disabled={applying || meal.itemCount === 0}
-                className="press mt-3 w-full cursor-pointer rounded-[9px] bg-acc py-2 text-[13px] font-semibold text-white disabled:cursor-default disabled:opacity-50"
+                className="press mt-3 w-full cursor-pointer rounded-[9px] bg-acc py-2 text-[13px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-50"
               >
                 {t('savedMeals.use')}
               </button>

@@ -83,7 +83,8 @@
       "8": "8 w",
       "12": "12 w",
       "all": "All"
-    }
+    },
+    "weeklyVolume": "Weekly volume"
   },
   "dateRange": {
     "thisMonth": "This Month",
@@ -106,5 +107,11 @@
     "runsCount_other": "{{count}} runs",
     "daysCount_one": "{{count}} day",
     "daysCount_other": "{{count}} days"
+  },
+  "hero": {
+    "thisWeek": "This week · {{range}}",
+    "lastWeek": "last week {{km}} km",
+    "noLastWeek": "no runs last week",
+    "recent": "Recent"
   }
 }

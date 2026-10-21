@@ -41,7 +41,7 @@ export default function GymPersonalRecordCard() {
   }, [exercise]);
 
   return (
-    <div className="rounded-[14px] border border-border bg-card p-[16px_18px]">
+    <div className="rounded-[14px] border border-border bg-card p-[16px_18px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0">
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
           {t('overview.records.title')}

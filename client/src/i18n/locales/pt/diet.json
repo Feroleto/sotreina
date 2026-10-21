@@ -1,14 +1,15 @@
 {
   "overview": {
     "title": "Dieta",
-    "ofGoal": "de {{kcal}} kcal",
-    "remaining": "{{kcal}} kcal restantes",
-    "overGoal": "{{kcal}} kcal acima da meta",
+    "remaining": "faltam {{kcal}}",
+    "overGoal": "{{kcal}} acima",
     "editGoal": "Editar meta diária",
     "mealsTitle": "Refeições de hoje",
     "items": "{{count}} item",
     "items_other": "{{count}} itens",
-    "addMeal": "Adicionar à refeição"
+    "addMeal": "Adicionar à refeição",
+    "goalLine": "meta {{kcal}}",
+    "noItems": "Nenhum item ainda"
   },
   "meal": {
     "BREAKFAST": "Café da manhã",

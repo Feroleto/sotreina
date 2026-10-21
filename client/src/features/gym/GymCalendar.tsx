@@ -137,7 +137,7 @@ export default function GymCalendar({ items }: GymCalendarProps) {
       });
 
   return (
-    <div ref={enterRef} data-enter={enterState} className="rounded-[14px] border border-border bg-card p-[16px]">
+    <div ref={enterRef} data-enter={enterState} className="rounded-[14px] border border-border bg-card p-[16px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0">
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">{monthLabel}</div>
         <div className="flex gap-1">
@@ -205,7 +205,7 @@ export default function GymCalendar({ items }: GymCalendarProps) {
               <div
                 className={`flex h-[28px] w-[28px] items-center justify-center rounded-full text-[12.5px] ${
                   hasWorkout
-                    ? 'enter-fade bg-acc font-semibold text-white'
+                    ? 'enter-fade bg-acc font-semibold text-acc-fg'
                     : isToday
                       ? 'border-[1.5px] border-acc text-foreground'
                       : isFuture

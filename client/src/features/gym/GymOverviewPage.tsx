@@ -1,216 +1,266 @@
+import type { CSSProperties } from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TemplateSummary } from '@/lib/types';
+import { formatDayMonth } from '@/lib/activityFormat';
+import { endOfWeek, nextBin, startOfBin } from '@/features/dashboard/bins';
 import { useWorkoutHistory } from './useWorkoutHistory';
 import { useWorkoutTemplates } from './useWorkoutTemplates';
-import { aggregateWeeklyVolume } from './historyBins';
 import { formatLastPerformed } from './relativeTime';
-import { stripWorkoutPrefix } from './routineFormat';
 import GymCalendar from './GymCalendar';
 import GymPersonalRecordCard from './GymPersonalRecordCard';
+import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
-
-const WEEKS = 12;
 
 function formatTons(kg: number): string {
   return (kg / 1000).toFixed(1);
 }
 
-function formatTotalDuration(sec: number): string {
+function formatShortDuration(sec: number): string {
   const h = Math.floor(sec / 3600);
   const m = Math.round((sec % 3600) / 60);
-  return `${h}h ${m}min`;
+  return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m}min`;
 }
 
-function TotalTile({
-  label,
-  value,
-  sub,
-  borderLeft,
-  borderTop,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  borderLeft: boolean;
-  borderTop: boolean;
-}) {
+/**
+ * the routine to suggest next: the one performed longest ago, so a split
+ * (A → B → C) rotates on its own. Never-performed routines only come up
+ * when nothing has been performed yet — otherwise an abandoned routine
+ * would sit in the spotlight forever
+ */
+function pickNextRoutine(templates: TemplateSummary[]): TemplateSummary | null {
+  const performed = templates.filter((tpl) => tpl.lastPerformedAt != null);
+  if (performed.length === 0) return templates[0] ?? null;
+  return performed.reduce((oldest, tpl) =>
+    tpl.lastPerformedAt! < oldest.lastPerformedAt! ? tpl : oldest,
+  );
+}
+
+function Stat({ label, value, first }: { label: string; value: string; first?: boolean }) {
   return (
-    <div
-      className={`p-[14px] ${borderLeft ? 'border-l border-border' : ''} ${
-        borderTop ? 'border-t border-border' : ''
-      }`}
-    >
-      <div className="text-[10.5px] font-semibold tracking-[.07em] text-muted-foreground uppercase">
-        {label}
+    <div className={first ? 'py-3.5' : 'border-l border-border py-3.5 pl-3.5'}>
+      <div className="text-[12px] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function HeroSkeleton() {
+  return (
+    <div>
+      <Skeleton className="mt-[22px] h-[64px] w-[45%]" />
+      <Skeleton className="mt-3 h-[12px] w-[60%]" />
+      <div className="mt-[22px] grid grid-cols-3 border-y border-border">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className={i ? 'border-l border-border py-3.5 pl-3.5' : 'py-3.5'}>
+            <Skeleton className="h-[11px] w-[55%]" />
+            <Skeleton className="mt-2 h-[20px] w-[60%]" />
+          </div>
+        ))}
       </div>
-      <div className="mt-1 text-[22px] font-bold tracking-[-.02em] text-foreground">{value}</div>
-      <div className="mt-[2px] text-[11px] text-muted-foreground">{sub}</div>
     </div>
   );
 }
 
-// the 2×2 totals grid with its inner dividers
-function TotalsSkeleton() {
-  return (
-    <div className="grid grid-cols-2">
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className={`p-[14px] ${i % 2 ? 'border-l border-border' : ''} ${
-            i > 1 ? 'border-t border-border' : ''
-          }`}
-        >
-          <Skeleton className="h-[10px] w-[55%]" />
-          <Skeleton className="mt-2 h-[22px] w-[60%]" />
-          <Skeleton className="mt-2 h-[10px] w-[45%]" />
-        </div>
-      ))}
-    </div>
-  );
+interface GymOverviewPageProps {
+  /** name of the session already running, if any — "Próximo treino" resumes it */
+  activeWorkoutName: string | null;
+  onStartWorkout: (templateId: string) => void;
+  onResumeWorkout: () => void;
+  onOpenRoutine: (templateId: string) => void;
+  onNewRoutine: () => void;
 }
 
-export default function GymOverviewPage() {
+/**
+ * Treino overview — Redesign 18b ("Monolito", same system as Corrida 17b):
+ * the week in one number, the next routine with a single primary action,
+ * then the routines as hairline rows. Calendar and PR search follow below
+ */
+export default function GymOverviewPage({
+  activeWorkoutName,
+  onStartWorkout,
+  onResumeWorkout,
+  onOpenRoutine,
+  onNewRoutine,
+}: GymOverviewPageProps) {
   const { t } = useTranslation('gym');
   const { items, loading } = useWorkoutHistory();
-  const { templates } = useWorkoutTemplates();
+  const { templates, loading: templatesLoading } = useWorkoutTemplates();
+  const { attach: enterRef, state: enterState } = useEntrance('gym/overview', {
+    ready: !loading && !templatesLoading,
+  });
 
-  // same 12-week window (Monday-start, current week included) used by the
-  // "Histórico" tab's KPI carousel — Overview and Histórico read off the
-  // same real GET /workouts/history-stats data, just sliced/rendered
-  // differently
-  const weeks = useMemo(() => aggregateWeeklyVolume(items, WEEKS), [items]);
-  const windowStart = weeks[0]?.start ?? new Date();
-  const windowItems = useMemo(
-    () => items.filter((w) => new Date(w.startedAt) >= windowStart),
-    [items, windowStart],
-  );
+  // current (partial) Monday-start week against the one before it — no
+  // weekly target exists, so last week is what the progress bar measures
+  const { thisWeek, lastWeekCount, weekStart } = useMemo(() => {
+    const monday = startOfBin(new Date(), 'week');
+    const prevMonday = new Date(monday);
+    prevMonday.setDate(prevMonday.getDate() - 7);
+    const end = nextBin(monday, 'week');
+    const current = items.filter((w) => {
+      const d = new Date(w.startedAt);
+      return d >= monday && d < end;
+    });
+    const previous = items.filter((w) => {
+      const d = new Date(w.startedAt);
+      return d >= prevMonday && d < monday;
+    });
+    return {
+      thisWeek: current,
+      lastWeekCount: previous.length,
+      weekStart: monday,
+    };
+  }, [items]);
 
-  const count = windowItems.length;
-  const volumeKg = windowItems.reduce((s, w) => s + w.volumeKg, 0);
-  const durationSec = windowItems.reduce((s, w) => s + w.durationSec, 0);
-  const frequency = count / Math.max(1, weeks.length);
+  const count = thisWeek.length;
+  const volumeKg = thisWeek.reduce((s, w) => s + w.volumeKg, 0);
+  const exercises = thisWeek.reduce((s, w) => s + w.exerciseCount, 0);
+  const durationSec = thisWeek.reduce((s, w) => s + w.durationSec, 0);
+  const pct = lastWeekCount > 0 ? Math.round((count / lastWeekCount) * 100) : null;
 
-  const routineStats = useMemo(() => {
-    const byTemplate = new Map<string, { count: number; volumeKg: number }>();
-    for (const w of windowItems) {
-      if (!w.templateId) continue;
-      const entry = byTemplate.get(w.templateId) ?? { count: 0, volumeKg: 0 };
-      entry.count += 1;
-      entry.volumeKg += w.volumeKg;
-      byTemplate.set(w.templateId, entry);
-    }
-    const rows = templates.map((tpl) => ({
-      template: tpl,
-      periodCount: byTemplate.get(tpl.id)?.count ?? 0,
-      periodVolumeKg: byTemplate.get(tpl.id)?.volumeKg ?? 0,
-    }));
-    rows.sort((a, b) => b.periodCount - a.periodCount);
-    const maxVolume = Math.max(1, ...rows.map((r) => r.periodVolumeKg));
-    return { rows, maxVolume };
-  }, [templates, windowItems]);
+  const next = useMemo(() => pickNextRoutine(templates), [templates]);
+  const lastPerformed = (tpl: TemplateSummary) =>
+    tpl.lastPerformedAt
+      ? t('routines.lastPerformed', {
+          when: formatLastPerformed(t, tpl.lastPerformedAt),
+        })
+      : t('routines.neverPerformed');
 
   return (
-    <div className="px-5 pt-[18px] pb-[44px] tabular-nums">
-      <LoadingSwap loading={loading} skeleton={<TotalsSkeleton />}>
-        <div className="grid grid-cols-2">
-          <TotalTile
-            label={t('history.kpiWorkouts')}
-            value={String(count)}
-            sub={t('history.weeksCount', { count: weeks.length })}
-            borderLeft={false}
-            borderTop={false}
-          />
-          <TotalTile
-            label={t('history.kpiVolume')}
-            value={`${formatTons(volumeKg)} t`}
-            sub={t('history.weeksCount', { count: weeks.length })}
-            borderLeft
-            borderTop={false}
-          />
-          <TotalTile
-            label={t('history.kpiTime')}
-            value={formatTotalDuration(durationSec)}
-            sub={t('history.inTraining')}
-            borderLeft={false}
-            borderTop
-          />
-          <TotalTile
-            label={t('history.kpiFrequency')}
-            value={frequency.toFixed(1)}
-            sub={t('history.perWeek')}
-            borderLeft
-            borderTop
-          />
+    <div
+      ref={enterRef}
+      data-enter={enterState}
+      className="px-[22px] pt-3 pb-[44px] tabular-nums md:max-w-[640px] md:p-[30px_34px_34px]"
+    >
+      <div className="text-[13px] text-muted-foreground">
+        {t('overviewPage.thisWeek', {
+          range: `${formatDayMonth(weekStart)} – ${formatDayMonth(endOfWeek(weekStart))}`,
+        })}
+      </div>
+
+      <LoadingSwap loading={loading} skeleton={<HeroSkeleton />}>
+        <div className="mt-[22px] flex items-baseline gap-2">
+          <span className="font-mono text-[64px] leading-none font-medium tracking-[-.05em] text-foreground">
+            {count}
+          </span>
+          <span className="text-[17px] text-muted-foreground">
+            {t('overviewPage.workouts', { count })}
+          </span>
+        </div>
+        <div className="mt-3 flex justify-between text-[12.5px] text-muted-foreground">
+          <span>
+            {lastWeekCount > 0
+              ? t('overviewPage.lastWeek', { count: lastWeekCount })
+              : t('overviewPage.noLastWeek')}
+          </span>
+          {pct !== null && <span className="font-medium text-foreground">{pct}%</span>}
+        </div>
+        {pct !== null && (
+          <div className="mt-[7px] h-[3px] rounded-[2px] bg-border">
+            <div
+              className="macro-fill h-full bg-acc"
+              style={{
+                clipPath: `inset(0 ${100 - Math.min(100, pct)}% 0 0 round 2px)`,
+              }}
+            />
+          </div>
+        )}
+
+        <div className="mt-[22px] grid grid-cols-3 border-y border-border">
+          <Stat first label={t('history.kpiVolume')} value={`${formatTons(volumeKg)} t`} />
+          <Stat label={t('overviewPage.exercises')} value={String(exercises)} />
+          <Stat label={t('history.kpiTime')} value={formatShortDuration(durationSec)} />
         </div>
       </LoadingSwap>
 
-      <div className="mt-5">
+      {(activeWorkoutName != null || next) && (
+        <>
+          <div className="mt-6 text-[14px] font-semibold text-foreground">
+            {activeWorkoutName != null ? t('overviewPage.inProgress') : t('overviewPage.next')}
+          </div>
+          <div className="mt-2.5 flex items-center gap-3 border-b border-border py-4">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[17px] font-semibold tracking-[-.01em] text-foreground">
+                {activeWorkoutName ?? next!.name}
+              </div>
+              {activeWorkoutName == null && next && (
+                <div className="mt-[3px] text-[12px] text-muted-foreground">
+                  {t('routines.exerciseCount', { count: next.exerciseCount })} ·{' '}
+                  {lastPerformed(next)}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                activeWorkoutName != null ? onResumeWorkout() : onStartWorkout(next!.id)
+              }
+              className="press flex h-10 flex-none cursor-pointer items-center rounded-full bg-acc px-[18px] text-[13.5px] font-semibold text-acc-fg"
+            >
+              {activeWorkoutName != null ? t('overviewPage.resume') : t('overviewPage.start')}
+            </button>
+          </div>
+        </>
+      )}
+
+      <div className="mt-6 flex items-center justify-between">
+        <div className="text-[14px] font-semibold text-foreground">
+          {t('overview.routinesSection.title')}
+        </div>
+        <button
+          type="button"
+          onClick={onNewRoutine}
+          className="-mr-2 min-h-[44px] cursor-pointer px-2 text-[12.5px] font-medium text-muted-foreground hover:text-foreground"
+        >
+          + {t('overviewPage.newRoutine')}
+        </button>
+      </div>
+      <div>
+        {templates.map((tpl, i) => (
+          <button
+            key={tpl.id}
+            type="button"
+            onClick={() => onOpenRoutine(tpl.id)}
+            className="enter-rise flex w-full cursor-pointer items-center gap-3 border-b border-border py-[13px] text-left"
+            style={{ '--i': i } as CSSProperties}
+          >
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[14.5px] font-medium text-foreground">{tpl.name}</div>
+              <div className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                {t('routines.exerciseCount', { count: tpl.exerciseCount })} · {lastPerformed(tpl)}
+              </div>
+            </div>
+            <svg
+              width="8"
+              height="14"
+              viewBox="0 0 8 14"
+              aria-hidden="true"
+              className="flex-none text-muted-foreground"
+            >
+              <path
+                d="M1 1l6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        ))}
+        {!templatesLoading && templates.length === 0 && (
+          <p className="border-b border-border py-6 text-center text-[13px] text-muted-foreground">
+            {t('routines.empty')}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-8">
         <GymCalendar items={items} />
       </div>
 
-      <div className="mt-5">
+      <div className="mt-6">
         <GymPersonalRecordCard />
-      </div>
-
-      <div className="mt-[22px]">
-        <div className="flex items-baseline justify-between">
-          <div className="text-[13.5px] font-semibold text-foreground">
-            {t('overview.routinesSection.title')}
-          </div>
-          <div className="text-[11.5px] text-muted-foreground">
-            {t('history.weeksCount', { count: WEEKS })}
-          </div>
-        </div>
-
-        <div className="mt-3 flex flex-col gap-2.5">
-          {routineStats.rows.map(({ template, periodCount, periodVolumeKg }, idx) => {
-            const isFavorite = idx === 0 && periodCount > 0;
-            const muscle = template.muscleGroups[0];
-            const progressPct = (periodVolumeKg / routineStats.maxVolume) * 100;
-            return (
-              <div
-                key={template.id}
-                className="rounded-[14px] border border-border p-[14px_16px]"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-semibold tracking-[.06em] text-muted-foreground uppercase">
-                    {muscle ? t(`muscles.${muscle}`, muscle) : '—'}
-                  </div>
-                  {isFavorite && (
-                    <span className="rounded-full bg-acc-bg px-2 py-[3px] text-[10px] font-semibold text-acc-tx">
-                      {t('overview.routinesSection.favorite')}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-1 truncate text-[15px] font-semibold text-foreground">
-                  {stripWorkoutPrefix(template.name)}
-                </div>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="text-[20px] font-bold text-foreground">{periodCount}</span>
-                  <span className="text-[11.5px] text-muted-foreground">
-                    {t('overview.routinesSection.workoutsLabel', { count: periodCount })}
-                  </span>
-                </div>
-                <div className="mt-2 h-[6px] w-full overflow-hidden rounded-[3px] bg-chip">
-                  <div
-                    className="h-full rounded-[3px] bg-acc"
-                    style={{ width: `${Math.max(0, Math.min(100, progressPct)).toFixed(1)}%` }}
-                  />
-                </div>
-                <div className="mt-2 text-[11.5px] text-muted-foreground">
-                  {t('overview.routinesSection.meta', {
-                    volume: formatTons(periodVolumeKg),
-                    when: template.lastPerformedAt
-                      ? t('routines.lastPerformed', {
-                          when: formatLastPerformed(t, template.lastPerformedAt),
-                        })
-                      : t('routines.neverPerformed'),
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
     </div>
   );

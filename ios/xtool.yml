@@ -1,0 +1,9 @@
+version: 1
+bundleID: com.feroleto.sotreina
+product: SoTreina
+infoPath: Support/SoTreina-Info.plist
+iconPath: Resources/AppIcon.png
+extensions:
+  # bundle ID defaults to com.feroleto.sotreina.SoTreinaLiveActivity
+  - product: SoTreinaLiveActivity
+    infoPath: Support/SoTreinaLiveActivity-Info.plist

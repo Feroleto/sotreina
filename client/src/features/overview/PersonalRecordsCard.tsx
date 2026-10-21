@@ -13,7 +13,12 @@ import {
 import { apiFetch } from '@/lib/api';
 import { useEntrance } from '@/lib/useEntrance';
 import { useAuth } from '@/features/auth/AuthContext';
-import { newRecordKeys, readPrSnapshot, topRecordIdentities, writePrSnapshot } from './prSnapshot';
+import {
+  newRecordKeys,
+  readPrSnapshot,
+  topRecordIdentities,
+  writePrSnapshot,
+} from './prSnapshot';
 
 const RecordCelebration = lazy(() => import('./RecordCelebration'));
 
@@ -67,7 +72,13 @@ function Chip({ label, muted }: { label: string; muted?: boolean }) {
 // a distance whose top-1 changed since the user's last visit: the chip pops
 // with a glow (Motion, lazy — only downloaded when there's something new)
 // and a "New" badge stays next to the title for this visit
-function CelebratedChip({ isNew, children }: { isNew: boolean; children: ReactNode }) {
+function CelebratedChip({
+  isNew,
+  children,
+}: {
+  isNew: boolean;
+  children: ReactNode;
+}) {
   if (!isNew) return <>{children}</>;
   return (
     <Suspense fallback={children}>
@@ -80,7 +91,7 @@ function NewBadge() {
   const { t } = useTranslation('overview');
   return (
     <span
-      className="flex-none rounded-[6px] bg-acc px-[5px] py-[1px] text-[9.5px] font-bold text-white"
+      className="flex-none rounded-[6px] bg-acc px-[5px] py-[1px] text-[9.5px] font-bold text-acc-fg"
       title={t('records.newBadgeTitle')}
     >
       {t('records.newBadge')}
@@ -286,7 +297,10 @@ export default function PersonalRecordsCard({
   const { user } = useAuth();
   const userId = user?.id;
   // rows rise in once the records are in, once per session
-  const { attach: enterRef, state: enterState } = useEntrance('run/overview:records', { ready: loaded });
+  const { attach: enterRef, state: enterState } = useEntrance(
+    'run/overview:records',
+    { ready: loaded },
+  );
 
   useEffect(() => {
     apiFetch('/personal-bests')
@@ -345,7 +359,7 @@ export default function PersonalRecordsCard({
     <div
       ref={enterRef}
       data-enter={enterState}
-      className="rounded-[12px] border border-border bg-card p-[18px_20px]"
+      className="rounded-[12px] border border-border bg-card p-[18px_20px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0"
     >
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
@@ -367,7 +381,11 @@ export default function PersonalRecordsCard({
       {/* mobile — headline distances only, single column */}
       <div className="mt-1 md:hidden">
         {DISTANCES.filter((d) => MOBILE_KEYS.includes(d.key)).map((def, i) => (
-          <div key={def.key} className="enter-rise" style={{ '--i': i } as CSSProperties}>
+          <div
+            key={def.key}
+            className="enter-rise"
+            style={{ '--i': i } as CSSProperties}
+          >
             <MobileRecordRow
               def={def}
               best={byName.get(def.key)?.[0]}

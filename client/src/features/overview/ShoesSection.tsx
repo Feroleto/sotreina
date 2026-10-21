@@ -15,7 +15,10 @@ export default function ShoesSection() {
   const [gear, setGear] = useState<Gear[]>([]);
   const [loading, setLoading] = useState(true);
   // below the fold on mobile: the cards rise when the section scrolls in
-  const { attach: enterRef, state: enterState } = useEntrance('run/overview:shoes', { ready: !loading, inView: true });
+  const { attach: enterRef, state: enterState } = useEntrance(
+    'run/overview:shoes',
+    { ready: !loading, inView: true },
+  );
 
   useEffect(() => {
     apiFetch('/gear')

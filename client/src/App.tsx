@@ -1,15 +1,25 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { flushSync } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '@/features/nav/Sidebar';
-import MobileChrome from '@/features/nav/MobileChrome';
+import { MobileHeader, MobileTabBar } from '@/features/nav/MobileChrome';
+import { ChromeBumpContext } from '@/features/nav/chromeVisibility';
 import PlaceholderPage from '@/features/nav/PlaceholderPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import { FIRST_SYNC_FLAG } from '@/features/onboarding/firstSyncFlag';
 import { useAuth } from '@/features/auth/AuthContext';
+import { cn } from '@/lib/utils';
 import { parseThemePref, type ThemePref } from '@/lib/theme';
 import { useActiveWorkout } from '@/features/gym/useActiveWorkout';
 import ActiveWorkoutBar from '@/features/gym/ActiveWorkoutBar';
+import type { RoutinesIntent } from '@/features/gym/GymWorkoutsPage';
 import {
   PAGE_IMPORTERS,
   bootHasActivities,
@@ -78,7 +88,9 @@ const DietHistoryPage = lazy(PAGE_IMPORTERS['diet/history']!);
 // login/onboarding are dead weight for the recurring logged-in user; boot.ts
 // preloads whichever one the localStorage hints predict will be needed
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
+const ResetPasswordPage = lazy(
+  () => import('@/features/auth/ResetPasswordPage'),
+);
 const FirstSyncPage = lazy(() => import('@/features/onboarding/FirstSyncPage'));
 
 function PageContent({
@@ -86,13 +98,18 @@ function PageContent({
   themePref,
   onThemePref,
   activeWorkout,
-  onOpenDrawer,
+  routinesIntent,
+  onNavigate,
 }: {
   page: PageId;
   themePref: ThemePref;
   onThemePref: (pref: ThemePref) => void;
   activeWorkout: ReturnType<typeof useActiveWorkout>;
-  onOpenDrawer: () => void;
+  routinesIntent: RoutinesIntent | null;
+  onNavigate: (
+    page: PageId,
+    opts?: { routinesIntent?: RoutinesIntent },
+  ) => void;
 }) {
   const { t } = useTranslation('nav');
   switch (page) {
@@ -103,10 +120,38 @@ function PageContent({
     case 'run/analysis':
       return <RunAnalysisPage />;
     case 'gym/overview':
-      return <GymOverviewPage />;
+      return (
+        <GymOverviewPage
+          activeWorkoutName={
+            activeWorkout.workout
+              ? (activeWorkout.workout.templateName ?? t('gym:session.title'))
+              : null
+          }
+          onStartWorkout={(templateId: string) => {
+            // navigate only once the session exists — on failure the user
+            // stays here instead of landing on an empty Rotinas list
+            void activeWorkout.start(templateId).then((ok) => {
+              if (ok) onNavigate('gym/workouts');
+            });
+          }}
+          onResumeWorkout={() => onNavigate('gym/workouts')}
+          onOpenRoutine={(templateId: string) =>
+            onNavigate('gym/workouts', {
+              routinesIntent: { kind: 'open', templateId },
+            })
+          }
+          onNewRoutine={() =>
+            onNavigate('gym/workouts', { routinesIntent: { kind: 'new' } })
+          }
+        />
+      );
     case 'gym/workouts':
       return (
-        <GymWorkoutsPage activeWorkout={activeWorkout} onOpenDrawer={onOpenDrawer} />
+        <GymWorkoutsPage
+          activeWorkout={activeWorkout}
+          onMinimizeWorkout={() => onNavigate('gym/overview')}
+          intent={routinesIntent}
+        />
       );
     case 'gym/history':
       return <GymHistoryPage />;
@@ -128,7 +173,7 @@ function BootSplash() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-page-bg">
       <div className="flex items-center gap-2.5">
-        <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[14px] font-bold text-white">
+        <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[14px] font-bold text-acc-fg">
           ST
         </div>
         <span className="text-[15px] font-semibold text-foreground">
@@ -154,19 +199,27 @@ function App() {
   );
   const [page, setPage] = useState<PageId>(() => {
     const stored = localStorage.getItem(ACTIVE_PAGE_KEY);
-    return isKnownPage(stored) && !isPageDisabled(stored) ? stored : DEFAULT_PAGE;
+    return isKnownPage(stored) && !isPageDisabled(stored)
+      ? stored
+      : DEFAULT_PAGE;
   });
   // first-access gate: null while checking whether the user has any imported
   // activity yet; onboardingDone lets FirstSyncPage hand off to the dashboard
   const [hasActivities, setHasActivities] = useState<boolean | null>(null);
   const [onboardingDone, setOnboardingDone] = useState(false);
 
-  // owned here (not MobileChrome) so WorkoutSession's hamburger button can
-  // open the same drawer from anywhere in the tree
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  // drawer gets its own history entry so hardware/gesture back closes it
-  // instead of leaving the app (same pattern as the activity detail)
-  const drawerPushedRef = useRef(false);
+  // full-screen sub-flows (detail, live workout, editors) claim the mobile
+  // header + tab bar away while mounted — see chromeVisibility.tsx
+  const [chromeClaims, setChromeClaims] = useState(0);
+  const bumpChrome = useCallback(
+    (delta: 1 | -1) => setChromeClaims((c) => c + delta),
+    [],
+  );
+  const chromeHidden = chromeClaims > 0;
+  // Treino overview → Rotinas hand-off ("open this routine" / "new routine")
+  const [routinesIntent, setRoutinesIntent] = useState<RoutinesIntent | null>(
+    null,
+  );
   // the first page after boot appears as-is; only real navigations animate
   const [navigated, setNavigated] = useState(false);
   // a slow chunk for an earlier click must not land after a later one
@@ -228,30 +281,10 @@ function App() {
     localStorage.setItem(ACTIVE_PAGE_KEY, page);
   }, [page]);
 
-  useEffect(() => {
-    const onPop = () => {
-      drawerPushedRef.current = false;
-      setDrawerOpen(false);
-    };
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
-
-  const openDrawer = () => {
-    setDrawerOpen(true);
-    window.history.pushState({ drawer: true }, '');
-    drawerPushedRef.current = true;
-  };
-
-  const closeDrawer = () => {
-    if (drawerPushedRef.current) {
-      window.history.back();
-    } else {
-      setDrawerOpen(false);
-    }
-  };
-
-  const navigate = (next: PageId, opts?: { collapse?: boolean }) => {
+  const navigate = (
+    next: PageId,
+    opts?: { collapse?: boolean; routinesIntent?: RoutinesIntent },
+  ) => {
     if (isPageDisabled(next)) return;
     if (opts?.collapse) setCollapsed(true);
     if (next === page) return;
@@ -262,6 +295,8 @@ function App() {
       () => {
         setNavigated(true);
         setPage(next);
+        // every navigation replaces it, so it never replays on a later visit
+        setRoutinesIntent(opts?.routinesIntent ?? null);
       },
       () => seq === navSeqRef.current,
     );
@@ -317,51 +352,68 @@ function App() {
     );
   }
 
+  const showWorkoutBar = !!activeWorkout.workout && page !== 'gym/workouts';
+
   return (
-    <div className="min-h-screen bg-page-bg max-md:pt-[calc(max(12px,env(safe-area-inset-top))_+_53px)] max-md:pb-[env(safe-area-inset-bottom)] md:p-3.5">
-      <MobileChrome
-        activePage={page}
-        onNavigate={navigate}
-        drawerOpen={drawerOpen}
-        onOpenDrawer={openDrawer}
-        onCloseDrawer={closeDrawer}
-      />
-      {activeWorkout.workout && page !== 'gym/workouts' && (
-        <ActiveWorkoutBar
-          workout={activeWorkout.workout}
-          onOpen={() => navigate('gym/workouts')}
-        />
-      )}
-      <div className="flex items-start md:gap-3.5">
-        <Sidebar
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((c) => !c)}
-          activePage={page}
-          onNavigate={navigate}
-          themePref={themePref}
-          onThemePref={setThemePref}
-        />
-        <div className="min-w-0 flex-1 md:min-h-[calc(100vh-28px)] md:rounded-2xl md:border md:border-border md:bg-card md:shadow-[0_8px_24px_rgba(8,12,20,.06)]">
-          {/* the only element captured by the section view transition —
-              chrome (sidebar, app bar, drawer) stays live, see index.css */}
-          <div
-            key={page}
-            data-vt-page
-            className={navigated && !supportsViewTransitions ? 'page-enter' : undefined}
-          >
-            <Suspense fallback={<div className="min-h-[calc(100vh-28px)]" />}>
-              <PageContent
-                page={page}
-                themePref={themePref}
-                onThemePref={setThemePref}
-                activeWorkout={activeWorkout}
-                onOpenDrawer={openDrawer}
-              />
-            </Suspense>
+    <ChromeBumpContext.Provider value={bumpChrome}>
+      <div
+        className={cn(
+          'min-h-screen bg-page-bg max-md:pt-[env(safe-area-inset-top)] md:p-3.5',
+          // mobile: clear the floating tab bar (+ the workout bar above it)
+          chromeHidden
+            ? 'max-md:pb-[env(safe-area-inset-bottom)]'
+            : showWorkoutBar
+              ? 'max-md:pb-[calc(max(20px,env(safe-area-inset-bottom)+8px)+150px)]'
+              : 'max-md:pb-[calc(max(20px,env(safe-area-inset-bottom)+8px)+86px)]',
+        )}
+      >
+        {!chromeHidden && (
+          <MobileTabBar activePage={page} onNavigate={navigate} />
+        )}
+        {showWorkoutBar && activeWorkout.workout && (
+          <ActiveWorkoutBar
+            workout={activeWorkout.workout}
+            aboveTabBar={!chromeHidden}
+            onOpen={() => navigate('gym/workouts')}
+          />
+        )}
+        <div className="flex items-start md:gap-3.5">
+          <Sidebar
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed((c) => !c)}
+            activePage={page}
+            onNavigate={navigate}
+            themePref={themePref}
+            onThemePref={setThemePref}
+          />
+          <div className="min-w-0 flex-1 md:min-h-[calc(100vh-28px)] md:rounded-2xl md:border md:border-border md:bg-card md:shadow-[0_8px_24px_rgba(8,12,20,.06)]">
+            {!chromeHidden && (
+              <MobileHeader activePage={page} onNavigate={navigate} />
+            )}
+            {/* the only element captured by the section view transition —
+              chrome (sidebar, mobile header, tab bar) stays live, see index.css */}
+            <div
+              key={page}
+              data-vt-page
+              className={
+                navigated && !supportsViewTransitions ? 'page-enter' : undefined
+              }
+            >
+              <Suspense fallback={<div className="min-h-[calc(100vh-28px)]" />}>
+                <PageContent
+                  page={page}
+                  themePref={themePref}
+                  onThemePref={setThemePref}
+                  activeWorkout={activeWorkout}
+                  routinesIntent={routinesIntent}
+                  onNavigate={navigate}
+                />
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ChromeBumpContext.Provider>
   );
 }
 

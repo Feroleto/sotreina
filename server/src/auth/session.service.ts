@@ -43,8 +43,15 @@ export class SessionService {
     };
   }
 
+  // same JWT for both transports: the cookie (web) and the Bearer header
+  // (native iOS app, see POST /auth/token) — so tokenVersion invalidation
+  // and logout behave identically for both
+  signToken(userId: string, tokenVersion: number): string {
+    return this.jwt.sign({ sub: userId, tv: tokenVersion });
+  }
+
   setCookie(res: Response, userId: string, tokenVersion: number): void {
-    const token = this.jwt.sign({ sub: userId, tv: tokenVersion });
+    const token = this.signToken(userId, tokenVersion);
     res.cookie(COOKIE_NAME, token, {
       ...this.cookieOptions,
       maxAge: SESSION_MAX_AGE_MS,
@@ -77,8 +84,13 @@ export class SessionService {
     return state ?? null;
   }
 
+  // An Authorization header, when present, wins outright over the cookie —
+  // a bad Bearer token is a failed session, never a fallback to whatever
+  // cookie happens to ride along. A Bearer is never attached automatically
+  // by a browser, so accepting it adds no CSRF surface
   extractSession(req: Request): { userId: string; tokenVersion: number } | null {
-    const token = req.cookies?.[COOKIE_NAME];
+    const header = req.headers?.authorization;
+    const token = header !== undefined ? parseBearer(header) : req.cookies?.[COOKIE_NAME];
     if (!token) return null;
 
     try {
@@ -88,4 +100,9 @@ export class SessionService {
       return null;
     }
   }
+}
+
+function parseBearer(header: string): string | null {
+  const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+  return match ? match[1] : null;
 }

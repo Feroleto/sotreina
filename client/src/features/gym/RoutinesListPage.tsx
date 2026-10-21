@@ -15,12 +15,15 @@ interface RoutinesListPageProps {
   onCreateNew: () => void;
   onEdit: (templateId: string) => void;
   onStartWorkout: (templateId: string) => void;
+  /** open this routine's detail as soon as the list has it (from Treino overview) */
+  initialTemplateId?: string | null;
 }
 
 export default function RoutinesListPage({
   onCreateNew,
   onEdit,
   onStartWorkout,
+  initialTemplateId = null,
 }: RoutinesListPageProps) {
   const { t } = useTranslation('gym');
   const { templates, loading, error, remove } = useWorkoutTemplates();
@@ -31,10 +34,25 @@ export default function RoutinesListPage({
   // onClick below) — holds the already-fetched summary so the detail screen
   // doesn't need to refetch the list just for the chips/meta line
   const [viewingTemplate, setViewingTemplate] = useState<TemplateSummary | null>(null);
+  // adjusted during render (not in an effect) once the list arrives — same
+  // "derive from props" pattern DrillStack uses for its depth tracking
+  const [pendingOpenId, setPendingOpenId] = useState(initialTemplateId);
+  if (pendingOpenId && !loading) {
+    setPendingOpenId(null);
+    const found = templates.find((tpl) => tpl.id === pendingOpenId);
+    if (found) setViewingTemplate(found);
+  }
+
+  // while the list loads, the stack already sits on that routine's screen
+  // (same key, empty body) so the detail appears in place instead of
+  // pushing over a half-loaded list
+  const openId = viewingTemplate?.id ?? pendingOpenId;
 
   return (
-    <DrillStack depth={viewingTemplate ? 1 : 0} viewKey={viewingTemplate ? `routine:${viewingTemplate.id}` : 'list'}>
-      {viewingTemplate ? (
+    <DrillStack depth={openId ? 1 : 0} viewKey={openId ? `routine:${openId}` : 'list'}>
+      {!viewingTemplate && pendingOpenId ? (
+        <div className="min-h-[60vh]" />
+      ) : viewingTemplate ? (
         <RoutineDetailPage
           template={viewingTemplate}
           onStart={() => onStartWorkout(viewingTemplate.id)}

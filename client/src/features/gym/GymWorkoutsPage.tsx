@@ -5,14 +5,22 @@ import RoutinesListPage from './RoutinesListPage';
 import RoutineEditPage from './RoutineEditPage';
 import WorkoutSession from './WorkoutSession';
 import WorkoutSummaryPage from './WorkoutSummaryPage';
+import { useHideMobileChrome } from '@/features/nav/chromeVisibility';
 
 type View = 'list' | 'edit';
+
+/** what the Treino overview asked this page to open when navigating here */
+export type RoutinesIntent = { kind: 'open'; templateId: string } | { kind: 'new' };
 
 interface GymWorkoutsPageProps {
   // owned by App.tsx (not this page) so the active session survives
   // navigating away from Academia — see ActiveWorkoutBar
   activeWorkout: ReturnType<typeof useActiveWorkout>;
-  onOpenDrawer: () => void;
+  /** leave the live session for another page (ActiveWorkoutBar brings it back) */
+  onMinimizeWorkout: () => void;
+  /** read once, on mount — the page is keyed per navigation, so a stale
+      intent can't replay on a later visit */
+  intent: RoutinesIntent | null;
 }
 
 // "Rotinas" nav tab — the routines browser (RoutinesListPage), with routine
@@ -23,7 +31,8 @@ interface GymWorkoutsPageProps {
 // ignoring templateId, so a refresh mid-workout never spawns a second one)
 export default function GymWorkoutsPage({
   activeWorkout,
-  onOpenDrawer,
+  onMinimizeWorkout,
+  intent,
 }: GymWorkoutsPageProps) {
   const { t } = useTranslation('gym');
   const {
@@ -45,8 +54,11 @@ export default function GymWorkoutsPage({
     lastFinished,
     dismissSummary,
   } = activeWorkout;
-  const [view, setView] = useState<View>('list');
+  const [view, setView] = useState<View>(() => (intent?.kind === 'new' ? 'edit' : 'list'));
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  // live session, its summary and the routine editor are full-screen flows
+  // with their own fixed bottom bar — the mobile tab bar would cover it
+  useHideMobileChrome(!loading && (!!workout || !!lastFinished || view === 'edit'));
 
   if (loading) {
     return (
@@ -78,7 +90,7 @@ export default function GymWorkoutsPage({
         onCheckTemplateDrift={checkTemplateDrift}
         onFinish={finish}
         onDiscard={discard}
-        onOpenDrawer={onOpenDrawer}
+        onMinimize={onMinimizeWorkout}
       />
     );
   }
@@ -95,6 +107,7 @@ export default function GymWorkoutsPage({
 
   return (
     <RoutinesListPage
+      initialTemplateId={intent?.kind === 'open' ? intent.templateId : null}
       onCreateNew={() => {
         setEditingTemplateId(null);
         setView('edit');

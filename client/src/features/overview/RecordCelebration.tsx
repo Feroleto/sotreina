@@ -29,7 +29,12 @@ function Celebration({ children }: { children: ReactNode }) {
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 1.1, times: [0, 0.25, 1], ease: 'easeOut', delay: DELAY }}
+          transition={{
+            duration: 1.1,
+            times: [0, 0.25, 1],
+            ease: 'easeOut',
+            delay: DELAY,
+          }}
         />
       )}
     </m.div>
@@ -37,7 +42,11 @@ function Celebration({ children }: { children: ReactNode }) {
 }
 
 /** wraps a record's distance chip: pops in with a brief glow, once */
-export default function RecordCelebration({ children }: { children: ReactNode }) {
+export default function RecordCelebration({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <MotionProvider>
       <Celebration>{children}</Celebration>

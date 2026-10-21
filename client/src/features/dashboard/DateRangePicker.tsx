@@ -287,7 +287,7 @@ export default function DateRangePicker({
                 onMouseEnter={() => setHoverDate(ts)}
                 className={`flex h-10 cursor-pointer items-center justify-center text-[13px] md:h-[27px] md:text-[12px] ${
                   isEdge
-                    ? 'rounded-[8px] font-semibold text-white'
+                    ? 'rounded-[8px] font-semibold text-acc-fg'
                     : inMid
                       ? 'text-foreground'
                       : outOfMax

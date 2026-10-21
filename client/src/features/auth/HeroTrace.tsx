@@ -87,7 +87,7 @@ export default function HeroTrace() {
           stroke="var(--acc)"
           strokeWidth="1.5"
         />
-        <circle r="5" fill="#EDF1F7" />
+        <circle r="5" fill="#F3F2EF" />
         <circle r="2.5" fill="var(--acc)" />
       </g>
     </svg>

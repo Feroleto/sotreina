@@ -18,7 +18,10 @@ export function topRecordIdentities(records: PersonalBestRecord[]): PrSnapshot {
  * snapshot (first visit, new device) means nothing to compare against —
  * celebrating every existing record there would be noise, so it's empty.
  */
-export function newRecordKeys(previous: PrSnapshot | null, next: PrSnapshot): string[] {
+export function newRecordKeys(
+  previous: PrSnapshot | null,
+  next: PrSnapshot,
+): string[] {
   if (previous == null) return [];
   return Object.keys(next).filter((k) => next[k] !== previous[k]);
 }

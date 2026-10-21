@@ -67,8 +67,8 @@ function ActivityListBody({
           className="enter-rise mb-[26px]"
           style={{ '--i': wi } as CSSProperties}
         >
-          <div className="flex items-baseline justify-between border-b border-grid-ax pb-[9px]">
-            <div className="text-xs font-semibold tracking-[.04em] uppercase text-muted-foreground">
+          <div className="flex items-baseline justify-between border-b border-border pb-[9px] md:border-grid-ax">
+            <div className="font-mono text-[11.5px] text-muted-foreground md:font-sans md:text-xs md:font-semibold md:tracking-[.04em] md:uppercase">
               {formatDayMonth(week.start)} –{' '}
               {formatDayMonth(
                 new Date(
@@ -97,24 +97,21 @@ function ActivityListBody({
                     className="flex min-w-0 flex-1 cursor-pointer items-center gap-[13px] px-0.5 py-[13px]"
                   >
                     <div
-                      className="h-2 w-2 flex-none rounded-full md:h-[7px] md:w-[7px]"
+                      className="hidden h-[7px] w-[7px] flex-none rounded-full md:block"
                       style={{ background: meta?.dot }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-semibold text-foreground">
+                      <div className="truncate text-[14.5px] font-medium text-foreground md:text-sm md:font-semibold">
                         {a.name}
                         <span className="hidden font-normal text-muted-foreground md:inline">
                           {' '}
                           · {formatDayMonth(new Date(a.startDate))}
                         </span>
                       </div>
-                      {/* mobile meta line: date · km · time */}
-                      <div className="mt-[1px] text-[11.5px] text-muted-foreground md:hidden">
+                      {/* mobile meta line: date · time (distance/pace sit right) */}
+                      <div className="mt-0.5 text-[12px] text-muted-foreground md:hidden">
                         {formatDayMonth(new Date(a.startDate))} ·{' '}
-                        {a.distanceKm != null
-                          ? `${formatKm(a.distanceKm)} km`
-                          : '—'}{' '}
-                        · {formatDurationShort(a.movingTimeSec)}
+                        {formatDurationShort(a.movingTimeSec)}
                       </div>
                     </div>
                     <div className="hidden w-[72px] text-right text-[13.5px] text-muted-foreground md:block">
@@ -125,15 +122,20 @@ function ActivityListBody({
                     <div className="hidden w-16 text-right text-[13.5px] text-muted-foreground md:block">
                       {formatDurationShort(a.movingTimeSec)}
                     </div>
-                    <div className="text-right text-sm font-semibold text-foreground md:w-[84px]">
+                    <div className="hidden text-right text-sm font-semibold text-foreground md:block md:w-[84px]">
                       {formatPace(a.paceRawSecKm)}
                     </div>
-                    <span
-                      aria-hidden="true"
-                      className="text-[15px] text-muted-foreground md:hidden"
-                    >
-                      ›
-                    </span>
+                    {/* mobile: distance over pace, both in mono (17b) */}
+                    <div className="flex-none text-right font-mono md:hidden">
+                      <div className="text-[14.5px] font-medium text-foreground">
+                        {a.distanceKm != null
+                          ? `${formatKm(a.distanceKm)} km`
+                          : '—'}
+                      </div>
+                      <div className="mt-0.5 text-[12px] text-muted-foreground">
+                        {formatPace(a.paceRawSecKm)}
+                      </div>
+                    </div>
                   </div>
                   <button
                     onClick={(e) => {
@@ -195,7 +197,7 @@ function ActivityListBody({
       {olderWeeks > 0 && (
         <button
           onClick={onLoadMore}
-          className="w-full cursor-pointer rounded-[10px] bg-chip py-3 text-[13px] font-medium text-foreground md:hidden"
+          className="min-h-[44px] w-full cursor-pointer border-b border-border py-3 text-[13px] font-medium text-muted-foreground md:hidden"
         >
           {t('list.olderWeeks', { count: olderWeeks })}
         </button>
@@ -241,7 +243,10 @@ function ActivityListSkeleton() {
             <Skeleton className="h-[11px] w-[80px]" />
           </div>
           {Array.from({ length: rows }, (_, i) => (
-            <div key={i} className="flex items-center gap-[13px] border-b border-border px-0.5 py-[15px]">
+            <div
+              key={i}
+              className="flex items-center gap-[13px] border-b border-border px-0.5 py-[15px]"
+            >
               <Skeleton className="h-2 w-2 flex-none rounded-full" />
               <div className="flex-1">
                 <Skeleton className="h-[13px] w-[45%]" />

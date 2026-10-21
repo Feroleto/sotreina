@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Menu, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import type { ExerciseListItem, SetInput, WorkoutDetail } from '@/lib/types';
 import ExercisePicker from './ExercisePicker';
 import RoutineExercisePicker from './RoutineExercisePicker';
@@ -23,10 +23,10 @@ interface WorkoutSessionProps {
   onCheckTemplateDrift: () => Promise<boolean>;
   onFinish: (syncTemplate: boolean) => void;
   onDiscard: () => void;
-  // opens the normal nav drawer (MobileChrome's) without touching the
-  // running session underneath — lets the user leave this screen through
-  // any navigation path instead of only finish/discard
-  onOpenDrawer: () => void;
+  // leaves this screen (mobile, where it hides the tab bar) without touching
+  // the running session underneath — ActiveWorkoutBar brings the user back,
+  // so finish/discard aren't the only ways out
+  onMinimize: () => void;
 }
 
 function formatElapsed(totalSec: number): string {
@@ -59,7 +59,7 @@ export default function WorkoutSession({
   onCheckTemplateDrift,
   onFinish,
   onDiscard,
-  onOpenDrawer,
+  onMinimize,
 }: WorkoutSessionProps) {
   const { t } = useTranslation('gym');
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -200,11 +200,11 @@ export default function WorkoutSession({
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
-            onClick={onOpenDrawer}
-            aria-label={t('session.openMenu')}
+            onClick={onMinimize}
+            aria-label={t('session.minimize')}
             className="flex h-9 w-9 flex-none cursor-pointer items-center justify-center rounded-[10px] text-foreground hover:bg-chip active:bg-chip md:hidden"
           >
-            <Menu className="h-5 w-5" strokeWidth={1.8} />
+            <ChevronDown className="h-5 w-5" strokeWidth={1.8} />
           </button>
           <h1 className="flex-1 truncate text-[16px] font-semibold text-foreground">
             {workout.templateName ?? t('session.title')}
@@ -296,7 +296,7 @@ export default function WorkoutSession({
                   onFinish(true);
                 }}
                 disabled={busy}
-                className="press flex-1 cursor-pointer rounded-[8px] bg-acc px-2.5 py-1.5 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="press flex-1 cursor-pointer rounded-[8px] bg-acc px-2.5 py-1.5 text-[12.5px] font-semibold text-acc-fg disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t('session.syncTemplateUpdate')}
               </button>
@@ -329,7 +329,7 @@ export default function WorkoutSession({
               type="button"
               onClick={handleFinishClick}
               disabled={busy || finishStep === 'checking'}
-              className="press min-h-[56px] flex-[2] cursor-pointer rounded-[14px] bg-acc px-6 text-[16px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="press min-h-[56px] flex-[2] cursor-pointer rounded-[14px] bg-acc px-6 text-[16px] font-semibold text-acc-fg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('session.finish')}
             </button>

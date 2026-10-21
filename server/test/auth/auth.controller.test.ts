@@ -17,6 +17,7 @@ describe('AuthController', () => {
     extractSession: ReturnType<typeof vi.fn>;
     clearCookie: ReturnType<typeof vi.fn>;
     setCookie: ReturnType<typeof vi.fn>;
+    signToken: ReturnType<typeof vi.fn>;
   };
   let authService: {
     authenticate: ReturnType<typeof vi.fn>;
@@ -33,6 +34,7 @@ describe('AuthController', () => {
       extractSession: vi.fn(),
       clearCookie: vi.fn(),
       setCookie: vi.fn(),
+      signToken: vi.fn().mockReturnValue('signed-jwt'),
     };
     authService = {
       authenticate: vi.fn(),
@@ -182,6 +184,39 @@ describe('AuthController', () => {
         controller.login({ email: 'test@example.com', password: 'wrong' }, res),
       ).rejects.toThrow(UnauthorizedException);
       expect(session.setCookie).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('token', () => {
+    it('returns the signed JWT plus the MeResponse in the body, without setting a cookie', async () => {
+      authService.login.mockResolvedValue({ userId: USER_ID, tokenVersion: 2 });
+      authService.authenticate.mockResolvedValue({ id: USER_ID, hasPassword: true });
+
+      const result = await controller.token({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+
+      expect(session.signToken).toHaveBeenCalledWith(USER_ID, 2);
+      expect(session.setCookie).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        token: 'signed-jwt',
+        user: { id: USER_ID, hasPassword: true },
+      });
+    });
+
+    it('throws UnauthorizedException on bad credentials, signing nothing', async () => {
+      authService.login.mockResolvedValue(null);
+
+      await expect(
+        controller.token({ email: 'test@example.com', password: 'wrong' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(session.signToken).not.toHaveBeenCalled();
+    });
+
+    it('rejects a malformed body before touching the auth service', async () => {
+      await expect(controller.token({ email: 'nope' })).rejects.toThrow(BadRequestException);
+      expect(authService.login).not.toHaveBeenCalled();
     });
   });
 

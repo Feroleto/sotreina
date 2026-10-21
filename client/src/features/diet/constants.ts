@@ -5,14 +5,6 @@ import type { MealType } from '@/lib/types';
 // out. Order here is just the order the picker lists them in.
 export const MEAL_TYPES: MealType[] = ['BREAKFAST', 'LUNCH', 'SNACK', 'DINNER', 'SUPPER'];
 
-// no --protein/--carbs/--fat tokens exist in index.css — these are the
-// literal fallback hex values from the design spec
-export const MACRO_COLORS = {
-  protein: '#C9634B',
-  carbs: '#D9A23D',
-  fat: '#7C6FC4',
-} as const;
-
 // fallback portion for foods with no known household measure
 export const DEFAULT_PORTION_G = 100;
 

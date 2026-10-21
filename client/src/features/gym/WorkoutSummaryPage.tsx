@@ -99,7 +99,7 @@ function RecordCard({
         initial={celebrate && !reduce ? { opacity: 0, scale: 0.6 } : false}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ ...SPRING_CELEBRATE, delay: delay + 0.15 }}
-        className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-acc text-[11px] font-bold text-white"
+        className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-acc text-[11px] font-bold text-acc-fg"
       >
         {t('summary.prBadge')}
       </m.span>
@@ -209,7 +209,7 @@ function Summary({ workout, onDone }: { workout: FinishedWorkout; onDone: () => 
       <button
         type="button"
         onClick={onDone}
-        className="press mt-8 w-full rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white"
+        className="press mt-8 w-full rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg"
       >
         {t('summary.done')}
       </button>

@@ -115,19 +115,55 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-/** app-bar title (mobile) per page — keys live in the 'nav' namespace */
-export const MOBILE_TITLE_KEYS: Record<PageId, string> = {
-  overview: 'sections.overview',
-  'run/overview': 'sections.overview',
-  'run/activities': 'sections.runActivities',
-  'run/analysis': 'sections.runAnalysis',
-  'gym/overview': 'sections.gymOverview',
-  'gym/workouts': 'sections.gymWorkouts',
-  'gym/history': 'sections.gymHistory',
-  'diet/overview': 'sections.dietOverview',
-  'diet/history': 'sections.dietHistory',
-  profile: 'profile.title',
-};
+export type MobileTabId = 'overview' | 'run' | 'gym' | 'diet';
+
+export interface MobileTab {
+  id: MobileTabId;
+  /** 'nav' namespace — the mobile tab bar uses its own short names */
+  labelKey: string;
+  /** landing page when the tab is tapped */
+  page: PageId;
+  /** 24×24 stroke path (Redesign Corrida 17b), drawn with currentColor */
+  icon: string;
+}
+
+/** mobile (< md) floating tab bar — one tab per area, sub-pages live in the
+    header's text tabs (see MobileChrome) */
+export const MOBILE_TABS: MobileTab[] = [
+  {
+    id: 'overview',
+    labelKey: 'tabs.today',
+    page: 'overview',
+    icon: 'M4 11l8-6 8 6v8a1 1 0 01-1 1h-4v-5h-6v5H5a1 1 0 01-1-1z',
+  },
+  {
+    id: 'run',
+    labelKey: 'tabs.run',
+    page: 'run/activities',
+    icon: 'M3 12h4l2-5 4 10 2-5h6',
+  },
+  {
+    id: 'gym',
+    labelKey: 'tabs.gym',
+    page: 'gym/overview',
+    icon: 'M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12',
+  },
+  {
+    id: 'diet',
+    labelKey: 'tabs.diet',
+    page: 'diet/overview',
+    icon: 'M12 4.5a7.5 7.5 0 110 15 7.5 7.5 0 010-15zM12 8v4l2.5 2',
+  },
+];
+
+/** the sub-pages shown as header tabs for a mobile tab (none for Hoje) */
+export function mobileSubPages(tab: MobileTabId): NavSubItem[] {
+  for (const section of NAV_SECTIONS) {
+    const item = section.items.find((i) => i.id === tab);
+    if (item) return item.subs ?? [];
+  }
+  return [];
+}
 
 /** id of the section-parent whose subs should be revealed, given the active page */
 export function activeParentId(page: PageId): string | null {

@@ -199,25 +199,25 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
           fills the space above the bottom sheet (top padding tracks the
           real status bar / notch via env(safe-area-inset-top), plus a
           small fixed cushion, instead of a flat guess) */}
-      <div className="flex min-w-0 flex-1 flex-col bg-[#0B0F17] px-[26px] pt-[calc(env(safe-area-inset-top)+20px)] md:flex-[1.25] md:px-[44px] md:pt-[36px]">
+      <div className="flex min-w-0 flex-1 flex-col bg-[#0B0B0C] px-[26px] pt-[calc(env(safe-area-inset-top)+20px)] md:flex-[1.25] md:px-[44px] md:pt-[36px]">
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-white">
+          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
             ST
           </div>
-          <span className="text-[14px] font-semibold text-[#EDF1F7]">
+          <span className="text-[14px] font-semibold text-[#F3F2EF]">
             SoTreina
           </span>
         </div>
 
         <div className="mt-4 py-8 md:my-auto md:py-10">
-          <h1 className="text-[33px] leading-[1.18] font-bold tracking-[-.025em] text-[#EDF1F7] md:text-[40px] md:leading-[1.16]">
+          <h1 className="text-[33px] leading-[1.18] font-bold tracking-[-.025em] text-[#F3F2EF] md:text-[40px] md:leading-[1.16]">
             <Trans
               t={t}
               i18nKey="login.headline"
               components={{ br: <br />, acc: <span className="text-acc" /> }}
             />
           </h1>
-          <p className="mt-3.5 text-[14px] leading-[1.5] text-[#8A93A5] md:mt-4 md:text-[14.5px]">
+          <p className="mt-3.5 text-[14px] leading-[1.5] text-[#93928E] md:mt-4 md:text-[14.5px]">
             {t('login.subheadline')}
           </p>
         </div>
@@ -228,9 +228,9 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
       {/* Sign-in — mobile: bottom sheet anchored under the hero; desktop:
           right panel. Follows the app theme either way.
           Desktop seam treatment against the always-dark hero (md+ only):
-          dark matches its #0B0F17 + hairline border; light keeps bg-card with
+          dark matches its #0B0B0C + hairline border; light keeps bg-card with
           an inset shadow as if the dark panel cast it */}
-      <div className="relative flex min-h-[54dvh] w-full flex-none flex-col rounded-t-[26px] bg-card px-[26px] pt-[28px] pb-[max(18px,env(safe-area-inset-bottom))] text-center dark:border-t dark:border-white/[.09] dark:bg-[#0F1522] md:min-h-0 md:w-[480px] md:justify-center md:rounded-none md:px-[52px] md:py-[48px] md:text-left md:shadow-[inset_20px_0_30px_-22px_rgba(8,12,20,.42)] md:dark:border-t-0 md:dark:border-l md:dark:border-white/[.09] md:dark:bg-[#0B0F17] md:dark:shadow-none">
+      <div className="relative flex min-h-[54dvh] w-full flex-none flex-col rounded-t-[26px] bg-card px-[26px] pt-[28px] pb-[max(18px,env(safe-area-inset-bottom))] text-center dark:border-t dark:border-white/[.09] dark:bg-[#161618] md:min-h-0 md:w-[480px] md:justify-center md:rounded-none md:px-[52px] md:py-[48px] md:text-left md:shadow-[inset_20px_0_30px_-22px_rgba(8,12,20,.42)] md:dark:border-t-0 md:dark:border-l md:dark:border-white/[.09] md:dark:bg-[#0B0B0C] md:dark:shadow-none">
         <div className="absolute right-[26px] top-[26px] hidden items-center gap-2 md:flex">
           <SegmentedControl
             size="compact"
@@ -364,7 +364,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
+                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
               >
                 {submitting ? (
                   <>
@@ -409,7 +409,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               <button
                 type="submit"
                 disabled={forgotSubmitting}
-                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-white disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
+                className="press mt-1 flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-acc py-[13px] text-[14.5px] font-semibold text-acc-fg disabled:cursor-default disabled:opacity-80 md:rounded-[11px]"
               >
                 {forgotSubmitting ? (
                   <>

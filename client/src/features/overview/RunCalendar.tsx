@@ -43,7 +43,10 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
   const { t } = useTranslation('overview');
   // training days fade in week by week, once per session; month navigation
   // afterwards is instant
-  const { attach: enterRef, state: enterState } = useEntrance('run/overview:calendar', { ready: activities.length > 0 });
+  const { attach: enterRef, state: enterState } = useEntrance(
+    'run/overview:calendar',
+    { ready: activities.length > 0 },
+  );
   const weekdays = t('calendar.weekdaysMin', {
     returnObjects: true,
   }) as string[];
@@ -136,7 +139,11 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
       });
 
   return (
-    <div ref={enterRef} data-enter={enterState} className="rounded-[12px] border border-border bg-card p-[18px]">
+    <div
+      ref={enterRef}
+      data-enter={enterState}
+      className="rounded-[12px] border border-border bg-card p-[18px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0"
+    >
       <div className="flex items-center justify-between">
         <div className="text-[13.5px] font-semibold text-foreground">
           {monthLabel}
@@ -208,7 +215,7 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-[13px] md:h-[30px] md:w-[30px] md:text-[12.5px] ${
                   hasActivity
-                    ? 'enter-fade bg-acc font-semibold text-white'
+                    ? 'enter-fade bg-acc font-semibold text-acc-fg'
                     : isToday
                       ? 'border-[1.5px] border-acc text-foreground'
                       : isFuture

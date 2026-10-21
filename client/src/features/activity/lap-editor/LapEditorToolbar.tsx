@@ -71,7 +71,7 @@ export default function LapEditorToolbar({
           onClick={() => toggle('lap')}
           className={`cursor-pointer rounded-[8px] px-3 py-1.5 text-[12.5px] font-medium ${
             openForm === 'lap'
-              ? 'bg-acc text-white'
+              ? 'bg-acc text-acc-fg'
               : 'bg-chip text-foreground hover:bg-grid-ax'
           }`}
         >
@@ -82,7 +82,7 @@ export default function LapEditorToolbar({
           onClick={() => toggle('reps')}
           className={`cursor-pointer rounded-[8px] px-3 py-1.5 text-[12.5px] font-medium ${
             openForm === 'reps'
-              ? 'bg-acc text-white'
+              ? 'bg-acc text-acc-fg'
               : 'bg-chip text-foreground hover:bg-grid-ax'
           }`}
         >
@@ -117,7 +117,7 @@ export default function LapEditorToolbar({
           <button
             type="button"
             onClick={submitLap}
-            className="press ml-auto cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
+            className="press ml-auto cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-acc-fg"
           >
             {t('laps.confirm')}
           </button>
@@ -174,7 +174,7 @@ export default function LapEditorToolbar({
             <button
               type="button"
               onClick={submitReps}
-              className="press cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-white"
+              className="press cursor-pointer rounded-[8px] bg-acc px-3 py-1 text-[12px] font-medium text-acc-fg"
             >
               {t('laps.confirm')}
             </button>

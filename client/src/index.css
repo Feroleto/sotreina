@@ -2,12 +2,15 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
+  /* numbers (KPIs, distances, paces) — Monolito redesign */
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -51,6 +54,8 @@
   --color-grid-ax: var(--grid-ax);
   --color-acc: var(--acc);
   --color-acc-tx: var(--acc-tx);
+  --color-acc-fg: var(--acc-fg);
+  --color-bar: var(--bar);
   --color-acc-bg: var(--acc-bg);
   --color-pos: var(--pos);
   --color-pos-bg: var(--pos-bg);
@@ -71,38 +76,44 @@
   --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --motion-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --acc: #3987e5;
-  --page-bg: #e9ecf0;
-  --background: #f5f6f8;
-  --foreground: #131a26;
+  /* "Monolito" palette (Redesign Corrida 17b): warm neutrals + mustard
+     accent, used only on progress, charts, active state and the primary
+     button. Text on a filled accent is always --acc-fg (dark), never white */
+  --acc: #d9a441;
+  --acc-fg: #141414;
+  --page-bg: #f4f3f0;
+  --background: #f4f3f0;
+  --foreground: #151515;
   --card: #ffffff;
-  --card-foreground: #131a26;
+  --card-foreground: #151515;
   --popover: #ffffff;
-  --popover-foreground: #131a26;
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: #69727f;
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: #151515;
+  --primary: #151515;
+  --primary-foreground: #f4f3f0;
+  --secondary: #e7e5e0;
+  --secondary-foreground: #151515;
+  --muted: #e7e5e0;
+  --muted-foreground: #68665f;
+  --accent: #e7e5e0;
+  --accent-foreground: #151515;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(15, 23, 42, 0.08);
-  --input: rgba(15, 23, 42, 0.16);
-  --ring: oklch(0.704 0.04 256.788);
-  --grid-ax: rgba(15, 23, 42, 0.16);
-  --chip: rgba(15, 23, 42, 0.05);
-  --acc-tx: color-mix(in oklab, var(--acc) 85%, black);
-  --acc-bg: color-mix(in oklab, var(--acc) 12%, transparent);
-  --pos: #1f8a5b;
-  --pos-bg: rgba(31, 138, 91, 0.1);
-  --neg: #c4473a;
-  --neutral: #5b6472;
-  --neutral-bg: rgba(15, 23, 42, 0.06);
-  --dot-easy: #9aa3b0;
+  --border: #e2dfd9;
+  --input: rgba(21, 21, 21, 0.18);
+  --ring: #a8a59e;
+  --grid-ax: #d6d3cc;
+  --chip: #e7e5e0;
+  --bar: #d6d3cc;
+  /* mustard is too light to read as text on the light background — darken */
+  --acc-tx: color-mix(in oklab, var(--acc) 58%, black);
+  --acc-bg: color-mix(in oklab, var(--acc) 16%, transparent);
+  --pos: #2f7d55;
+  --pos-bg: rgba(47, 125, 85, 0.1);
+  --neg: #b8431f;
+  --neutral: #68665f;
+  --neutral-bg: rgba(21, 21, 21, 0.06);
+  --dot-easy: #a8a59e;
   --seg-active: #ffffff;
-  --seg-shadow: 0 1px 2.5px rgba(15, 23, 42, 0.14);
+  --seg-shadow: 0 1px 2.5px rgba(21, 21, 21, 0.14);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -119,36 +130,37 @@
 }
 
 .dark {
-  --page-bg: #0b0f17;
-  --background: #0b0f17;
-  --foreground: #edf1f7;
-  --card: #121826;
-  --card-foreground: #edf1f7;
-  --popover: #121826;
-  --popover-foreground: #edf1f7;
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: #8a93a5;
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  --page-bg: #0b0b0c;
+  --background: #0b0b0c;
+  --foreground: #f3f2ef;
+  --card: #161618;
+  --card-foreground: #f3f2ef;
+  --popover: #161618;
+  --popover-foreground: #f3f2ef;
+  --primary: #f3f2ef;
+  --primary-foreground: #0b0b0c;
+  --secondary: #222225;
+  --secondary-foreground: #f3f2ef;
+  --muted: #222225;
+  --muted-foreground: #93928e;
+  --accent: #222225;
+  --accent-foreground: #f3f2ef;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: rgba(255, 255, 255, 0.07);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: oklch(0.551 0.027 264.364);
-  --grid-ax: rgba(255, 255, 255, 0.16);
-  --chip: rgba(255, 255, 255, 0.06);
-  --acc-tx: color-mix(in oklab, var(--acc) 62%, white);
-  --acc-bg: color-mix(in oklab, var(--acc) 20%, transparent);
-  --pos: #4cc38a;
-  --pos-bg: rgba(76, 195, 138, 0.14);
-  --neg: #e5766b;
-  --neutral: #8a93a5;
+  --border: #26262a;
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: #5c5b58;
+  --grid-ax: #2e2e33;
+  --chip: #222225;
+  --bar: #2e2e33;
+  --acc-tx: var(--acc);
+  --acc-bg: color-mix(in oklab, var(--acc) 18%, transparent);
+  --pos: #5fbf8a;
+  --pos-bg: rgba(95, 191, 138, 0.14);
+  --neg: #e5765a;
+  --neutral: #93928e;
   --neutral-bg: rgba(255, 255, 255, 0.08);
-  --dot-easy: #5b6472;
-  --seg-active: rgba(255, 255, 255, 0.13);
+  --dot-easy: #5c5b58;
+  --seg-active: rgba(255, 255, 255, 0.12);
   --seg-shadow: none;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
@@ -442,12 +454,6 @@
   animation: fade-in 200ms ease-out backwards;
 }
 
-/* the ring's over-goal color swap is a color change, not motion: kept
-   under reduced motion too (the media block below adds the fill sweep) */
-.ring-fill {
-  transition: stroke 200ms ease;
-}
-
 /* Data entrances (Phase 2 of .plans/animacoes-vida-spec.md). Inert unless an
    ancestor carries data-enter from lib/useEntrance.ts: once per session per
    block, only while that hook's short "run" window lasts — so a period
@@ -456,7 +462,8 @@
    --i on an element = its index, for the stagger (capped so long lists
    don't keep trickling in) */
 @media (prefers-reduced-motion: no-preference) {
-  [data-enter='pending'] :is(.enter-rise, .enter-fade, .chart-fade, .chart-bar) {
+  [data-enter='pending']
+    :is(.enter-rise, .enter-fade, .chart-fade, .chart-bar) {
     opacity: 0;
   }
   [data-enter='pending'] .chart-line {
@@ -487,9 +494,6 @@
     animation: bar-grow 450ms var(--motion-ease-out) backwards;
     animation-delay: calc(min(var(--i, 0), 12) * 30ms);
   }
-  [data-enter='run'] .ring-fill {
-    animation: ring-fill 700ms var(--motion-ease-out) backwards;
-  }
   [data-enter='run'] .macro-fill {
     animation: macro-fill 600ms var(--motion-ease-out) 150ms backwards;
   }
@@ -497,11 +501,6 @@
   /* value changes after the entrance (a food added/removed): transitions
      retarget from wherever the fill is, so a quick second change never
      restarts the way a keyframe would */
-  .ring-fill {
-    transition:
-      stroke-dashoffset 500ms var(--motion-ease-out),
-      stroke 200ms ease;
-  }
   .macro-fill {
     transition: clip-path 500ms var(--motion-ease-out);
   }
@@ -524,12 +523,6 @@
   from {
     opacity: 0;
     transform: scaleY(0.1);
-  }
-}
-/* --ring-empty = the ring's circumference (an empty ring), set inline */
-@keyframes ring-fill {
-  from {
-    stroke-dashoffset: var(--ring-empty);
   }
 }
 @keyframes macro-fill {
