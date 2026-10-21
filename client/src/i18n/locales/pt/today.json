@@ -1,0 +1,57 @@
+{
+  "title": "Hoje",
+  "status": {
+    "run": "Corrida",
+    "gym": "Treino",
+    "diet": "Dieta",
+    "done": "feito",
+    "pending": "pendente",
+    "runDone": "{{km}} km feitos",
+    "gymDone": "{{name}} feito",
+    "gymDoneCount": "{{count}} treino feito",
+    "gymDoneCount_other": "{{count}} treinos feitos",
+    "gymPending": "{{name}} pendente",
+    "gymInProgress": "{{name}} em andamento",
+    "dietProgress": "{{kcal}} / {{goal}}"
+  },
+  "days": {
+    "title": "Últimos 7 dias",
+    "legend": "áreas concluídas",
+    "a11y": "{{day}}: {{count}} de 3 áreas concluídas"
+  },
+  "areas": {
+    "title": "Por área",
+    "editGoals": "Editar metas semanais",
+    "runGoal": "semana · meta {{km}} km",
+    "gymGoal": "semana · meta {{count}} treino",
+    "gymGoal_other": "semana · meta {{count}} treinos",
+    "dietGoal": "hoje · meta {{kcal}} kcal"
+  },
+  "feed": {
+    "title": "Atividade recente",
+    "empty": "Nada registrado ainda. Corridas, treinos e refeições aparecem aqui.",
+    "today": "hoje",
+    "yesterday": "ontem",
+    "daysAgo": "há {{count}} dia",
+    "daysAgo_other": "há {{count}} dias",
+    "minutes": "{{count}} min",
+    "exercises": "{{count}} exercício",
+    "exercises_other": "{{count}} exercícios",
+    "items": "{{count}} item",
+    "items_other": "{{count}} itens"
+  },
+  "goals": {
+    "title": "Metas semanais",
+    "subtitle": "A semana começa na segunda-feira.",
+    "runKm": "Corrida",
+    "runKmUnit": "km por semana",
+    "workouts": "Treino",
+    "workoutsUnit": "treinos por semana",
+    "decrease": "Diminuir",
+    "increase": "Aumentar",
+    "back": "Voltar",
+    "save": "Salvar metas",
+    "saving": "Salvando…",
+    "error": "Não foi possível salvar. Tente novamente."
+  }
+}

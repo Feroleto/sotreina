@@ -33,6 +33,7 @@ const PREFETCH_MAX_AGE_MS = 30_000;
 export const PAGE_IMPORTERS: Partial<
   Record<PageId, () => Promise<{ default: ComponentType<any> }>>
 > = {
+  overview: () => import('@/features/today/TodayPage'),
   'run/activities': () => import('@/features/dashboard/Dashboard'),
   'run/overview': () => import('@/features/overview/RunOverviewPage'),
   'run/analysis': () => import('@/features/analysis/RunAnalysisPage'),

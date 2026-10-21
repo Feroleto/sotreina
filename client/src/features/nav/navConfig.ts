@@ -20,7 +20,7 @@ export type PageId =
   | 'diet/history'
   | 'profile';
 
-export const DEFAULT_PAGE: PageId = 'run/activities';
+export const DEFAULT_PAGE: PageId = 'overview';
 
 /** localStorage key holding the persisted active page */
 export const ACTIVE_PAGE_KEY = 'active-page';

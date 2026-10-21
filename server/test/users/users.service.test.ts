@@ -36,6 +36,8 @@ const FULL_SNAPSHOT = {
   dailyProteinGoal: 150,
   dailyCarbsGoal: 250,
   dailyFatGoal: 65,
+  weeklyRunKmGoal: 20,
+  weeklyWorkoutsGoal: 3,
 };
 
 describe('UsersService', () => {
@@ -107,6 +109,24 @@ describe('UsersService', () => {
         expect.objectContaining({
           where: { id: USER_ID },
           data: { dailyKcalGoal: 2500, dailyProteinGoal: 180 },
+        }),
+      );
+    });
+
+    it('updates the weekly goals and selects them back in the snapshot', async () => {
+      const updated = { ...FULL_SNAPSHOT, weeklyRunKmGoal: 35, weeklyWorkoutsGoal: 4 };
+      mockPrisma.user.update.mockResolvedValueOnce(updated);
+
+      const result = await service.updateMe(USER_ID, {
+        weeklyRunKmGoal: 35,
+        weeklyWorkoutsGoal: 4,
+      });
+
+      expect(result).toEqual(updated);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { weeklyRunKmGoal: 35, weeklyWorkoutsGoal: 4 },
+          select: expect.objectContaining({ weeklyRunKmGoal: true, weeklyWorkoutsGoal: true }),
         }),
       );
     });

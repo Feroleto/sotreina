@@ -7,6 +7,7 @@ import { endOfWeek, nextBin, startOfBin } from '@/features/dashboard/bins';
 import { useWorkoutHistory } from './useWorkoutHistory';
 import { useWorkoutTemplates } from './useWorkoutTemplates';
 import { formatLastPerformed } from './relativeTime';
+import { pickNextRoutine } from './routineFormat';
 import GymCalendar from './GymCalendar';
 import GymPersonalRecordCard from './GymPersonalRecordCard';
 import { useEntrance } from '@/lib/useEntrance';
@@ -20,20 +21,6 @@ function formatShortDuration(sec: number): string {
   const h = Math.floor(sec / 3600);
   const m = Math.round((sec % 3600) / 60);
   return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m}min`;
-}
-
-/**
- * the routine to suggest next: the one performed longest ago, so a split
- * (A → B → C) rotates on its own. Never-performed routines only come up
- * when nothing has been performed yet — otherwise an abandoned routine
- * would sit in the spotlight forever
- */
-function pickNextRoutine(templates: TemplateSummary[]): TemplateSummary | null {
-  const performed = templates.filter((tpl) => tpl.lastPerformedAt != null);
-  if (performed.length === 0) return templates[0] ?? null;
-  return performed.reduce((oldest, tpl) =>
-    tpl.lastPerformedAt! < oldest.lastPerformedAt! ? tpl : oldest,
-  );
 }
 
 function Stat({ label, value, first }: { label: string; value: string; first?: boolean }) {

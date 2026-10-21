@@ -17,6 +17,8 @@ model User {
   dailyProteinGoal    Int                  @default(150) @map("daily_protein_goal")
   dailyCarbsGoal      Int                  @default(250) @map("daily_carbs_goal")
   dailyFatGoal        Int                  @default(65) @map("daily_fat_goal")
+  weeklyRunKmGoal     Int                  @default(20) @map("weekly_run_km_goal")
+  weeklyWorkoutsGoal  Int                  @default(3) @map("weekly_workouts_goal")
   tokenVersion        Int                  @default(0) @map("token_version")
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt

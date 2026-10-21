@@ -10,6 +10,10 @@ const MIN_KCAL_GOAL = 800;
 const MAX_KCAL_GOAL = 6000;
 const MIN_MACRO_GOAL = 0;
 const MAX_MACRO_GOAL = 500;
+const MIN_WEEKLY_RUN_KM_GOAL = 1;
+const MAX_WEEKLY_RUN_KM_GOAL = 300;
+const MIN_WEEKLY_WORKOUTS_GOAL = 1;
+const MAX_WEEKLY_WORKOUTS_GOAL = 14;
 
 function parseOptionalIntInRange(
   field: string,
@@ -61,6 +65,18 @@ export class UsersController {
         body?.dailyFatGoal,
         MIN_MACRO_GOAL,
         MAX_MACRO_GOAL,
+      ),
+      weeklyRunKmGoal: parseOptionalIntInRange(
+        'weeklyRunKmGoal',
+        body?.weeklyRunKmGoal,
+        MIN_WEEKLY_RUN_KM_GOAL,
+        MAX_WEEKLY_RUN_KM_GOAL,
+      ),
+      weeklyWorkoutsGoal: parseOptionalIntInRange(
+        'weeklyWorkoutsGoal',
+        body?.weeklyWorkoutsGoal,
+        MIN_WEEKLY_WORKOUTS_GOAL,
+        MAX_WEEKLY_WORKOUTS_GOAL,
       ),
     };
 

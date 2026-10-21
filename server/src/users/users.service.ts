@@ -9,6 +9,8 @@ export interface MeSnapshot {
   dailyProteinGoal: number;
   dailyCarbsGoal: number;
   dailyFatGoal: number;
+  weeklyRunKmGoal: number;
+  weeklyWorkoutsGoal: number;
 }
 
 const ME_SELECT = {
@@ -17,6 +19,8 @@ const ME_SELECT = {
   dailyProteinGoal: true,
   dailyCarbsGoal: true,
   dailyFatGoal: true,
+  weeklyRunKmGoal: true,
+  weeklyWorkoutsGoal: true,
 };
 
 export interface UpdateMeInput {
@@ -25,6 +29,8 @@ export interface UpdateMeInput {
   dailyProteinGoal?: number;
   dailyCarbsGoal?: number;
   dailyFatGoal?: number;
+  weeklyRunKmGoal?: number;
+  weeklyWorkoutsGoal?: number;
 }
 
 @Injectable()

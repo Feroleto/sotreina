@@ -9,6 +9,7 @@ import analysisEn from './locales/en/analysis.json';
 import gymEn from './locales/en/gym.json';
 import dietEn from './locales/en/diet.json';
 import legalEn from './locales/en/legal.json';
+import todayEn from './locales/en/today.json';
 
 import commonPt from './locales/pt/common.json';
 import authPt from './locales/pt/auth.json';
@@ -21,6 +22,7 @@ import analysisPt from './locales/pt/analysis.json';
 import gymPt from './locales/pt/gym.json';
 import dietPt from './locales/pt/diet.json';
 import legalPt from './locales/pt/legal.json';
+import todayPt from './locales/pt/today.json';
 
 export const resources = {
   en: {
@@ -35,6 +37,7 @@ export const resources = {
     gym: gymEn,
     diet: dietEn,
     legal: legalEn,
+    today: todayEn,
   },
   pt: {
     common: commonPt,
@@ -48,5 +51,6 @@ export const resources = {
     gym: gymPt,
     diet: dietPt,
     legal: legalPt,
+    today: todayPt,
   },
 } as const;

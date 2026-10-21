@@ -381,6 +381,13 @@ export interface NutritionGoal {
   dailyFatGoal: number;
 }
 
+// GET/PATCH /users/me also carries the weekly targets the "Hoje" page
+// measures Corrida and Treino against — same snapshot as NutritionGoal
+export interface WeeklyGoals {
+  weeklyRunKmGoal: number;
+  weeklyWorkoutsGoal: number;
+}
+
 // ---- Saved meals (reusable food+quantity combos, no fixed Meal — see
 // AddMealPage's "Refeições salvas" flow) ----
 

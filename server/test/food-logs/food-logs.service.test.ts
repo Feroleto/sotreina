@@ -154,6 +154,16 @@ describe('FoodLogsService', () => {
       expect(where.loggedAt.gte).toEqual(new Date('2026-07-29T00:00:00.000Z'));
       expect(where.loggedAt.lt).toEqual(new Date('2026-07-30T00:00:00.000Z'));
     });
+
+    it("uses the caller's local midnight when a time zone is given", async () => {
+      mockPrisma.foodLog.findMany.mockResolvedValueOnce([]);
+
+      await service.findByDate(USER_ID, '2026-07-29', 'America/Sao_Paulo');
+
+      const where = mockPrisma.foodLog.findMany.mock.calls[0][0].where;
+      expect(where.loggedAt.gte).toEqual(new Date('2026-07-29T03:00:00.000Z'));
+      expect(where.loggedAt.lt).toEqual(new Date('2026-07-30T03:00:00.000Z'));
+    });
   });
 
   describe('remove', () => {

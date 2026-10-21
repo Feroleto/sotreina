@@ -9,6 +9,7 @@ import {
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/current-user.decorator';
+import { CurrentTimeZone } from '../common/current-time-zone.decorator';
 
 @Controller('food-logs')
 @UseGuards(AuthGuard)
@@ -22,21 +23,33 @@ export class FoodLogsController {
   }
 
   @Get('summary')
-  async summary(@CurrentUser() user: AuthenticatedUser, @Query('date') date?: string) {
+  async summary(
+    @CurrentUser() user: AuthenticatedUser,
+    @CurrentTimeZone() timeZone: string,
+    @Query('date') date?: string,
+  ) {
     const parsedDate = parseDateQuery(date);
-    return this.service.getDailySummary(user.id, parsedDate);
+    return this.service.getDailySummary(user.id, parsedDate, timeZone);
   }
 
   @Get('history')
-  async history(@CurrentUser() user: AuthenticatedUser, @Query('days') days?: string) {
+  async history(
+    @CurrentUser() user: AuthenticatedUser,
+    @CurrentTimeZone() timeZone: string,
+    @Query('days') days?: string,
+  ) {
     const parsedDays = parseDaysQuery(days);
-    return this.service.getHistory(user.id, parsedDays);
+    return this.service.getHistory(user.id, parsedDays, timeZone);
   }
 
   @Get()
-  async findByDate(@CurrentUser() user: AuthenticatedUser, @Query('date') date?: string) {
+  async findByDate(
+    @CurrentUser() user: AuthenticatedUser,
+    @CurrentTimeZone() timeZone: string,
+    @Query('date') date?: string,
+  ) {
     const parsedDate = parseDateQuery(date);
-    return this.service.findByDate(user.id, parsedDate);
+    return this.service.findByDate(user.id, parsedDate, timeZone);
   }
 
   @Patch(':id')

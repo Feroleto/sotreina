@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from '@/features/nav/Sidebar';
 import { MobileHeader, MobileTabBar } from '@/features/nav/MobileChrome';
 import { ChromeBumpContext } from '@/features/nav/chromeVisibility';
-import PlaceholderPage from '@/features/nav/PlaceholderPage';
 import ProfilePage from '@/features/profile/ProfilePage';
 import { FIRST_SYNC_FLAG } from '@/features/onboarding/firstSyncFlag';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -77,6 +76,7 @@ function runViewTransition(
 // out of the entry chunk that the logged-out LoginPage visitor downloads.
 // Importers are shared with lib/boot.ts, which preloads the active page's
 // chunk at t0 — same specifier, so the module map dedupes the download.
+const TodayPage = lazy(PAGE_IMPORTERS['overview']!);
 const Dashboard = lazy(PAGE_IMPORTERS['run/activities']!);
 const RunOverviewPage = lazy(PAGE_IMPORTERS['run/overview']!);
 const RunAnalysisPage = lazy(PAGE_IMPORTERS['run/analysis']!);
@@ -115,7 +115,16 @@ function PageContent({
   const { t } = useTranslation('nav');
   switch (page) {
     case 'overview':
-      return <PlaceholderPage title={t('sections.overview')} />;
+      return (
+        <TodayPage
+          activeWorkoutName={
+            activeWorkout.workout
+              ? (activeWorkout.workout.templateName ?? t('gym:session.title'))
+              : null
+          }
+          onNavigate={(next: PageId) => onNavigate(next)}
+        />
+      );
     case 'run/overview':
       return <RunOverviewPage />;
     case 'run/analysis':
