@@ -41,8 +41,7 @@
     "etaSec": "~{{s}}s remaining"
   },
   "connectBanner": {
-    "message": "Connect Strava to import your runs.",
-    "cta": "Connect Strava"
+    "message": "Connect Strava to import your runs."
   },
   "list": {
     "empty": "No activities with this filter",

@@ -10,10 +10,18 @@ const SUBSCRIPTION_ID = '999888';
 
 describe('StravaWebhookController', () => {
   let controller: StravaWebhookController;
-  let service: { handleDeauthorization: ReturnType<typeof vi.fn> };
+  let service: {
+    handleDeauthorization: ReturnType<typeof vi.fn>;
+    handleActivityDeleted: ReturnType<typeof vi.fn>;
+    handleActivityUpdated: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
-    service = { handleDeauthorization: vi.fn().mockResolvedValue(undefined) };
+    service = {
+      handleDeauthorization: vi.fn().mockResolvedValue(undefined),
+      handleActivityDeleted: vi.fn().mockResolvedValue(undefined),
+      handleActivityUpdated: vi.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StravaWebhookController],
@@ -84,7 +92,38 @@ describe('StravaWebhookController', () => {
       });
 
       expect(service.handleDeauthorization).not.toHaveBeenCalled();
+      expect(service.handleActivityDeleted).not.toHaveBeenCalled();
+      expect(service.handleActivityUpdated).not.toHaveBeenCalled();
       expect(result).toEqual({ received: true });
+    });
+
+    it('removes an activity deleted on Strava, scoped to its owner', async () => {
+      await controller.handleEvent({
+        object_type: 'activity',
+        aspect_type: 'delete',
+        object_id: 12345,
+        subscription_id: Number(SUBSCRIPTION_ID),
+        owner_id: 105494700,
+        event_time: 1700000000,
+      });
+
+      expect(service.handleActivityDeleted).toHaveBeenCalledWith(12345n, 105494700n);
+    });
+
+    it('forwards activity title/type updates', async () => {
+      await controller.handleEvent({
+        object_type: 'activity',
+        aspect_type: 'update',
+        object_id: 12345,
+        subscription_id: Number(SUBSCRIPTION_ID),
+        owner_id: 105494700,
+        event_time: 1700000000,
+        updates: { title: 'Long run' },
+      });
+
+      expect(service.handleActivityUpdated).toHaveBeenCalledWith(12345n, 105494700n, {
+        title: 'Long run',
+      });
     });
 
     it('acks malformed bodies without throwing (public endpoint, forged garbage must not 500)', async () => {
@@ -94,12 +133,14 @@ describe('StravaWebhookController', () => {
         { subscription_id: 'not-a-number', object_id: 1 },
         { subscription_id: Number(SUBSCRIPTION_ID), object_id: 'abc' },
         { subscription_id: Number(SUBSCRIPTION_ID), object_id: 1.5 },
+        { subscription_id: Number(SUBSCRIPTION_ID), object_id: 1, owner_id: 'x' },
       ]) {
         const result = await controller.handleEvent(body as any);
         expect(result).toEqual({ received: true });
       }
 
       expect(service.handleDeauthorization).not.toHaveBeenCalled();
+      expect(service.handleActivityDeleted).not.toHaveBeenCalled();
     });
 
     it('ignores events with an unexpected subscription_id, even a forged deauthorization', async () => {

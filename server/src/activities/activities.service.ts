@@ -64,6 +64,9 @@ export interface WeeklyDistancePoint {
 
 export interface ActivityDetail {
   id: string;
+  // string, not BigInt — JSON can't carry BigInt; used for the
+  // "View on Strava" link the brand guidelines ask for
+  stravaId: string;
   name: string;
   type: string;
   sportType: string | null;
@@ -264,10 +267,11 @@ export class ActivitiesService {
   }
 
   async findById(userId: string, id: string): Promise<ActivityDetail | null> {
-    return this.prisma.activity.findFirst({
+    const activity = await this.prisma.activity.findFirst({
       where: { id, userId },
       select: {
         id: true,
+        stravaId: true,
         name: true,
         type: true,
         sportType: true,
@@ -303,5 +307,6 @@ export class ActivitiesService {
         },
       },
     });
+    return activity && { ...activity, stravaId: activity.stravaId.toString() };
   }
 }

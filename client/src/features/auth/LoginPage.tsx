@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowRight, Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { API_BASE_URL } from '@/lib/apiUrl';
 import { apiFetch } from '@/lib/api';
@@ -10,15 +10,10 @@ import { useAppLanguage } from '@/i18n/useAppLanguage';
 import { useAuth } from '@/features/auth/AuthContext';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
 import HeroTrace from '@/features/auth/HeroTrace';
+import { ConnectWithStrava } from '@/components/StravaBrand';
 
 type Mode = 'login' | 'register';
 type View = 'main' | 'form' | 'forgot';
-
-// TODO: swap the button for Strava's official "Connect with Strava" asset
-// (SVG/PNG from developers.strava.com/guidelines) once it's vendored into
-// the repo — this mirrors the required brand orange (#FC4C02) and wordmark
-// in the meantime. #FC4C02 is Strava's brand color: fixed in both themes,
-// deliberately not tokenized.
 
 function HowItWorksPopover() {
   const { t } = useTranslation('auth');
@@ -435,27 +430,12 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={connect}
-              disabled={connecting}
-              className="flex w-full items-center justify-center gap-[9px] rounded-[12px] bg-[#FC4C02] py-[15px] text-[15px] font-semibold text-white transition-colors hover:bg-[#E04300] disabled:cursor-default disabled:opacity-80 disabled:hover:bg-[#FC4C02] md:rounded-[11px] md:py-[13px] md:text-[14.5px]"
-            >
-              {connecting ? (
-                <>
-                  <Loader2 size={15} className="animate-spin" strokeWidth={2} />
-                  {t('login.connecting')}
-                </>
-              ) : (
-                <>
-                  {t('login.connect')}
-                  <ArrowRight size={15} strokeWidth={2} />
-                </>
-              )}
-            </button>
+            <div className="flex justify-center md:justify-start">
+              <ConnectWithStrava onClick={connect} disabled={connecting} />
+            </div>
 
             <p className="mt-[11px] text-[11.5px] text-muted-foreground">
-              {t('login.redirectNotice')}
+              {connecting ? t('login.connecting') : t('login.redirectNotice')}
             </p>
           </div>
         )}
@@ -481,7 +461,15 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               {t('login.readOnlyNotice')}
             </span>
           </div>
-          <HowItWorksPopover />
+          <div className="flex items-center justify-center gap-4 md:justify-start">
+            <HowItWorksPopover />
+            <a
+              href="/privacidade"
+              className="text-[11.5px] text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {t('login.privacy')}
+            </a>
+          </div>
         </div>
       </div>
     </div>

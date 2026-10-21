@@ -12,6 +12,7 @@ import RunCalendar from './RunCalendar';
 import PersonalRecordsCard from './PersonalRecordsCard';
 import ShoesSection from './ShoesSection';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
+import { PoweredByStrava } from '@/components/StravaBrand';
 
 // mobile 2×2 hairline grid (Redesign Corrida 17b "Monolito": no cards,
 // numbers in Geist Mono) — right column and second row draw the dividers
@@ -242,6 +243,8 @@ export default function RunOverviewPage() {
       <div className="mt-[26px]">
         <ShoesSection />
       </div>
+
+      <PoweredByStrava className="mt-8 justify-center" />
     </div>
   );
 }

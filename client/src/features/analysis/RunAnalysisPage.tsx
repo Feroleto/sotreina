@@ -15,6 +15,7 @@ import EfficiencyFactorChart from './EfficiencyFactorChart';
 import MonotonyStrainChart from './MonotonyStrainChart';
 import DecouplingTrendChart from './DecouplingTrendChart';
 import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
+import { PoweredByStrava } from '@/components/StravaBrand';
 
 function SectionLabel({
   children,
@@ -157,6 +158,8 @@ export default function RunAnalysisPage() {
           <MonotonyStrainChart weeks={completed} />
         </div>
       )}
+
+      <PoweredByStrava className="mt-8 justify-center" />
     </div>
   );
 }

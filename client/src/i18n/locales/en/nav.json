@@ -28,9 +28,9 @@
     "stravaTitle": "STRAVA",
     "stravaConnected": "Connected",
     "stravaNotConnected": "Not connected",
-    "connectStrava": "Connect Strava",
     "disconnect": "Disconnect",
-    "disconnectConfirm": "Disconnect your Strava account? Your existing activities will be kept.",
+    "disconnectConfirm": "Disconnect your Strava account? The activities imported from Strava will be deleted from SoTreina.",
+    "disconnectConfirmDeleteAccount": "Disconnect Strava? Your account has no password, so it will be deleted entirely, including workouts and diet logs. Add a password below first to keep it.",
     "disconnectConfirmYes": "Disconnect",
     "disconnectConfirmCancel": "Cancel",
     "disconnectError": "Couldn't disconnect. Please try again.",
@@ -40,7 +40,8 @@
     "addPasswordEmailHint": "This can be any email — Strava doesn't share yours with us, so it doesn't need to match your Strava account. You'll use it to sign in with your password instead of Strava.",
     "addPasswordSubmit": "Save password",
     "addPasswordSubmitting": "Saving…",
-    "addPasswordSuccess": "Password added — you can now also sign in with your email and password."
+    "addPasswordSuccess": "Password added — you can now also sign in with your email and password.",
+    "privacy": "Privacy Policy"
   },
   "addSport": "Add a Sport",
   "yourProfile": "Your profile",

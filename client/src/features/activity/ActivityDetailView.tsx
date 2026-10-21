@@ -11,6 +11,7 @@ import {
 import { currentIntlLocale } from '@/lib/dateLocale';
 import type { ActivityDetail } from '@/lib/types';
 import { apiFetch } from '@/lib/api';
+import { PoweredByStrava } from '@/components/StravaBrand';
 import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
 
 // lazy so Leaflet is only fetched when a GPS activity detail is opened
@@ -182,8 +183,18 @@ export default function ActivityDetailView({
       <div className="text-[22px] font-semibold tracking-[-.02em] text-foreground">
         {activity.name}
       </div>
-      <div className="mt-[3px] text-[13px] text-muted-foreground">
+      <div className="mt-[3px] flex flex-wrap items-baseline gap-x-3 text-[13px] text-muted-foreground">
         {formatDateFull(activity.startDate)}
+        {/* brand guidelines: this exact text (not translated), legible and
+            marked as a link via bold weight or Strava orange #FC5200 */}
+        <a
+          href={`https://www.strava.com/activities/${activity.stravaId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[#FC5200] hover:underline"
+        >
+          View on Strava
+        </a>
       </div>
 
       <div className="mt-[22px] grid grid-cols-2 gap-2.5 md:grid-cols-4">
@@ -321,6 +332,8 @@ export default function ActivityDetailView({
           {t('laps.edit')}
         </button>
       </div>
+
+      <PoweredByStrava className="mt-8 justify-center" />
 
       {editorOpen && (
         <Suspense fallback={null}>

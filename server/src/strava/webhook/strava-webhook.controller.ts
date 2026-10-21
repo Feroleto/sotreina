@@ -28,9 +28,12 @@ interface StravaWebhookEvent {
 // equivalent — confirmed against the official docs, not just assumed). The
 // best available check on the POST body is subscription_id (see below),
 // which the Strava dev community itself notes is "guessable" in theory —
-// not airtight, but real. Worst case a forged event still only disconnects
-// the wrong account, which the affected user just reconnects — acceptable
-// residual risk for a small trusted beta group
+// not airtight, but real. A deauthorization wipes the athlete's Strava data,
+// so the service double-checks it with Strava before acting (see
+// StravaWebhookService.handleDeauthorization). Activity events aren't
+// double-checked: they're scoped to the owner's own activities, and a
+// forged delete of one activity is recoverable via
+// POST /strava/sync/activity/:stravaId
 @Controller('strava/webhook')
 export class StravaWebhookController {
   private readonly logger = new Logger(StravaWebhookController.name);
@@ -69,7 +72,8 @@ export class StravaWebhookController {
     // events get the same fast 200 ack as ignored ones
     if (
       typeof event?.subscription_id !== 'number' ||
-      !Number.isInteger(event.object_id)
+      !Number.isInteger(event.object_id) ||
+      !Number.isInteger(event.owner_id)
     ) {
       this.logger.warn('Ignored malformed webhook event');
       return { received: true };
@@ -90,7 +94,19 @@ export class StravaWebhookController {
       event.updates?.authorized === 'false'
     ) {
       await this.service.handleDeauthorization(BigInt(event.object_id));
+    } else if (event.object_type === 'activity' && event.aspect_type === 'delete') {
+      await this.service.handleActivityDeleted(
+        BigInt(event.object_id),
+        BigInt(event.owner_id),
+      );
+    } else if (event.object_type === 'activity' && event.aspect_type === 'update') {
+      await this.service.handleActivityUpdated(
+        BigInt(event.object_id),
+        BigInt(event.owner_id),
+        event.updates ?? {},
+      );
     } else {
+      // activity create is left to the 6h cron sync
       this.logger.debug(
         `Ignored webhook event: ${event.object_type}/${event.aspect_type} (${event.object_id})`,
       );

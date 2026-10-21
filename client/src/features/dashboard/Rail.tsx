@@ -8,6 +8,7 @@ import {
 } from '@/lib/activityFormat';
 import { useAuth } from '@/features/auth/AuthContext';
 import { API_BASE_URL } from '@/lib/apiUrl';
+import { ConnectWithStrava } from '@/components/StravaBrand';
 import SyncPanel from './SyncPanel';
 import { TYPE_OPTIONS, type TypeFilter } from './bins';
 
@@ -18,17 +19,10 @@ function ConnectStravaBanner() {
       <div className="mb-2.5 text-[11.5px] font-medium tracking-[.05em] uppercase text-muted-foreground">
         {t('sync.title')}
       </div>
-      <div className="flex items-center justify-between gap-2.5">
-        <p className="min-w-0 text-[12.5px] text-muted-foreground">
-          {t('connectBanner.message')}
-        </p>
-        <a
-          href={`${API_BASE_URL}/strava/connect`}
-          className="shrink-0 cursor-pointer rounded-[9px] bg-chip px-[13px] py-1.5 text-[12.5px] font-medium text-foreground hover:bg-grid-ax"
-        >
-          {t('connectBanner.cta')}
-        </a>
-      </div>
+      <p className="mb-3 text-[12.5px] text-muted-foreground">
+        {t('connectBanner.message')}
+      </p>
+      <ConnectWithStrava href={`${API_BASE_URL}/strava/connect`} />
     </div>
   );
 }

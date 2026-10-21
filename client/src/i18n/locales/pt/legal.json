@@ -1,0 +1,67 @@
+{
+  "title": "Política de Privacidade",
+  "updated": "Última atualização: 21 de outubro de 2026",
+  "back": "Voltar ao SoTreina",
+  "sections": [
+    {
+      "title": "Quem somos",
+      "body": [
+        "O SoTreina é um aplicativo pessoal de acompanhamento de treinos (corrida, musculação e dieta), operado de forma independente. Ele não é desenvolvido, patrocinado nem endossado pela Strava.",
+        "Para qualquer assunto sobre seus dados, escreva para contas@sotreina.com."
+      ]
+    },
+    {
+      "title": "Dados que coletamos",
+      "body": [
+        "Conta: e-mail e senha (guardada apenas como hash) quando você se cadastra com e-mail; nome e foto de perfil quando você entra com o Strava.",
+        "Dados do Strava, somente se você conectar sua conta: atividades de corrida (data, distância, tempo, ritmo, elevação, frequência cardíaca, cadência, rota resumida e voltas), equipamentos (tênis), melhores esforços e zonas de frequência cardíaca.",
+        "Dados que você registra no próprio SoTreina: treinos de musculação, alimentos consumidos, refeições e metas."
+      ]
+    },
+    {
+      "title": "Como usamos os dados",
+      "body": [
+        "Seus dados servem exclusivamente para mostrar a você mesmo seus treinos, estatísticas e gráficos. Nenhum dado seu é exibido a outros usuários.",
+        "Não vendemos nem compartilhamos seus dados com terceiros para publicidade, e não usamos dados do Strava para treinar nem alimentar sistemas de inteligência artificial.",
+        "O acesso ao Strava é somente leitura: o SoTreina nunca publica nada no seu perfil."
+      ]
+    },
+    {
+      "title": "Onde os dados ficam",
+      "body": [
+        "Usamos estes provedores para operar o serviço: Render (servidor), Neon (banco de dados), Vercel (site), Resend (e-mails transacionais, como redefinição de senha) e Cloudflare (DNS). Eles processam dados apenas em nosso nome."
+      ]
+    },
+    {
+      "title": "Por quanto tempo guardamos",
+      "body": [
+        "Os dados ficam guardados enquanto sua conta existir e o Strava estiver conectado. Quando o acesso ao Strava é revogado, todos os dados vindos do Strava são apagados."
+      ]
+    },
+    {
+      "title": "Como retirar seu consentimento",
+      "body": [
+        "Você pode desconectar o Strava a qualquer momento em Perfil → Desconectar, ou revogar o acesso direto no Strava em strava.com/settings/apps. Nos dois casos, todas as atividades e demais dados vindos do Strava são apagados do SoTreina.",
+        "Se sua conta não tiver senha (entrada apenas pelo Strava), desconectar exclui a conta inteira, pois não restaria forma de acessá-la."
+      ]
+    },
+    {
+      "title": "Como pedir a exclusão dos seus dados",
+      "body": [
+        "Para excluir sua conta e todos os seus dados (inclusive musculação e dieta), envie um e-mail para contas@sotreina.com a partir do endereço cadastrado. Confirmamos a exclusão por escrito."
+      ]
+    },
+    {
+      "title": "Seus direitos",
+      "body": [
+        "Conforme a LGPD e o GDPR, você pode pedir acesso, correção, portabilidade ou exclusão dos seus dados, e se opor a um tratamento. Basta escrever para contas@sotreina.com."
+      ]
+    },
+    {
+      "title": "Mudanças nesta política",
+      "body": [
+        "Se esta política mudar, a data no topo da página será atualizada."
+      ]
+    }
+  ]
+}

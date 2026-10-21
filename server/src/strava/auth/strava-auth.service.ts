@@ -3,9 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { EmailService } from '../../email/email.service';
+import { purgeStravaData } from '../strava-data-purge';
 
 const STRAVA_AUTH_URL = 'https://www.strava.com/oauth/authorize';
 const STRAVA_TOKEN_URL = 'https://www.strava.com/oauth/token';
+// replaces the legacy oauth/deauthorize, which stops working 2027-06-01
+const STRAVA_REVOKE_URL = 'https://www.strava.com/oauth/revoke';
 
 interface StravaTokenExchangeResponse {
   access_token: string;
@@ -147,9 +150,49 @@ export class StravaAuthService {
     return { userId: user.id, tokenVersion: user.tokenVersion };
   }
 
-  // idempotent — a no-op (not an error) when there's nothing to delete
-  async disconnectAccount(userId: string): Promise<void> {
-    const { count } = await this.prisma.stravaAccount.deleteMany({ where: { userId } });
-    if (count > 0) this.logger.log(`Strava account disconnected for user ${userId}`);
+  // revokes our grant on Strava's side, then deletes every piece of Strava
+  // data we hold for the user (API Policy 7.4, see purgeStravaData). The
+  // revoke is best-effort, like EmailService: a failure there is logged and
+  // the local deletion still happens — it's the part the policy is about.
+  // accountDeleted tells the caller a Strava-only user was removed entirely.
+  // Idempotent — a no-op (not an error) when there's nothing to delete.
+  async disconnectAccount(userId: string): Promise<{ accountDeleted: boolean }> {
+    const account = await this.prisma.stravaAccount.findUnique({
+      where: { userId },
+      select: { refreshToken: true },
+    });
+    if (!account) return { accountDeleted: false };
+
+    await this.revokeToken(account.refreshToken);
+    const result = await purgeStravaData(this.prisma, userId);
+    this.logger.log(
+      `Strava account disconnected for user ${userId}${result.accountDeleted ? ' (Strava-only user deleted)' : ''}`,
+    );
+    return result;
+  }
+
+  private async revokeToken(refreshToken: string): Promise<void> {
+    const credentials = Buffer.from(
+      `${this.config.get('STRAVA_CLIENT_ID')}:${this.config.get('STRAVA_CLIENT_SECRET')}`,
+    ).toString('base64');
+
+    try {
+      const response = await fetch(STRAVA_REVOKE_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${credentials}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          token: refreshToken,
+          token_type_hint: 'refresh_token',
+        }).toString(),
+      });
+      if (!response.ok) {
+        this.logger.warn(`Strava token revoke failed: ${response.status}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Strava token revoke failed: ${(err as Error).message}`);
+    }
   }
 }

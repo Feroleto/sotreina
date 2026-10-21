@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Logger, Res, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Logger, Res, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { StravaAuthService } from './strava-auth.service';
@@ -31,10 +31,16 @@ export class StravaConnectController {
     res.redirect(url);
   }
 
+  // a Strava-only user is deleted outright (nothing left to log in with),
+  // so their session cookie goes too; the client logs out on accountDeleted
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Delete()
-  @HttpCode(204)
-  async disconnect(@CurrentUser() user: AuthenticatedUser): Promise<void> {
-    await this.stravaAuth.disconnectAccount(user.id);
+  async disconnect(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ accountDeleted: boolean }> {
+    const result = await this.stravaAuth.disconnectAccount(user.id);
+    if (result.accountDeleted) this.session.clearCookie(res);
+    return result;
   }
 }

@@ -88,6 +88,7 @@ const DietHistoryPage = lazy(PAGE_IMPORTERS['diet/history']!);
 // login/onboarding are dead weight for the recurring logged-in user; boot.ts
 // preloads whichever one the localStorage hints predict will be needed
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
+const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
 const ResetPasswordPage = lazy(
   () => import('@/features/auth/ResetPasswordPage'),
 );
@@ -305,6 +306,16 @@ function App() {
   // reached only via the emailed reset link — must work regardless of
   // whether the visitor currently has a session, so this check comes before
   // the loading/user gate below
+  // public privacy policy (Strava API Policy 7.3) — same session-agnostic
+  // standalone treatment as the reset page below
+  if (window.location.pathname === '/privacidade') {
+    return (
+      <Suspense fallback={<BootSplash />}>
+        <PrivacyPage />
+      </Suspense>
+    );
+  }
+
   if (window.location.pathname === '/redefinir-senha') {
     return (
       <Suspense fallback={<BootSplash />}>

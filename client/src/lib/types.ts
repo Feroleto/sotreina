@@ -45,6 +45,7 @@ export interface ActivityLap {
 }
 
 export interface ActivityDetail extends Activity {
+  stravaId: string;
   summaryPolyline: string | null;
   laps: ActivityLap[];
 }

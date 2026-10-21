@@ -105,6 +105,26 @@ export class StravaClientService {
     return data.access_token;
   }
 
+  // asks Strava whether our stored grant for this user still works: false
+  // when the refresh or the call itself is rejected as unauthorized (access
+  // really revoked), true when it succeeds, null when Strava couldn't say
+  // (network error, 5xx, 429). Used to check a deauthorization webhook event
+  // before acting on it, since Strava doesn't sign those events
+  async isAuthorizationValid(userId: string): Promise<boolean | null> {
+    try {
+      const token = await this.getValidAccessToken(userId);
+      const response = await fetch(`${STRAVA_API_BASE}/athlete`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      this.captureRateLimit(response);
+      if (response.ok) return true;
+      if (response.status === 401) return false;
+      return null;
+    } catch (err) {
+      return err instanceof UnauthorizedException ? false : null;
+    }
+  }
+
   async get<T>(userId: string, path: string, params?: Record<string, string | number>): Promise<T> {
     await this.throttle();
 

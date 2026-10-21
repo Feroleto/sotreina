@@ -253,4 +253,33 @@ describe('StravaClientService', () => {
       expect(eta).toBeGreaterThan(WINDOW_MS / 1000);
     });
   });
+
+  describe('isAuthorizationValid', () => {
+    it('is true when Strava accepts the token', async () => {
+      fetchMock.mockResolvedValueOnce(stravaResponse({ id: 1 }));
+      await expect(service.isAuthorizationValid(USER_ID)).resolves.toBe(true);
+    });
+
+    it('is false when Strava answers 401 (access revoked)', async () => {
+      fetchMock.mockResolvedValueOnce(stravaResponse({}, {}, 401));
+      await expect(service.isAuthorizationValid(USER_ID)).resolves.toBe(false);
+    });
+
+    it('is false when refreshing an expired token is rejected', async () => {
+      mockPrisma.stravaAccount.findUniqueOrThrow.mockResolvedValueOnce({
+        accessToken: 'token',
+        refreshToken: 'refresh',
+        expiresAt: new Date(Date.now() - 1000),
+      });
+      fetchMock.mockResolvedValueOnce(stravaResponse({}, {}, 400));
+      await expect(service.isAuthorizationValid(USER_ID)).resolves.toBe(false);
+    });
+
+    it('is null (unknown) on a server error or network failure', async () => {
+      fetchMock.mockResolvedValueOnce(stravaResponse({}, {}, 503));
+      await expect(service.isAuthorizationValid(USER_ID)).resolves.toBeNull();
+      fetchMock.mockRejectedValueOnce(new Error('network down'));
+      await expect(service.isAuthorizationValid(USER_ID)).resolves.toBeNull();
+    });
+  });
 });

@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { StravaAccountConflictError, StravaAuthService } from 'src/strava/auth/strava-auth.service';
 import { EmailService } from 'src/email/email.service';
 
-const { mockPrisma } = vi.hoisted(() => {
+const { mockPrisma, mockPurge } = vi.hoisted(() => {
   return {
+    mockPurge: vi.fn(),
     mockPrisma: {
       stravaAccount: {
         findUnique: vi.fn(),
@@ -35,6 +36,8 @@ vi.mock('@prisma/adapter-pg', () => {
     PrismaPg: class {},
   };
 });
+
+vi.mock('src/strava/strava-data-purge', () => ({ purgeStravaData: mockPurge }));
 
 const ATHLETE_ID = 105494700n;
 const EXISTING_USER_ID = 'user_existing';
@@ -143,14 +146,18 @@ describe('StravaAuthService.handleCallback', () => {
 
 describe('StravaAuthService.disconnectAccount', () => {
   let service: StravaAuthService;
+  let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+    mockPurge.mockResolvedValue({ accountDeleted: false });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StravaAuthService,
-        { provide: ConfigService, useValue: { get: vi.fn(() => 'test-value') } },
+        { provide: ConfigService, useValue: { get: vi.fn((key: string) => key) } },
         { provide: EmailService, useValue: { sendWelcomeEmail: vi.fn() } },
       ],
     }).compile();
@@ -158,19 +165,44 @@ describe('StravaAuthService.disconnectAccount', () => {
     service = module.get(StravaAuthService);
   });
 
-  it('deletes the StravaAccount for the given userId', async () => {
-    mockPrisma.stravaAccount.deleteMany.mockResolvedValueOnce({ count: 1 });
-
-    await service.disconnectAccount(EXISTING_USER_ID);
-
-    expect(mockPrisma.stravaAccount.deleteMany).toHaveBeenCalledWith({
-      where: { userId: EXISTING_USER_ID },
-    });
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it('does not throw when there is nothing to delete', async () => {
-    mockPrisma.stravaAccount.deleteMany.mockResolvedValueOnce({ count: 0 });
+  it('revokes the refresh token on Strava, then purges the Strava data', async () => {
+    mockPrisma.stravaAccount.findUnique.mockResolvedValueOnce({ refreshToken: 'refresh-token' });
 
-    await expect(service.disconnectAccount(EXISTING_USER_ID)).resolves.toBeUndefined();
+    const result = await service.disconnectAccount(EXISTING_USER_ID);
+
+    expect(result).toEqual({ accountDeleted: false });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://www.strava.com/oauth/revoke');
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBe(
+      `Basic ${Buffer.from('STRAVA_CLIENT_ID:STRAVA_CLIENT_SECRET').toString('base64')}`,
+    );
+    expect(new URLSearchParams(init.body).get('token')).toBe('refresh-token');
+    expect(mockPurge).toHaveBeenCalledWith(mockPrisma, EXISTING_USER_ID);
+  });
+
+  it('still purges locally when the revoke call fails', async () => {
+    mockPrisma.stravaAccount.findUnique.mockResolvedValueOnce({ refreshToken: 'refresh-token' });
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+    mockPurge.mockResolvedValueOnce({ accountDeleted: true });
+
+    const result = await service.disconnectAccount(EXISTING_USER_ID);
+
+    expect(result).toEqual({ accountDeleted: true });
+    expect(mockPurge).toHaveBeenCalledWith(mockPrisma, EXISTING_USER_ID);
+  });
+
+  it('is a no-op when there is no Strava account to disconnect', async () => {
+    mockPrisma.stravaAccount.findUnique.mockResolvedValueOnce(null);
+
+    await expect(service.disconnectAccount(EXISTING_USER_ID)).resolves.toEqual({
+      accountDeleted: false,
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mockPurge).not.toHaveBeenCalled();
   });
 });

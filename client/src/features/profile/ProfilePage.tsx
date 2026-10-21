@@ -9,6 +9,7 @@ import { useAppLanguage } from '@/i18n/useAppLanguage';
 import { apiFetch } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/apiUrl';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
+import { ConnectWithStrava } from '@/components/StravaBrand';
 
 interface ProfilePageProps {
   themePref: ThemePref;
@@ -63,6 +64,14 @@ export default function ProfilePage({
     try {
       const res = await apiFetch('/strava/connect', { method: 'DELETE' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { accountDeleted } = (await res.json()) as { accountDeleted: boolean };
+      // a Strava-only account (no password) is deleted outright, since
+      // nothing would be left to log in with — the server already cleared
+      // the session cookie, this drops the local state
+      if (accountDeleted) {
+        await logout();
+        return;
+      }
       setUser(user ? { ...user, hasStravaAccount: false } : null);
       setConfirmingDisconnect(false);
     } catch {
@@ -178,20 +187,19 @@ export default function ProfilePage({
             >
               {t('profile.disconnect')}
             </button>
-          ) : (
-            <a
-              href={`${API_BASE_URL}/strava/connect`}
-              className="shrink-0 cursor-pointer rounded-[9px] bg-chip px-[13px] py-1.5 text-[12.5px] font-medium text-foreground hover:bg-grid-ax"
-            >
-              {t('profile.connectStrava')}
-            </a>
-          )}
+          ) : null}
         </div>
+
+        {!user?.hasStravaAccount && (
+          <ConnectWithStrava href={`${API_BASE_URL}/strava/connect`} className="mt-3" />
+        )}
 
         {confirmingDisconnect && (
           <div className="mt-3 flex items-center justify-between gap-3 rounded-[10px] bg-chip px-3 py-2.5">
             <span className="text-[12.5px] text-foreground">
-              {t('profile.disconnectConfirm')}
+              {user?.hasPassword
+                ? t('profile.disconnectConfirm')
+                : t('profile.disconnectConfirmDeleteAccount')}
             </span>
             <div className="flex shrink-0 items-center gap-2">
               <button
@@ -342,6 +350,13 @@ export default function ProfilePage({
         <LogOut className="h-4 w-4" strokeWidth={1.8} />
         {t('logOut')}
       </button>
+
+      <a
+        href="/privacidade"
+        className="mt-4 block text-center text-[12.5px] text-muted-foreground underline-offset-4 hover:underline"
+      >
+        {t('profile.privacy')}
+      </a>
     </div>
   );
 }

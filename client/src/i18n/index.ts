@@ -41,6 +41,7 @@ void i18n.use(initReactI18next).init({
     'analysis',
     'gym',
     'diet',
+    'legal',
   ],
   defaultNS: 'common',
   resources,

@@ -22,6 +22,7 @@ import {
   startOfBin,
   type TypeFilter,
 } from './bins';
+import { PoweredByStrava } from '@/components/StravaBrand';
 
 export default function Dashboard() {
   const { t } = useTranslation('dashboard');
@@ -364,6 +365,8 @@ export default function Dashboard() {
                     : null
                 }
               />
+
+              <PoweredByStrava className="mt-8 justify-center" />
             </div>
           )}
         </DrillStack>
