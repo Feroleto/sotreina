@@ -14,6 +14,7 @@ import {
   type NavSubItem,
   type PageId,
 } from './navConfig';
+import { Logo } from '@/components/Logo';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -201,9 +202,7 @@ export default function Sidebar({
 
       <div className="flex h-full flex-col overflow-hidden px-3 pt-5 pb-4">
         <div className="flex items-center gap-2.5 px-[9px]">
-          <div className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-acc text-[14px] font-bold text-acc-fg">
-            ST
-          </div>
+          <Logo className="text-foreground" />
           <SidebarLabel
             collapsed={collapsed}
             className="text-[15px] font-semibold text-foreground"

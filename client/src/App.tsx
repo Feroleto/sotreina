@@ -31,6 +31,7 @@ import {
   isPageDisabled,
   type PageId,
 } from '@/features/nav/navConfig';
+import { Logo } from '@/components/Logo';
 
 // section switches crossfade via the View Transitions API where it exists
 // (Chromium, Safari 18+); elsewhere the new page plays the same entrance as
@@ -183,9 +184,7 @@ function BootSplash() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-page-bg">
       <div className="flex items-center gap-2.5">
-        <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[14px] font-bold text-acc-fg">
-          ST
-        </div>
+        <Logo className="text-foreground" />
         <span className="text-[15px] font-semibold text-foreground">
           SoTreina
         </span>

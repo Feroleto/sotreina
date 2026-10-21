@@ -11,6 +11,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
 import HeroTrace from '@/features/auth/HeroTrace';
 import { ConnectWithStrava } from '@/components/StravaBrand';
+import { Logo } from '@/components/Logo';
 
 type Mode = 'login' | 'register';
 type View = 'main' | 'form' | 'forgot';
@@ -196,9 +197,7 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
           small fixed cushion, instead of a flat guess) */}
       <div className="flex min-w-0 flex-1 flex-col bg-[#0B0B0C] px-[26px] pt-[calc(env(safe-area-inset-top)+20px)] md:flex-[1.25] md:px-[44px] md:pt-[36px]">
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
-            ST
-          </div>
+          <Logo className="text-[#F3F2EF]" />
           <span className="text-[14px] font-semibold text-[#F3F2EF]">
             SoTreina
           </span>

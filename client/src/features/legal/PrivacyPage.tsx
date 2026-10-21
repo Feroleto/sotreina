@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import SegmentedControl from '@/components/SegmentedControl';
 import { useAppLanguage } from '@/i18n/useAppLanguage';
+import { Logo } from '@/components/Logo';
 
 interface Section {
   title: string;
@@ -21,9 +22,7 @@ export default function PrivacyPage() {
       <article className="mx-auto max-w-[640px]">
         <div className="flex items-center justify-between gap-3">
           <a href="/" className="flex items-center gap-[10px]">
-            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
-              ST
-            </div>
+            <Logo className="text-foreground" />
             <span className="text-[14px] font-semibold text-foreground">SoTreina</span>
           </a>
           <SegmentedControl

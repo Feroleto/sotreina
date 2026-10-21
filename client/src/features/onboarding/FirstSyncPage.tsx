@@ -9,6 +9,7 @@ import { useReducedMotion } from 'motion/react';
 import MotionProvider from '@/components/MotionProvider';
 import CountUp from '@/components/CountUp';
 import { currentIntlLocale } from '@/lib/dateLocale';
+import { Logo } from '@/components/Logo';
 
 const POLL_MS = 2000;
 
@@ -36,9 +37,7 @@ function MobileSkeletonBackdrop() {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
-            ST
-          </div>
+          <Logo className="text-foreground" />
           <span className="text-[14px] font-semibold text-foreground">
             SoTreina
           </span>
@@ -87,9 +86,7 @@ function SkeletonBackdrop() {
       {/* sidebar */}
       <div className="flex w-[210px] flex-none flex-col gap-6 rounded-[16px] border border-border bg-card px-[14px] py-[20px]">
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
-            ST
-          </div>
+          <Logo className="text-foreground" />
           <span className="text-[14px] font-semibold text-foreground">
             SoTreina
           </span>

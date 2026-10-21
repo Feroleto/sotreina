@@ -7,6 +7,7 @@ import SegmentedControl from '@/components/SegmentedControl';
 import PasswordInput from '@/components/PasswordInput';
 import { useAppLanguage } from '@/i18n/useAppLanguage';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
+import { Logo } from '@/components/Logo';
 
 type Status = 'form' | 'success' | 'invalid';
 
@@ -90,9 +91,7 @@ export default function ResetPasswordPage({
         </div>
 
         <div className="flex items-center gap-[10px]">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-[9px] bg-acc text-[12px] font-bold text-acc-fg">
-            ST
-          </div>
+          <Logo className="text-foreground" />
           <span className="text-[14px] font-semibold text-foreground">
             SoTreina
           </span>
