@@ -1,8 +1,14 @@
 import SwiftUI
+import UserNotifications
 
 @main
 struct SoTreinaApp: App {
     @State private var session = SessionStore()
+
+    init() {
+        // the delegate is weak: a static instance keeps it alive
+        UNUserNotificationCenter.current().delegate = ForegroundNotificationPresenter.shared
+    }
 
     var body: some Scene {
         WindowGroup {

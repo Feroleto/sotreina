@@ -1,0 +1,35 @@
+[
+  {
+    "id": "cmruoi2lw000035x0ycgigj05",
+    "name": "Upper",
+    "description": null,
+    "exerciseCount": 3,
+    "exercisePreview": [
+      "Barra Fixa com Peso",
+      "Crucifixo Inclinado no Cabo",
+      "Supino Inclinado no Smith"
+    ],
+    "muscleGroups": [
+      "LATS",
+      "CHEST"
+    ],
+    "lastPerformedAt": "2026-07-23T20:01:11.814Z"
+  },
+  {
+    "id": "cmrxm81yl0000wox02s2w5pr6",
+    "name": "Teste",
+    "description": null,
+    "exerciseCount": 5,
+    "exercisePreview": [
+      "Abdominal 3/4",
+      "Posterior de Coxa 90/90",
+      "Máquina de Abdominal"
+    ],
+    "muscleGroups": [
+      "ABDOMINALS",
+      "HAMSTRINGS",
+      "BACK"
+    ],
+    "lastPerformedAt": null
+  }
+]

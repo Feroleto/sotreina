@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { ExercisesService } from '../exercises/exercises.service';
 import { WorkoutTemplatesService } from '../workout-templates/workout-templates.service';
-import type { AddExerciseInput, SetInput, StartWorkoutInput } from './dto';
+import type { AddExerciseInput, AddSetInput, SetInput, StartWorkoutInput } from './dto';
 import type { TemplateSyncExercise } from '../workout-templates/workout-templates.service';
 import { localizedName, type Lang } from '../common/lang';
 import {
@@ -511,26 +511,45 @@ export class WorkoutsService {
     userId: string,
     workoutId: string,
     workoutExerciseId: string,
-    input: SetInput,
+    input: AddSetInput,
     lang: Lang = 'en',
   ): Promise<WorkoutDetail> {
     await this.assertOwnedWorkoutExercise(userId, workoutId, workoutExerciseId);
+
+    // a resend of a set the server already has (response lost on the way
+    // back) answers with the current detail instead of a duplicate
+    if (input.clientId) {
+      const existing = await this.prisma.workoutSet.findFirst({
+        where: { workoutExerciseId, clientId: input.clientId },
+        select: { id: true },
+      });
+      if (existing) return (await this.findById(userId, workoutId, lang))!;
+    }
 
     const last = await this.prisma.workoutSet.aggregate({
       where: { workoutExerciseId },
       _max: { setNumber: true },
     });
 
-    await this.prisma.workoutSet.create({
-      data: {
-        workoutExerciseId,
-        setNumber: (last._max.setNumber ?? 0) + 1,
-        weightKg: input.weightKg,
-        reps: input.reps,
-        rpe: input.rpe,
-        setType: input.setType ?? 'WORKING',
-      },
-    });
+    try {
+      await this.prisma.workoutSet.create({
+        data: {
+          workoutExerciseId,
+          setNumber: (last._max.setNumber ?? 0) + 1,
+          weightKg: input.weightKg,
+          reps: input.reps,
+          rpe: input.rpe,
+          setType: input.setType ?? 'WORKING',
+          clientId: input.clientId,
+        },
+      });
+    } catch (e) {
+      // two resends racing past the findFirst above: the unique
+      // [workoutExerciseId, clientId] lets exactly one through. Duck-typed
+      // rather than instanceof PrismaClientKnownRequestError — tests mock
+      // @prisma/client wholesale
+      if (!(input.clientId && (e as { code?: unknown }).code === 'P2002')) throw e;
+    }
 
     return (await this.findById(userId, workoutId, lang))!;
   }

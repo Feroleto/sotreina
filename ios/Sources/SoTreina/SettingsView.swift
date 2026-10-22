@@ -1,10 +1,13 @@
 import SwiftUI
 import SoTreinaKit
 
-/// Fase 0 spike screen: proves login + Bearer + Live Activity on device.
-struct HomeView: View {
+/// Account + diagnostics, opened from the routines toolbar. The Live
+/// Activity buttons are the Fase 0 spike, kept until Fase 2 wires the real
+/// rest timer into the session.
+struct SettingsView: View {
     let me: Me
     @Environment(SessionStore.self) private var session
+    @Environment(\.dismiss) private var dismiss
     @State private var liveActivity = LiveActivityController()
 
     var body: some View {
@@ -26,7 +29,7 @@ struct HomeView: View {
                     }
                     .disabled(!liveActivity.isRunning)
                 } header: {
-                    Text("Live Activity")
+                    Text("Live Activity (teste)")
                 } footer: {
                     if let status = liveActivity.status {
                         Text(status)
@@ -42,7 +45,13 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("SoTreina")
+            .navigationTitle("Conta")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("OK") { dismiss() }
+                }
+            }
         }
     }
 }

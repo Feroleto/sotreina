@@ -1,6 +1,6 @@
 # Spec — SoTreina no iPhone: PWA + app nativo do treino ao vivo (via xtool, sem Mac)
 
-Data: 2026-10-18 · Status: **Fase A no ar** · **Fase 0 em andamento**: backend (§5.1) e projeto `ios/` escritos, aguardando setup do xtool + validação no iPhone · Fases 1–2 não iniciadas
+Data: 2026-10-18 · Status: **Fase A no ar** · **Fase 0 aprovada (2026-10-22)**: app + Live Activity rodando no iPhone, com os contornos de xtool/USB do `ios/README.md` · **Fase 1 implementada (2026-10-22)**: as 4 telas, `clientId`, timer + notificação local e aviso de expiração rodando no iPhone; falta o uso real por alguns dias e aplicar a migration `add_workout_set_client_id` no Neon · Fase 2 não iniciada
 Ferramenta-base do nativo: [xtool](https://github.com/xtool-org/xtool), que substitui o Xcode no Linux/WSL: builda pacotes SwiftPM, assina e instala no iPhone.
 
 ## 1. Objetivo
@@ -102,7 +102,7 @@ Datas: o backend serializa ISO-8601 com milissegundos, o que exige um `JSONDecod
 
 - **Não há simulador** (ele só roda em macOS). Todo teste visual é no iPhone físico. Lógica pura roda com `swift test` no Linux, se ficar num target sem UIKit/SwiftUI e sem rede (o `URLSession` do Linux vive em `FoundationNetworking` e diverge do da Apple).
 - **Não há Interface Builder.** Só SwiftUI em código.
-- **USB no WSL2** exige `usbipd-win` (Windows) + `usbmuxd` (Linux). A alternativa é Wi-Fi depois do primeiro pareamento.
+- **iPhone no WSL2**: o caminho que funciona é o usbmux do **Apple Devices** no Windows, exposto ao WSL por `netsh portproxy` (`ios/scripts/usbmux.sh`). `usbipd-win` + `usbmuxd` do WSL foi testado e **trava no install** (2026-10-22). Ver `ios/README.md`.
 - **O setup do xtool** baixa o Xcode (`.xip`, pelo site de developer da Apple, logado) uma vez, pra extrair o SDK.
 - **Apple ID grátis**: o login do xtool usa a opção "password" (APIs privadas da Apple), já que "API key" exige conta paga. O app expira em 7 dias e não abre até ser reinstalado. Os dados locais sobrevivem à reinstalação por cima se o bundle ID não mudar. Não há push remoto, mas o timer usa notificação **local**, que não precisa de entitlement. **A Live Activity não precisa de App Group**: o app passa o `ContentState` direto pro ActivityKit, e o `Text(timerInterval:)` conta sozinho.
 
@@ -132,7 +132,7 @@ ios/
 
 ### 6.3 Camadas
 
-- **`APIClient`** (`URLSession` + `async/await`): base URL `https://sotreina.com/api` (fallback `sotreina.vercel.app/api` até a migração do domínio terminar), `Authorization: Bearer`, `Accept-Language: pt` (o backend localiza o nome dos exercícios por esse header). Um 401 apaga o token e volta pro login.
+- **`APIClient`** (`URLSession` + `async/await`): base URL `https://www.sotreina.com/api` (o host canônico: os outros respondem 308, e o URLSession descarta o `Authorization` num redirect entre hosts), `Authorization: Bearer`, `Accept-Language: pt` (o backend localiza o nome dos exercícios por esse header). Um 401 apaga o token e volta pro login.
 - **Estado**: `@Observable`, um `ActiveWorkoutStore` espelhando o papel do `useActiveWorkout.ts` da web. Toda mutação recebe o `WorkoutDetail` completo de volta (convenção atual) e substitui o estado.
 - **Foreground**: no `scenePhase == .active`, recarrega `GET /workouts/active`. Isso cobre "editei na web" (o último a escrever ganha, e isso foi aceito).
 
@@ -185,7 +185,7 @@ Cada fase termina com uso real por alguns dias.
 
 Pra seguir, **tudo** abaixo precisa funcionar:
 
-1. **Build e install pelo WSL**: `xtool setup` concluído, hello world SwiftUI no iPhone via USB (usbipd), e `ios/scripts/deploy.sh` reinstalando em 1 comando. Bônus: reinstalação por Wi-Fi.
+1. **Build e install pelo WSL**: `xtool setup` concluído, hello world SwiftUI no iPhone via USB, e `ios/scripts/deploy.sh` reinstalando em 1 comando. Bônus: reinstalação por Wi-Fi.
 2. **Live Activity mínima**: a extensão builda, instala junto, e um botão no app inicia uma Live Activity com um timer contando na Dynamic Island e na tela bloqueada. Sem botões interativos ainda. **Este é o critério decisivo.**
 3. **API**: §5.1 no backend, login contra a API local e contra produção, JWT no Keychain, `GET /auth/me` mostrando o nome.
 4. **Logs**: ver o `os.Logger` e o crash log do app no iPhone a partir do WSL (`idevicesyslog` do libimobiledevice ou o que o xtool oferecer).
@@ -220,7 +220,7 @@ O `clientId` da Fase 1 já é o alicerce.
 | --- | --- | --- | --- |
 | Extensão/Live Activity não funciona via xtool | O nativo perde a razão de existir | Fase 0, item 2. **Risco reduzido (2026-10-18)**: o xtool 1.22 suporta extensões WidgetKit oficialmente (`extensions:` no `xtool.yml`, doc `Appex.md`, exemplo `DemoExtensions`). Falta só confirmar no device com Apple ID grátis | Arquivar o nativo, web push no PWA |
 | `LiveActivityIntent` exige desbloqueio na tela bloqueada | O `✓` custa um Face ID | Fase 2, no device | Aceitar (o Face ID é rápido) |
-| usbipd/usbmuxd instável no WSL2 | A reinstalação semanal vira sofrimento | Fase 0, item 1 | Wi-Fi. O PWA cobre a semana sem app |
+| usbipd/usbmuxd instável no WSL2 | A reinstalação semanal vira sofrimento | Fase 0, item 1 | **Aconteceu** (trava no install). Resolvido com o usbmux do Apple Devices no Windows via `netsh portproxy` |
 | Login "password" do xtool quebrar com mudança da Apple | Não consegue reinstalar | Acompanhar as issues do xtool | Conta paga com API key, ou ficar só no PWA |
 | Ciclo build+install lento sem simulador | Produtividade | Medir na Fase 0 | Máximo de lógica no `SoTreinaKit` |
 | Esquecer de reinstalar | App não abre no treino | — | Aviso §6.5. O PWA é a reserva |

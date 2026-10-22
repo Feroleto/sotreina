@@ -47,7 +47,7 @@ final class LiveActivityController {
             ).id
             restEndsAt = endsAt
             status = "Live Activity iniciada — bloqueie a tela pra conferir"
-            log.info("live activity started")
+            log.notice("live activity started")
         } catch {
             status = "Falhou: \(error.localizedDescription)"
             log.error("Activity.request failed: \(String(describing: error), privacy: .public)")

@@ -15,6 +15,7 @@ import {
   parseAddExerciseInput,
   parseFinishWorkoutInput,
   parseReorderExerciseInput,
+  parseAddSetInput,
   parseSetInput,
   parseStartWorkoutInput,
   parseWorkoutsPagination,
@@ -136,7 +137,7 @@ export class WorkoutsController {
     @Param('workoutExerciseId') workoutExerciseId: string,
     @Body() body: unknown,
   ) {
-    const input = parseSetInput(body);
+    const input = parseAddSetInput(body);
     return this.service.addSet(user.id, workoutId, workoutExerciseId, input, lang);
   }
 

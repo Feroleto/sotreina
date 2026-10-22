@@ -359,6 +359,63 @@ describe('WorkoutsService', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(mockPrisma.workoutSet.create).not.toHaveBeenCalled();
     });
+
+    const CLIENT_ID = '6f1c2b7e-3d4a-4b5c-9e8f-0a1b2c3d4e5f';
+
+    it('stores the clientId on a new set', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.workoutSet.aggregate.mockResolvedValueOnce({ _max: { setNumber: 1 } });
+      mockPrisma.workoutSet.create.mockResolvedValueOnce({});
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB);
+
+      await service.addSet(USER_ID, 'w1', 'we1', { reps: 8, clientId: CLIENT_ID });
+
+      expect(mockPrisma.workoutSet.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { workoutExerciseId: 'we1', clientId: CLIENT_ID } }),
+      );
+      expect(mockPrisma.workoutSet.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ clientId: CLIENT_ID }) }),
+      );
+    });
+
+    it('a resend with a known clientId returns the detail without creating a duplicate', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.findFirst.mockResolvedValueOnce({ id: 'set1' });
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB);
+
+      const detail = await service.addSet(USER_ID, 'w1', 'we1', { reps: 8, clientId: CLIENT_ID });
+
+      expect(detail.id).toBe('w1');
+      expect(mockPrisma.workoutSet.create).not.toHaveBeenCalled();
+    });
+
+    it('a racing resend that hits the unique constraint still answers with the detail', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.findFirst.mockResolvedValueOnce(null);
+      mockPrisma.workoutSet.aggregate.mockResolvedValueOnce({ _max: { setNumber: 1 } });
+      mockPrisma.workoutSet.create.mockRejectedValueOnce(
+        Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+      );
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB);
+
+      const detail = await service.addSet(USER_ID, 'w1', 'we1', { reps: 8, clientId: CLIENT_ID });
+
+      expect(detail.id).toBe('w1');
+    });
+
+    it('without a clientId a P2002 is not swallowed and no lookup happens', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.aggregate.mockResolvedValueOnce({ _max: { setNumber: 1 } });
+      mockPrisma.workoutSet.create.mockRejectedValueOnce(
+        Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }),
+      );
+
+      await expect(service.addSet(USER_ID, 'w1', 'we1', { reps: 8 })).rejects.toThrow(
+        'Unique constraint failed',
+      );
+      expect(mockPrisma.workoutSet.findFirst).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateSet / deleteSet ownership', () => {

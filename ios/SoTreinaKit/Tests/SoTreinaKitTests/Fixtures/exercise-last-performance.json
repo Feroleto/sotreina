@@ -1,0 +1,30 @@
+{
+  "workoutId": "cmrxxr8o800012gx0iscow1tj",
+  "startedAt": "2026-07-23T20:00:15.273Z",
+  "sets": [
+    {
+      "id": "cmrxxrepn00052gx0erowwcbn",
+      "setNumber": 1,
+      "weightKg": 20,
+      "reps": 5,
+      "rpe": null,
+      "setType": "WORKING"
+    },
+    {
+      "id": "cmrxxriky00062gx0ii098d7l",
+      "setNumber": 2,
+      "weightKg": 20,
+      "reps": 5,
+      "rpe": null,
+      "setType": "WORKING"
+    },
+    {
+      "id": "cmrxxrna700072gx0qrar7nj0",
+      "setNumber": 3,
+      "weightKg": 20,
+      "reps": 5,
+      "rpe": null,
+      "setType": "WORKING"
+    }
+  ]
+}

@@ -414,7 +414,11 @@ model WorkoutSet {
   rpe               Decimal?        @db.Decimal(3, 1)
   setType           SetType         @default(WORKING) @map("set_type")
   completedAt       DateTime        @default(now()) @map("completed_at")
+  // idempotency key sent by the iOS app on POST .../sets, so a manual resend
+  // after a lost response can't duplicate the set; the web never sends it
+  clientId          String?         @map("client_id")
 
+  @@unique([workoutExerciseId, clientId])
   @@index([workoutExerciseId])
   @@map("workout_sets")
 }

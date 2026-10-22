@@ -1,0 +1,115 @@
+{
+  "id": "cmrxxr8o800012gx0iscow1tj",
+  "startedAt": "2026-07-23T20:00:15.273Z",
+  "finishedAt": "2026-07-23T20:01:11.814Z",
+  "notes": null,
+  "templateId": "cmruoi2lw000035x0ycgigj05",
+  "templateName": "Upper",
+  "exercises": [
+    {
+      "id": "cmrxxr8od00022gx0wkyh3pps",
+      "exerciseId": "cmrtiqrgk00nmp0x0rst7lfat",
+      "exerciseName": "Barra Fixa com Peso",
+      "order": 1,
+      "supersetGroupId": null,
+      "target": {
+        "sets": 3,
+        "repsMin": 12,
+        "repsMax": 12
+      },
+      "sets": [
+        {
+          "id": "cmrxxrepn00052gx0erowwcbn",
+          "setNumber": 1,
+          "weightKg": 20,
+          "reps": 5,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:00:23.100Z"
+        },
+        {
+          "id": "cmrxxriky00062gx0ii098d7l",
+          "setNumber": 2,
+          "weightKg": 20,
+          "reps": 5,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:00:28.114Z"
+        },
+        {
+          "id": "cmrxxrna700072gx0qrar7nj0",
+          "setNumber": 3,
+          "weightKg": 20,
+          "reps": 5,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:00:34.207Z"
+        }
+      ]
+    },
+    {
+      "id": "cmrxxr8od00032gx01rsljwyw",
+      "exerciseId": "cmrtiqqn2009ep0x0hwz0k1pp",
+      "exerciseName": "Crucifixo Inclinado no Cabo",
+      "order": 2,
+      "supersetGroupId": null,
+      "target": {
+        "sets": 2,
+        "repsMin": 5,
+        "repsMax": 9
+      },
+      "sets": [
+        {
+          "id": "cmrxxrul300082gx0nhmvy29v",
+          "setNumber": 1,
+          "weightKg": 40,
+          "reps": 8,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:00:43.671Z"
+        },
+        {
+          "id": "cmrxxrz4a00092gx0y1r1uebd",
+          "setNumber": 2,
+          "weightKg": 40,
+          "reps": 6,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:00:49.546Z"
+        }
+      ]
+    },
+    {
+      "id": "cmrxxr8od00042gx0uy2cy55u",
+      "exerciseId": "cmrtiqr8e00jlp0x07iivpj3e",
+      "exerciseName": "Supino Inclinado no Smith",
+      "order": 3,
+      "supersetGroupId": null,
+      "target": {
+        "sets": 2,
+        "repsMin": 12,
+        "repsMax": 12
+      },
+      "sets": [
+        {
+          "id": "cmrxxs7gx000a2gx0x1vv8o1b",
+          "setNumber": 1,
+          "weightKg": 80,
+          "reps": 7,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:01:00.369Z"
+        },
+        {
+          "id": "cmrxxsct8000b2gx0gdlz7xsi",
+          "setNumber": 2,
+          "weightKg": 80,
+          "reps": 5,
+          "rpe": null,
+          "setType": "WORKING",
+          "completedAt": "2026-07-23T20:01:07.292Z"
+        }
+      ]
+    }
+  ]
+}

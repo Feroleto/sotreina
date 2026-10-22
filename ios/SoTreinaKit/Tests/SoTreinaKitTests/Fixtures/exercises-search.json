@@ -1,0 +1,59 @@
+{
+  "items": [
+    {
+      "id": "cmrtiqq1h000fp0x0s6ujroiu",
+      "name": "Supino no Chão Alternado com Kettlebell",
+      "slug": "alternating-floor-press",
+      "force": "PUSH",
+      "level": "BEGINNER",
+      "mechanic": "COMPOUND",
+      "equipment": "KETTLEBELLS",
+      "primaryMuscles": [
+        "CHEST"
+      ],
+      "secondaryMuscles": [
+        "ABDOMINALS",
+        "SHOULDERS",
+        "TRICEPS"
+      ],
+      "source": "SEED"
+    },
+    {
+      "id": "cmrtiqq3z0017p0x01mnfduzy",
+      "name": "Supino Reto com Barra - Pegada Média",
+      "slug": "barbell-bench-press-medium-grip",
+      "force": "PUSH",
+      "level": "BEGINNER",
+      "mechanic": "COMPOUND",
+      "equipment": "BARBELL",
+      "primaryMuscles": [
+        "CHEST"
+      ],
+      "secondaryMuscles": [
+        "SHOULDERS",
+        "TRICEPS"
+      ],
+      "source": "SEED"
+    },
+    {
+      "id": "cmrtiqq4f001dp0x0l4q8o1cf",
+      "name": "Supino Guilhotina com Barra",
+      "slug": "barbell-guillotine-bench-press",
+      "force": "PUSH",
+      "level": "INTERMEDIATE",
+      "mechanic": "COMPOUND",
+      "equipment": "BARBELL",
+      "primaryMuscles": [
+        "CHEST"
+      ],
+      "secondaryMuscles": [
+        "SHOULDERS",
+        "TRICEPS"
+      ],
+      "source": "SEED"
+    }
+  ],
+  "total": 45,
+  "page": 1,
+  "limit": 3
+}

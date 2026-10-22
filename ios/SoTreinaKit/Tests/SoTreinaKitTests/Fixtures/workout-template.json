@@ -1,0 +1,46 @@
+{
+  "id": "cmruoi2lw000035x0ycgigj05",
+  "name": "Upper",
+  "description": null,
+  "exercises": [
+    {
+      "id": "cmrxxsgag000c2gx0rv7if6pc",
+      "exerciseId": "cmrtiqrgk00nmp0x0rst7lfat",
+      "exerciseName": "Barra Fixa com Peso",
+      "primaryMuscles": [
+        "LATS"
+      ],
+      "order": 1,
+      "targetSets": 3,
+      "targetRepsMin": 12,
+      "targetRepsMax": 12,
+      "supersetGroupId": null
+    },
+    {
+      "id": "cmrxxsgag000d2gx0eieaih89",
+      "exerciseId": "cmrtiqqn2009ep0x0hwz0k1pp",
+      "exerciseName": "Crucifixo Inclinado no Cabo",
+      "primaryMuscles": [
+        "CHEST"
+      ],
+      "order": 2,
+      "targetSets": 2,
+      "targetRepsMin": 5,
+      "targetRepsMax": 9,
+      "supersetGroupId": null
+    },
+    {
+      "id": "cmrxxsgag000e2gx0ilui5l3p",
+      "exerciseId": "cmrtiqr8e00jlp0x07iivpj3e",
+      "exerciseName": "Supino Inclinado no Smith",
+      "primaryMuscles": [
+        "CHEST"
+      ],
+      "order": 3,
+      "targetSets": 2,
+      "targetRepsMin": 12,
+      "targetRepsMax": 12,
+      "supersetGroupId": null
+    }
+  ]
+}

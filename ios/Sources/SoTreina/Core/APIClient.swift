@@ -37,8 +37,8 @@ struct APIClient {
     var baseURL: URL = APIClient.storedBaseURL
     var token: String?
 
-    func get<Response: Decodable>(_ path: String) async throws -> Response? {
-        try await send("GET", path, body: Optional<String>.none)
+    func get<Response: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Response? {
+        try await send("GET", path, query: query, body: Optional<String>.none)
     }
 
     func post<Body: Encodable, Response: Decodable>(_ path: String, body: Body) async throws -> Response? {
@@ -49,14 +49,30 @@ struct APIClient {
         let _: EmptyResponse? = try await send("POST", path, body: Optional<String>.none)
     }
 
+    func patch<Body: Encodable, Response: Decodable>(_ path: String, body: Body) async throws -> Response? {
+        try await send("PATCH", path, body: body)
+    }
+
+    func delete<Response: Decodable>(_ path: String) async throws -> Response? {
+        try await send("DELETE", path, body: Optional<String>.none)
+    }
+
+    func deleteEmpty(_ path: String) async throws {
+        let _: EmptyResponse? = try await send("DELETE", path, body: Optional<String>.none)
+    }
+
     /// Returns `nil` for an empty 2xx body — `GET /auth/me` answers 200 with
     /// no body (not 401) for a visitor without a valid session.
     private func send<Body: Encodable, Response: Decodable>(
         _ method: String,
         _ path: String,
+        query: [URLQueryItem] = [],
         body: Body?
     ) async throws -> Response? {
-        var request = URLRequest(url: baseURL.appending(path: path))
+        // query items go in separately: appending(path:) would encode a "?"
+        var url = baseURL.appending(path: path)
+        if !query.isEmpty { url.append(queryItems: query) }
+        var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         // the backend localizes exercise names by this header; the app is PT-only
@@ -72,7 +88,7 @@ struct APIClient {
         let started = Date()
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError.invalidResponse }
-        Self.log.debug("\(method, privacy: .public) \(path, privacy: .public) → \(http.statusCode) in \(Date().timeIntervalSince(started), format: .fixed(precision: 2))s")
+        Self.log.notice("\(method, privacy: .public) \(path, privacy: .public) -> \(http.statusCode) in \(Date().timeIntervalSince(started), format: .fixed(precision: 2))s")
 
         switch http.statusCode {
         case 200..<300:

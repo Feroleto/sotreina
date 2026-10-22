@@ -15,7 +15,8 @@ final class SessionStore {
     private(set) var state: State = .loading
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "session")
 
-    private var api: APIClient {
+    /// A client carrying the current token — what every feature store uses.
+    var api: APIClient {
         APIClient(baseURL: APIClient.storedBaseURL, token: Keychain.readToken())
     }
 
@@ -52,7 +53,7 @@ final class SessionStore {
 
         Keychain.saveToken(response.token)
         state = .loggedIn(response.user)
-        log.info("logged in as \(response.user.id, privacy: .public)")
+        log.notice("logged in as \(response.user.id, privacy: .public)")
     }
 
     /// Bumps tokenVersion on the server — logs out the web too, by design
@@ -63,6 +64,13 @@ final class SessionStore {
         } catch {
             log.error("logout request failed: \(String(describing: error), privacy: .public)")
         }
+        signOutLocally()
+    }
+
+    /// A 401 anywhere means the JWT expired (30d) or a logout elsewhere bumped
+    /// tokenVersion: drop it and go back to the login screen.
+    func expire() {
+        log.notice("session expired")
         signOutLocally()
     }
 

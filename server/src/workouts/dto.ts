@@ -156,3 +156,23 @@ export function parseSetInput(body: unknown): SetInput {
 
   return result;
 }
+
+export interface AddSetInput extends SetInput {
+  clientId?: string;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// POST only: PATCH never takes clientId (it's the identity of the set
+// creation, not an editable field)
+export function parseAddSetInput(body: unknown): AddSetInput {
+  const result: AddSetInput = parseSetInput(body);
+  const { clientId } = body as Record<string, unknown>;
+  if (clientId !== undefined && clientId !== null) {
+    if (typeof clientId !== 'string' || !UUID_RE.test(clientId)) {
+      throw new BadRequestException('clientId must be a UUID');
+    }
+    result.clientId = clientId;
+  }
+  return result;
+}

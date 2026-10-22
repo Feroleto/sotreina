@@ -90,5 +90,5 @@ O campo "Servidor" da tela de login aceita outra URL. O iPhone não alcança o `
 - [x] **Live Activity**: "Iniciar descanso de 60s" mostra o timer na Dynamic Island e na tela bloqueada, contando sozinho. "+15s" atualiza, e "Encerrar" remove. **Critério decisivo.**
 - [x] Login com email/senha contra produção, e o nome aparece na tela inicial
 - [x] Fechar e reabrir o app mantém o login (token no Keychain)
-- [ ] `logs.sh` mostra as linhas `GET auth/me → 200` do app
+- [x] `logs.sh` mostra as linhas `GET auth/me -> 200` do app (só `.notice` pra cima: `.info`/`.debug` não passam pelo `idevicesyslog`)
 - [ ] Tempo de um ciclo editar → `deploy.sh` → app aberto: ____ s
