@@ -5,4 +5,5 @@
 # (e.g. --udid <id>, -c release).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+source scripts/usbmux.sh
 exec xtool dev run "$@"

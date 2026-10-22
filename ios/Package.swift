@@ -27,7 +27,15 @@ let package = Package(
         ),
         .target(
             name: "SoTreinaLiveActivity",
-            dependencies: ["SoTreinaKit"]
+            dependencies: ["SoTreinaKit"],
+            // The extension's entry point is Foundation's _NSExtensionMain, so
+            // nothing references our @main and dead stripping drops the whole
+            // widget (no __text section; zsign then fails with "Can't find free
+            // space of LoadCommands"). Keep _main alive. Remove once xtool ships
+            // xtool-org/xtool#320 (bug #379).
+            linkerSettings: [
+                .unsafeFlags(["-Xlinker", "-u", "-Xlinker", "_main"]),
+            ]
         ),
     ]
 )

@@ -1,4 +1,5 @@
 import Foundation
+import os
 import Security
 
 /// Stores the session JWT. `AfterFirstUnlock` (not `WhenUnlocked`) so a
@@ -6,6 +7,7 @@ import Security
 enum Keychain {
     private static let service = "com.feroleto.sotreina"
     private static let account = "session-token"
+    private static let log = Logger(subsystem: "com.feroleto.sotreina", category: "keychain")
 
     private static var baseQuery: [String: Any] {
         [
@@ -21,9 +23,15 @@ enum Keychain {
         query[kSecMatchLimit as String] = kSecMatchLimitOne
 
         var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data
-        else { return nil }
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else {
+            // errSecItemNotFound is the normal logged-out case; anything else
+            // (e.g. -34018 missing entitlement on a sideloaded build) is a bug
+            if status != errSecItemNotFound {
+                log.error("read failed: OSStatus \(status, privacy: .public)")
+            }
+            return nil
+        }
         return String(data: data, encoding: .utf8)
     }
 
@@ -32,7 +40,12 @@ enum Keychain {
         var query = baseQuery
         query[kSecValueData as String] = Data(token.utf8)
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status == errSecSuccess {
+            log.info("token saved")
+        } else {
+            log.error("save failed: OSStatus \(status, privacy: .public)")
+        }
     }
 
     static func deleteToken() {

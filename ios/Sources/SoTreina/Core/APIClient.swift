@@ -13,15 +13,23 @@ enum APIError: Error {
 /// backend's SessionService.extractSession reads the header first.
 struct APIClient {
     /// Goes through the Vercel proxy, same as the web — keeps the Render
-    /// host an implementation detail. Switch to https://sotreina.com/api
-    /// once the custom domain migration is done.
-    static let defaultBaseURL = URL(string: "https://sotreina.vercel.app/api")!
+    /// host an implementation detail. Must be the canonical host: the other
+    /// domains answer 308 to www.sotreina.com, and URLSession drops the
+    /// Authorization header on a cross-host redirect (every authed call would
+    /// look logged out, and bootstrap would wipe the token).
+    static let defaultBaseURL = URL(string: "https://www.sotreina.com/api")!
+    /// Hosts that only redirect to `defaultBaseURL` — a stored one (saved by
+    /// an older build's login) is read as the default.
+    private static let redirectingHosts: Set<String> = ["sotreina.vercel.app", "sotreina.com"]
     private static let baseURLKey = "apiBaseURL"
     private static let log = Logger(subsystem: "com.feroleto.sotreina", category: "api")
 
     static var storedBaseURL: URL {
         get {
-            UserDefaults.standard.string(forKey: baseURLKey).flatMap(URL.init(string:)) ?? defaultBaseURL
+            guard let stored = UserDefaults.standard.string(forKey: baseURLKey).flatMap(URL.init(string:)),
+                  !redirectingHosts.contains(stored.host() ?? "")
+            else { return defaultBaseURL }
+            return stored
         }
         set { UserDefaults.standard.set(newValue.absoluteString, forKey: baseURLKey) }
     }

@@ -5,4 +5,5 @@
 # Matches on the line text, so it catches both the app and the
 # SoTreinaLiveActivity extension process.
 set -euo pipefail
+source "$(dirname "$0")/usbmux.sh"
 exec idevicesyslog --match SoTreina "$@"
