@@ -7,11 +7,14 @@ const MIN_TARGET_SETS = 1;
 const MAX_TARGET_SETS = 20;
 const MIN_TARGET_REPS = 1;
 const MAX_TARGET_REPS = 100;
+const MIN_REST_SECONDS = 15;
+const MAX_REST_SECONDS = 600;
 
 export interface TemplateExerciseTargets {
   targetSets?: number;
   targetRepsMin?: number;
   targetRepsMax?: number;
+  restSeconds?: number;
 }
 
 function parseOptionalInt(
@@ -53,7 +56,14 @@ function parseTargets(body: Record<string, unknown>): TemplateExerciseTargets {
     throw new BadRequestException('targetRepsMin must be <= targetRepsMax');
   }
 
-  return { targetSets, targetRepsMin, targetRepsMax };
+  const restSeconds = parseOptionalInt(
+    'restSeconds',
+    body.restSeconds,
+    MIN_REST_SECONDS,
+    MAX_REST_SECONDS,
+  );
+
+  return { targetSets, targetRepsMin, targetRepsMax, restSeconds };
 }
 
 export interface CreateTemplateExerciseInput extends TemplateExerciseTargets {

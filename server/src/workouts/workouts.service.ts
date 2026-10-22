@@ -29,6 +29,8 @@ export interface ExerciseTarget {
   sets: number | null;
   repsMin: number | null;
   repsMax: number | null;
+  /** seconds; null = the user's global rest default */
+  restSeconds: number | null;
 }
 
 export interface WorkoutExerciseDetail {
@@ -163,12 +165,23 @@ export class WorkoutsService {
     if (workout.templateId) {
       const templateExercises = await this.prisma.workoutTemplateExercise.findMany({
         where: { templateId: workout.templateId },
-        select: { exerciseId: true, targetSets: true, targetRepsMin: true, targetRepsMax: true },
+        select: {
+          exerciseId: true,
+          targetSets: true,
+          targetRepsMin: true,
+          targetRepsMax: true,
+          restSeconds: true,
+        },
       });
       targetsByExerciseId = new Map(
         templateExercises.map((te) => [
           te.exerciseId,
-          { sets: te.targetSets, repsMin: te.targetRepsMin, repsMax: te.targetRepsMax },
+          {
+            sets: te.targetSets,
+            repsMin: te.targetRepsMin,
+            repsMax: te.targetRepsMax,
+            restSeconds: te.restSeconds,
+          },
         ]),
       );
     }

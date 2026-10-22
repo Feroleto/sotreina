@@ -9,10 +9,21 @@ public struct RestTimer: Equatable, Sendable {
         public var endsAt: Date
         /// the full length of this rest, for progress display
         public var duration: Int
+        /// a routine's per-exercise rest: ±15s on it doesn't touch the default
+        public var overridden: Bool
 
-        public init(endsAt: Date, duration: Int) {
+        public init(endsAt: Date, duration: Int, overridden: Bool = false) {
             self.endsAt = endsAt
             self.duration = duration
+            self.overridden = overridden
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            endsAt = try container.decode(Date.self, forKey: .endsAt)
+            duration = try container.decode(Int.self, forKey: .duration)
+            // absent in what builds before it persisted
+            overridden = try container.decodeIfPresent(Bool.self, forKey: .overridden) ?? false
         }
     }
 
@@ -39,8 +50,17 @@ public struct RestTimer: Equatable, Sendable {
         active.map { $0.endsAt <= now } ?? false
     }
 
-    public mutating func start(now: Date = .now) {
-        active = Active(endsAt: now.addingTimeInterval(TimeInterval(duration)), duration: duration)
+    /// `seconds` is a routine's per-exercise rest (`ExerciseTarget.restSeconds`):
+    /// it runs for that long without becoming the default, so the next
+    /// exercise without its own rest still gets the usual length — the same
+    /// rule as the web's `startOverride`.
+    public mutating func start(seconds: Int? = nil, now: Date = .now) {
+        let length = seconds.map(Self.clamp) ?? duration
+        active = Active(
+            endsAt: now.addingTimeInterval(TimeInterval(length)),
+            duration: length,
+            overridden: seconds != nil
+        )
     }
 
     /// `+15s`/`-15s`. Remaining time floors at zero, and the adjusted length
@@ -49,8 +69,12 @@ public struct RestTimer: Equatable, Sendable {
         guard let current = active else { return }
         let endsAt = max(now, current.endsAt.addingTimeInterval(TimeInterval(seconds)))
         let remaining = Int(endsAt.timeIntervalSince(now).rounded())
-        active = Active(endsAt: endsAt, duration: max(current.duration + seconds, remaining))
-        duration = Self.clamp(remaining)
+        active = Active(
+            endsAt: endsAt,
+            duration: max(current.duration + seconds, remaining),
+            overridden: current.overridden
+        )
+        if !current.overridden { duration = Self.clamp(remaining) }
     }
 
     public mutating func skip() {

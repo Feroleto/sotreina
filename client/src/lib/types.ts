@@ -205,6 +205,8 @@ export interface ExerciseTarget {
   sets: number | null;
   repsMin: number | null;
   repsMax: number | null;
+  // seconds; null = the user's remembered rest length (useRestTimer)
+  restSeconds: number | null;
 }
 
 export interface WorkoutExercise {
@@ -276,6 +278,7 @@ export interface TemplateExerciseTargets {
   targetSets?: number;
   targetRepsMin?: number;
   targetRepsMax?: number;
+  restSeconds?: number;
 }
 
 export interface TemplateExerciseDetail extends TemplateExerciseTargets {

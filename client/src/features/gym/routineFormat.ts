@@ -13,6 +13,20 @@ export function formatRepsRange(
   return String(min ?? max);
 }
 
+// per-exercise rest steps for the routine editor (15s, the server's minimum,
+// up to 10min, its maximum — WorkoutTemplateExercise.restSeconds)
+export const REST_STEP_SEC = 15;
+export const REST_MIN_SEC = 15;
+export const REST_MAX_SEC = 600;
+// where "+" lands from "Padrão" (no per-exercise rest): the timer's default
+export const REST_FIRST_SEC = 90;
+export const REST_OPTIONS_SEC = [30, 45, 60, 75, 90, 120, 150, 180, 240, 300];
+
+// 90 → "1:30", 45 → "0:45"
+export function formatRestSeconds(sec: number): string {
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+}
+
 // "Treino A — Peito/Tríceps" → "Peito/Tríceps" — GymOverviewPage's routines
 // section shows the descriptive part only, dropping the "Treino X — " label
 // suggested by editor.namePlaceholder; names that don't follow that

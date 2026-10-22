@@ -29,6 +29,8 @@ private func fixture<T: Decodable>(_ name: String, as type: T.Type) throws -> T 
         #expect(template.exercises.map(\.order) == [1, 2, 3])
         #expect(template.exercises[1].targetRepsMin == 5)
         #expect(template.exercises[1].targetRepsMax == 9)
+        // captured before restSeconds existed: an absent key decodes as nil
+        #expect(template.exercises[1].restSeconds == nil)
     }
 
     @Test func decodesFinishedWorkoutDetail() throws {

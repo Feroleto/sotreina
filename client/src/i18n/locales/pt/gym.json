@@ -182,8 +182,16 @@
       "decreaseRepsMin": "Diminuir repetições mínimas",
       "increaseRepsMin": "Aumentar repetições mínimas",
       "decreaseRepsMax": "Diminuir repetições máximas",
-      "increaseRepsMax": "Aumentar repetições máximas"
-    }
+      "increaseRepsMax": "Aumentar repetições máximas",
+      "restLabel": "Descanso",
+      "restHint": "Depois de cada série deste exercício",
+      "restDefault": "Padrão",
+      "decreaseRest": "Diminuir descanso",
+      "increaseRest": "Aumentar descanso"
+    },
+    "restPlaceholder": "Descanso",
+    "restDefault": "Padrão",
+    "restSuffix": "descanso {{rest}}"
   },
   "rest": {
     "openTimer": "Abrir timer de descanso",

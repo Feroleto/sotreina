@@ -38,6 +38,8 @@ public struct TemplateExercise: Codable, Equatable, Sendable, Identifiable {
     public var targetSets: Int?
     public var targetRepsMin: Int?
     public var targetRepsMax: Int?
+    /// seconds; nil = the user's default (absent from older servers too)
+    public var restSeconds: Int?
     public var supersetGroupId: String?
 }
 
@@ -73,6 +75,15 @@ public struct ExerciseTarget: Codable, Equatable, Sendable {
     public var sets: Int?
     public var repsMin: Int?
     public var repsMax: Int?
+    /// the routine's rest for this exercise; nil = the user's default
+    public var restSeconds: Int?
+
+    public init(sets: Int?, repsMin: Int?, repsMax: Int?, restSeconds: Int? = nil) {
+        self.sets = sets
+        self.repsMin = repsMin
+        self.repsMax = repsMax
+        self.restSeconds = restSeconds
+    }
 }
 
 /// `WorkoutSetItem`. `weightKg`/`rpe` are `Decimal` columns, already

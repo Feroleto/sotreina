@@ -255,6 +255,7 @@ describe('WorkoutTemplatesService', () => {
             targetSets: 3,
             targetRepsMin: null,
             targetRepsMax: null,
+            restSeconds: null,
             supersetGroupId: null,
           },
           {
@@ -264,19 +265,21 @@ describe('WorkoutTemplatesService', () => {
             targetSets: 0,
             targetRepsMin: null,
             targetRepsMax: null,
+            restSeconds: null,
             supersetGroupId: null,
           },
         ],
       });
     });
 
-    it('preserves targetRepsMin/Max/supersetGroupId for exercises that already existed in the template', async () => {
+    it('preserves targetRepsMin/Max/restSeconds/supersetGroupId for exercises that already existed in the template', async () => {
       mockPrisma.workoutTemplate.findFirst.mockResolvedValueOnce({ id: 't1' }); // ownership
       mockPrisma.workoutTemplateExercise.findMany.mockResolvedValueOnce([
         {
           exerciseId: 'ex1',
           targetRepsMin: 8,
           targetRepsMax: 12,
+          restSeconds: 120,
           supersetGroupId: 'sg1',
         },
       ]);
@@ -297,6 +300,7 @@ describe('WorkoutTemplatesService', () => {
             targetSets: 4,
             targetRepsMin: 8,
             targetRepsMax: 12,
+            restSeconds: 120,
             supersetGroupId: 'sg1',
           },
           {
@@ -306,6 +310,7 @@ describe('WorkoutTemplatesService', () => {
             targetSets: 2,
             targetRepsMin: null,
             targetRepsMax: null,
+            restSeconds: null,
             supersetGroupId: null,
           },
         ],
@@ -321,7 +326,7 @@ describe('WorkoutTemplatesService', () => {
 
       await service.update(USER_ID, 't1', {
         exercises: [
-          { exerciseId: 'ex1', targetSets: 3 },
+          { exerciseId: 'ex1', targetSets: 3, restSeconds: 150 },
           { exerciseId: 'ex2', targetRepsMin: 8, targetRepsMax: 12 },
         ],
       });
@@ -338,6 +343,7 @@ describe('WorkoutTemplatesService', () => {
             targetSets: 3,
             targetRepsMin: null,
             targetRepsMax: null,
+            restSeconds: 150,
           },
           {
             templateId: 't1',
@@ -346,6 +352,7 @@ describe('WorkoutTemplatesService', () => {
             targetSets: null,
             targetRepsMin: 8,
             targetRepsMax: 12,
+            restSeconds: null,
           },
         ],
       });

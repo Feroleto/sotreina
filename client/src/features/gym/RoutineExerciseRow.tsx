@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import type { TemplateExerciseTargets } from '@/lib/types';
 import type { WorkingExercise } from './useRoutineEditor';
+import { REST_OPTIONS_SEC, formatRestSeconds } from './routineFormat';
 
 interface RoutineExerciseRowProps {
   exercise: WorkingExercise;
@@ -41,8 +42,16 @@ export default function RoutineExerciseRow({
       targetSets: sets.trim() ? Number(sets) : undefined,
       targetRepsMin: repsMin.trim() ? Number(repsMin) : undefined,
       targetRepsMax: repsMax.trim() ? Number(repsMax) : undefined,
+      restSeconds: exercise.restSeconds,
     });
   };
+
+  // a value set elsewhere (the mobile stepper's 15s steps) that isn't one of
+  // the select's options still has to be shown, not silently swapped
+  const restOptions =
+    exercise.restSeconds != null && !REST_OPTIONS_SEC.includes(exercise.restSeconds)
+      ? [...REST_OPTIONS_SEC, exercise.restSeconds].sort((a, b) => a - b)
+      : REST_OPTIONS_SEC;
 
   return (
     <div className="rounded-[14px] border border-border bg-card p-3.5">
@@ -113,6 +122,29 @@ export default function RoutineExerciseRow({
           className="h-9 w-16 rounded-[8px] border border-border bg-page-bg px-2 text-[13px] text-foreground outline-none focus:border-acc"
         />
         <span className="text-[11px] text-muted-foreground">{t('editor.repsUnit')}</span>
+        <select
+          value={exercise.restSeconds ?? ''}
+          onChange={(e) =>
+            onTargetsChange({
+              targetSets: sets.trim() ? Number(sets) : undefined,
+              targetRepsMin: repsMin.trim() ? Number(repsMin) : undefined,
+              targetRepsMax: repsMax.trim() ? Number(repsMax) : undefined,
+              restSeconds: e.target.value ? Number(e.target.value) : undefined,
+            })
+          }
+          aria-label={t('editor.restPlaceholder')}
+          title={t('editor.restPlaceholder')}
+          className="ml-auto h-9 rounded-[8px] border border-border bg-page-bg px-2 text-[13px] text-foreground outline-none focus:border-acc"
+        >
+          <option value="">
+            {t('editor.restPlaceholder')}: {t('editor.restDefault')}
+          </option>
+          {restOptions.map((sec) => (
+            <option key={sec} value={sec}>
+              {t('editor.restPlaceholder')}: {formatRestSeconds(sec)}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

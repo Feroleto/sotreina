@@ -49,6 +49,7 @@ function toWorking(template: TemplateDetail): WorkingExercise[] {
       targetSets: e.targetSets,
       targetRepsMin: e.targetRepsMin,
       targetRepsMax: e.targetRepsMax,
+      restSeconds: e.restSeconds,
     }));
 }
 
@@ -62,6 +63,7 @@ function exercisesSignature(exercises: WorkingExercise[]): string {
       targetSets: e.targetSets ?? null,
       targetRepsMin: e.targetRepsMin ?? null,
       targetRepsMax: e.targetRepsMax ?? null,
+      restSeconds: e.restSeconds ?? null,
     })),
   );
 }
@@ -171,6 +173,7 @@ export function useRoutineEditor(templateId: string | null) {
             targetSets: e.targetSets,
             targetRepsMin: e.targetRepsMin,
             targetRepsMax: e.targetRepsMax,
+            restSeconds: e.restSeconds,
           })),
         }),
       });

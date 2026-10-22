@@ -120,4 +120,46 @@ describe('RestTimerEngine', () => {
     expect(engine.getSnapshot().remainingMs).toBe(0);
     expect(localStorage.getItem('restTimer:active')).toBeNull();
   });
+
+  describe('startOverride (a routine\'s per-exercise rest)', () => {
+    it('runs for the given length without changing the remembered default', () => {
+      const engine = new RestTimerEngine();
+      engine.start(90);
+      engine.skip();
+
+      engine.startOverride(180);
+      expect(engine.getSnapshot()).toMatchObject({ isActive: true, remainingMs: 180_000, duration: 180 });
+
+      engine.finish();
+      // idle shows the default again, and a plain start uses it
+      expect(engine.getSnapshot().duration).toBe(90);
+      engine.start();
+      expect(engine.getSnapshot().remainingMs).toBe(90_000);
+    });
+
+    it('±15s on an override does not leak into the default', () => {
+      const engine = new RestTimerEngine();
+      engine.start(60);
+      engine.skip();
+
+      engine.startOverride(120);
+      engine.addSeconds(15);
+      expect(engine.getSnapshot().remainingMs).toBe(135_000);
+      engine.skip();
+      expect(new RestTimerEngine().getSnapshot().duration).toBe(60);
+    });
+
+    it('survives a reload still marked as an override', () => {
+      const engine = new RestTimerEngine();
+      engine.start(60);
+      engine.skip();
+      engine.startOverride(150);
+
+      const reloaded = new RestTimerEngine();
+      expect(reloaded.getSnapshot()).toMatchObject({ isActive: true, duration: 150 });
+      reloaded.addSeconds(15);
+      reloaded.skip();
+      expect(reloaded.getSnapshot().duration).toBe(60);
+    });
+  });
 });

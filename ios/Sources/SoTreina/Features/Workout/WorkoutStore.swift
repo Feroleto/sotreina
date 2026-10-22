@@ -165,7 +165,8 @@ final class WorkoutStore {
         pendingSets.append(pending)
         // the rest starts on the tap, not on the server's answer: a slow or
         // failed request must not cost the athlete their rest timing
-        rest.start()
+        let restSeconds = active?.exercises.first { $0.id == workoutExerciseId }?.target?.restSeconds
+        rest.start(seconds: restSeconds)
         await send(pending)
     }
 

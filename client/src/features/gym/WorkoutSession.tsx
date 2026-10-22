@@ -162,7 +162,12 @@ export default function WorkoutSession({
     // ahead of the async beep the timer fires later from a setInterval tick
     primeAudio();
     const ok = await onAddSet(workoutExerciseId, input);
-    if (ok) restTimer.start();
+    if (!ok) return;
+    // the routine's rest for this exercise, else the user's usual length
+    const restSeconds = workout.exercises.find((we) => we.id === workoutExerciseId)?.target
+      ?.restSeconds;
+    if (restSeconds) restTimer.startOverride(restSeconds);
+    else restTimer.start();
   };
 
   // Free workouts (no templateId) and templated ones that never drifted

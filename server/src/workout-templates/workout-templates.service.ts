@@ -15,6 +15,7 @@ export interface TemplateExerciseDetail {
   targetSets: number | null;
   targetRepsMin: number | null;
   targetRepsMax: number | null;
+  restSeconds: number | null;
   supersetGroupId: string | null;
 }
 
@@ -55,6 +56,7 @@ const TEMPLATE_DETAIL_SELECT = {
       targetSets: true,
       targetRepsMin: true,
       targetRepsMax: true,
+      restSeconds: true,
       supersetGroupId: true,
       exerciseId: true,
       exercise: { select: { name: true, namePt: true, primaryMuscles: true } },
@@ -72,6 +74,7 @@ type TemplateWithExercises = {
     targetSets: number | null;
     targetRepsMin: number | null;
     targetRepsMax: number | null;
+    restSeconds: number | null;
     supersetGroupId: string | null;
     exerciseId: string;
     exercise: { name: string; namePt: string | null; primaryMuscles: string[] };
@@ -92,6 +95,7 @@ function toDetail(template: TemplateWithExercises, lang: Lang): TemplateDetail {
       targetSets: te.targetSets,
       targetRepsMin: te.targetRepsMin,
       targetRepsMax: te.targetRepsMax,
+      restSeconds: te.restSeconds,
       supersetGroupId: te.supersetGroupId,
     })),
   };
@@ -130,6 +134,7 @@ export class WorkoutTemplatesService {
             targetSets: e.targetSets,
             targetRepsMin: e.targetRepsMin,
             targetRepsMax: e.targetRepsMax,
+            restSeconds: e.restSeconds,
           })),
         },
       },
@@ -229,6 +234,7 @@ export class WorkoutTemplatesService {
             targetSets: e.targetSets ?? null,
             targetRepsMin: e.targetRepsMin ?? null,
             targetRepsMax: e.targetRepsMax ?? null,
+            restSeconds: e.restSeconds ?? null,
           })),
         }),
       );
@@ -252,7 +258,7 @@ export class WorkoutTemplatesService {
   // same delete+createMany shape as the lap editor's PUT .../laps. The
   // exerciseIds here already passed visibility checks when they were added
   // to the workout (WorkoutsService.addExercise), so no need to re-check.
-  // targetRepsMin/Max/supersetGroupId aren't tracked by a live workout
+  // targetRepsMin/Max/restSeconds/supersetGroupId aren't tracked by a live workout
   // session, so they're preserved per exerciseId for rows that already
   // existed in the template, and left null for exercises the session added
   // that weren't part of the template before. No `lang` param: its return
@@ -271,6 +277,7 @@ export class WorkoutTemplatesService {
         exerciseId: true,
         targetRepsMin: true,
         targetRepsMax: true,
+        restSeconds: true,
         supersetGroupId: true,
       },
     });
@@ -288,6 +295,7 @@ export class WorkoutTemplatesService {
             targetSets: ex.targetSets,
             targetRepsMin: prev?.targetRepsMin ?? null,
             targetRepsMax: prev?.targetRepsMax ?? null,
+            restSeconds: prev?.restSeconds ?? null,
             supersetGroupId: prev?.supersetGroupId ?? null,
           };
         }),

@@ -30,8 +30,9 @@ final class RestTimerController {
 
     var isRunning: Bool { timer.active != nil }
 
-    func start() {
-        timer.start()
+    /// `seconds`: the routine's rest for this exercise, nil = the default
+    func start(seconds: Int? = nil) {
+        timer.start(seconds: seconds)
         changed()
     }
 

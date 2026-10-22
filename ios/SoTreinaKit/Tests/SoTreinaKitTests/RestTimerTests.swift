@@ -67,4 +67,27 @@ import Testing
         timer.setDuration(150)
         #expect(timer.duration == 150)
     }
+
+    @Test func perExerciseRestRunsWithoutBecomingTheDefault() {
+        var timer = RestTimer(duration: 90)
+        timer.start(seconds: 180, now: t0)
+        #expect(timer.remaining(now: t0) == 180)
+
+        timer.add(seconds: 15, now: t0)
+        #expect(timer.remaining(now: t0) == 195)
+        #expect(timer.duration == 90)
+
+        timer.skip()
+        timer.start(now: t0)
+        #expect(timer.remaining(now: t0) == 90)
+    }
+
+    @Test func overriddenFlagSurvivesPersistenceAndOldDataReadsAsFalse() throws {
+        let active = RestTimer.Active(endsAt: t0, duration: 120, overridden: true)
+        let data = try JSONEncoder().encode(active)
+        #expect(try JSONDecoder().decode(RestTimer.Active.self, from: data) == active)
+
+        let legacy = Data(#"{"endsAt": 0, "duration": 90}"#.utf8)
+        #expect(try JSONDecoder().decode(RestTimer.Active.self, from: legacy).overridden == false)
+    }
 }

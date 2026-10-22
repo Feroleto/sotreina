@@ -10,6 +10,9 @@ const TICK_MS = 250;
 interface PersistedActive {
   endsAt: number;
   duration: number;
+  // a routine's per-exercise rest (see startOverride) — absent in values
+  // persisted before it existed, which reads as false
+  overridden?: boolean;
 }
 
 export interface RestTimerSnapshot {
@@ -30,7 +33,7 @@ function readPersistedActive(): PersistedActive | null {
   try {
     const parsed = JSON.parse(raw) as Partial<PersistedActive>;
     if (typeof parsed.endsAt !== 'number' || typeof parsed.duration !== 'number') return null;
-    return { endsAt: parsed.endsAt, duration: parsed.duration };
+    return { endsAt: parsed.endsAt, duration: parsed.duration, overridden: parsed.overridden === true };
   } catch {
     return null;
   }
@@ -45,6 +48,7 @@ function readPersistedActive(): PersistedActive | null {
 export class RestTimerEngine {
   private endsAt: number | null = null;
   private duration: number;
+  private overridden = false;
 
   constructor(now: number = Date.now()) {
     this.duration = readLastDuration();
@@ -53,6 +57,7 @@ export class RestTimerEngine {
       // survives an accidental mid-rest page reload
       this.endsAt = persisted.endsAt;
       this.duration = persisted.duration;
+      this.overridden = persisted.overridden === true;
     } else if (persisted) {
       // stale (already elapsed while the page was closed) — discard silently
       localStorage.removeItem(ACTIVE_KEY);
@@ -70,8 +75,23 @@ export class RestTimerEngine {
     const dur = durationSeconds ?? readLastDuration();
     this.duration = dur;
     this.endsAt = now + dur * 1000;
+    this.overridden = false;
     localStorage.setItem(LAST_DURATION_KEY, String(dur));
     localStorage.setItem(ACTIVE_KEY, JSON.stringify({ endsAt: this.endsAt, duration: dur }));
+  }
+
+  // a routine's per-exercise rest (WorkoutTemplateExercise.restSeconds):
+  // runs for that long without becoming the remembered default, so the next
+  // exercise without its own rest still gets the user's usual length — and
+  // ±15s on it doesn't touch that default either
+  startOverride(durationSeconds: number, now: number = Date.now()): void {
+    this.duration = durationSeconds;
+    this.endsAt = now + durationSeconds * 1000;
+    this.overridden = true;
+    localStorage.setItem(
+      ACTIVE_KEY,
+      JSON.stringify({ endsAt: this.endsAt, duration: durationSeconds, overridden: true }),
+    );
   }
 
   // delta may be negative (the -15s button) — remaining time is floored at 0,
@@ -83,20 +103,29 @@ export class RestTimerEngine {
     const nextDuration = Math.max(0, Math.round((nextEndsAt - now) / 1000));
     this.endsAt = nextEndsAt;
     this.duration = nextDuration;
-    localStorage.setItem(LAST_DURATION_KEY, String(nextDuration));
-    localStorage.setItem(ACTIVE_KEY, JSON.stringify({ endsAt: nextEndsAt, duration: nextDuration }));
+    if (!this.overridden) localStorage.setItem(LAST_DURATION_KEY, String(nextDuration));
+    localStorage.setItem(
+      ACTIVE_KEY,
+      JSON.stringify({ endsAt: nextEndsAt, duration: nextDuration, overridden: this.overridden }),
+    );
   }
 
   skip(): void {
-    this.endsAt = null;
-    localStorage.removeItem(ACTIVE_KEY);
+    this.stop();
   }
 
   // same state transition as skip() — kept as a separate method so the hook
   // can layer vibration/sound on top only for a natural completion, not a
   // manual skip, without the engine itself knowing about browser APIs
   finish(): void {
+    this.stop();
+  }
+
+  private stop(): void {
     this.endsAt = null;
+    // an override's length was never the default: idle shows the default again
+    if (this.overridden) this.duration = readLastDuration();
+    this.overridden = false;
     localStorage.removeItem(ACTIVE_KEY);
   }
 }
@@ -142,6 +171,12 @@ export function useRestTimer() {
     setSnapshot(engine.getSnapshot());
   }, []);
 
+  const startOverride = useCallback((durationSeconds: number) => {
+    const engine = engineRef.current!;
+    engine.startOverride(durationSeconds);
+    setSnapshot(engine.getSnapshot());
+  }, []);
+
   const addSeconds = useCallback((delta: number) => {
     const engine = engineRef.current!;
     engine.addSeconds(delta);
@@ -162,5 +197,5 @@ export function useRestTimer() {
     });
   }, []);
 
-  return { ...snapshot, muted, start, addSeconds, skip, toggleMuted };
+  return { ...snapshot, muted, start, startOverride, addSeconds, skip, toggleMuted };
 }

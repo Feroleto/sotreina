@@ -7,7 +7,7 @@ import RoutineExerciseRow from './RoutineExerciseRow';
 import ExercisePicker from './ExercisePicker';
 import RoutineExercisePicker from './RoutineExercisePicker';
 import RoutineExerciseEditPage from './RoutineExerciseEditPage';
-import { formatRepsRange } from './routineFormat';
+import { formatRepsRange, formatRestSeconds } from './routineFormat';
 
 interface RoutineEditPageProps {
   templateId: string | null;
@@ -376,6 +376,8 @@ export default function RoutineEditPage({ templateId, onDone, onCancel }: Routin
                     sets: ex.targetSets ?? '—',
                     reps: formatRepsRange(ex.targetRepsMin, ex.targetRepsMax),
                   })}
+                  {ex.restSeconds != null &&
+                    ` · ${t('editor.restSuffix', { rest: formatRestSeconds(ex.restSeconds) })}`}
                 </div>
               </div>
               <button

@@ -3,6 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Minus, Plus } from 'lucide-react';
 import type { TemplateExerciseTargets } from '@/lib/types';
 import type { WorkingExercise } from './useRoutineEditor';
+import {
+  REST_FIRST_SEC,
+  REST_MAX_SEC,
+  REST_MIN_SEC,
+  REST_STEP_SEC,
+  formatRestSeconds,
+} from './routineFormat';
 
 const MIN_SETS = 1;
 const MAX_SETS = 10;
@@ -36,6 +43,8 @@ export default function RoutineExerciseEditPage({
   const [sets, setSets] = useState(exercise.targetSets ?? DEFAULT_SETS);
   const [repsMin, setRepsMin] = useState(exercise.targetRepsMin ?? DEFAULT_REPS_MIN);
   const [repsMax, setRepsMax] = useState(exercise.targetRepsMax ?? DEFAULT_REPS_MAX);
+  // undefined = no per-exercise rest, the timer's remembered length applies
+  const [rest, setRest] = useState(exercise.restSeconds);
 
   // resync local numbers when the exercise prop changes for a reason outside
   // this component's own edits (e.g. a reorder's server response touching
@@ -46,12 +55,14 @@ export default function RoutineExerciseEditPage({
   if (
     exercise.targetSets !== prevTargets.targetSets ||
     exercise.targetRepsMin !== prevTargets.targetRepsMin ||
-    exercise.targetRepsMax !== prevTargets.targetRepsMax
+    exercise.targetRepsMax !== prevTargets.targetRepsMax ||
+    exercise.restSeconds !== prevTargets.restSeconds
   ) {
     setPrevTargets(exercise);
     setSets(exercise.targetSets ?? DEFAULT_SETS);
     setRepsMin(exercise.targetRepsMin ?? DEFAULT_REPS_MIN);
     setRepsMax(exercise.targetRepsMax ?? DEFAULT_REPS_MAX);
+    setRest(exercise.restSeconds);
   }
 
   const canDecreaseSets = sets > MIN_SETS;
@@ -60,6 +71,22 @@ export default function RoutineExerciseEditPage({
   const canIncreaseRepsMin = repsMin < repsMax && repsMin < MAX_REPS;
   const canDecreaseRepsMax = repsMax > repsMin && repsMax > MIN_REPS;
   const canIncreaseRepsMax = repsMax < MAX_REPS;
+
+  const canIncreaseRest = rest == null || rest < REST_MAX_SEC;
+
+  // "−" at the minimum steps back to "Padrão" rather than stopping there
+  function decreaseRest() {
+    if (rest == null) return;
+    const next = rest - REST_STEP_SEC < REST_MIN_SEC ? undefined : rest - REST_STEP_SEC;
+    setRest(next);
+    onChange({ restSeconds: next });
+  }
+  function increaseRest() {
+    if (!canIncreaseRest) return;
+    const next = rest == null ? REST_FIRST_SEC : rest + REST_STEP_SEC;
+    setRest(next);
+    onChange({ restSeconds: next });
+  }
 
   function decreaseSets() {
     if (!canDecreaseSets) return;
@@ -207,6 +234,38 @@ export default function RoutineExerciseEditPage({
               className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-full bg-chip text-foreground disabled:cursor-not-allowed disabled:opacity-30"
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={2.2} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-[14px] rounded-[14px] border border-border bg-card p-[16px]">
+          <div className="text-center text-[11px] font-medium tracking-[.05em] text-muted-foreground uppercase">
+            {t('editor.editExercise.restLabel')}
+          </div>
+          <div className="mt-1 text-center text-[11.5px] text-muted-foreground">
+            {t('editor.editExercise.restHint')}
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-6">
+            <button
+              type="button"
+              onClick={decreaseRest}
+              disabled={rest == null}
+              aria-label={t('editor.editExercise.decreaseRest')}
+              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full bg-chip text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <Minus className="h-4 w-4" strokeWidth={2.2} />
+            </button>
+            <span className="w-20 text-center font-mono text-[22px] font-bold text-foreground">
+              {rest == null ? t('editor.editExercise.restDefault') : formatRestSeconds(rest)}
+            </span>
+            <button
+              type="button"
+              onClick={increaseRest}
+              disabled={!canIncreaseRest}
+              aria-label={t('editor.editExercise.increaseRest')}
+              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full bg-chip text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.2} />
             </button>
           </div>
         </div>

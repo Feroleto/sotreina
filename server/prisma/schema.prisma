@@ -380,6 +380,9 @@ model WorkoutTemplateExercise {
   targetSets      Int?            @map("target_sets")
   targetRepsMin   Int?            @map("target_reps_min")
   targetRepsMax   Int?            @map("target_reps_max")
+  // rest after each set of this exercise, in seconds; null = the user's
+  // global default (the rest timer is client-side, see useRestTimer.ts)
+  restSeconds     Int?            @map("rest_seconds")
   supersetGroupId String?         @map("superset_group_id")
   createdAt       DateTime        @default(now()) @map("created_at")
 

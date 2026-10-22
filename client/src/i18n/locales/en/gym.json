@@ -182,8 +182,16 @@
       "decreaseRepsMin": "Decrease minimum reps",
       "increaseRepsMin": "Increase minimum reps",
       "decreaseRepsMax": "Decrease maximum reps",
-      "increaseRepsMax": "Increase maximum reps"
-    }
+      "increaseRepsMax": "Increase maximum reps",
+      "restLabel": "Rest",
+      "restHint": "After each set of this exercise",
+      "restDefault": "Default",
+      "decreaseRest": "Decrease rest",
+      "increaseRest": "Increase rest"
+    },
+    "restPlaceholder": "Rest",
+    "restDefault": "Default",
+    "restSuffix": "rest {{rest}}"
   },
   "rest": {
     "openTimer": "Open rest timer",

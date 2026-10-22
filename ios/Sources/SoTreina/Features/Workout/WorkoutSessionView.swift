@@ -171,8 +171,12 @@ private struct ExerciseSection: View {
                 .accessibilityLabel("Opções de \(exercise.exerciseName)")
             }
         } footer: {
-            if let target = WorkoutFormat.target(exercise.target) {
-                Text("Meta: \(target)")
+            let parts = [
+                WorkoutFormat.target(exercise.target).map { "Meta: \($0)" },
+                exercise.target?.restSeconds.map { "descanso \(WorkoutFormat.elapsed($0))" },
+            ].compactMap { $0 }
+            if !parts.isEmpty {
+                Text(parts.joined(separator: " · "))
             }
         }
         .confirmationDialog(

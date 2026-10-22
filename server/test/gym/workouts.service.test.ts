@@ -471,13 +471,18 @@ describe('WorkoutsService', () => {
         ],
       });
       mockPrisma.workoutTemplateExercise.findMany.mockResolvedValueOnce([
-        { exerciseId: 'ex1', targetSets: 4, targetRepsMin: 8, targetRepsMax: 12 },
+        { exerciseId: 'ex1', targetSets: 4, targetRepsMin: 8, targetRepsMax: 12, restSeconds: 120 },
       ]);
 
       const result = await service.findById(USER_ID, 'w1');
 
       expect(result?.templateName).toBe('Push Day');
-      expect(result?.exercises[0]?.target).toEqual({ sets: 4, repsMin: 8, repsMax: 12 });
+      expect(result?.exercises[0]?.target).toStrictEqual({
+        sets: 4,
+        repsMin: 8,
+        repsMax: 12,
+        restSeconds: 120,
+      });
     });
 
     it('leaves target null for an exercise added ad hoc, not present in the template', async () => {

@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import type { TemplateDetail, TemplateExerciseDetail, TemplateSummary } from '@/lib/types';
 import { formatLastPerformed } from './relativeTime';
-import { formatRepsRange } from './routineFormat';
+import { formatRepsRange, formatRestSeconds } from './routineFormat';
 import RoutineWorkoutToggleButton from './RoutineWorkoutToggleButton';
 import RoutineExerciseDetailPage from './RoutineExerciseDetailPage';
 import DrillStack from '@/components/DrillStack';
@@ -182,6 +182,8 @@ export default function RoutineDetailPage({
                         sets: ex.targetSets ?? '—',
                         reps: formatRepsRange(ex.targetRepsMin, ex.targetRepsMax),
                       })}
+                      {ex.restSeconds != null &&
+                        ` · ${t('editor.restSuffix', { rest: formatRestSeconds(ex.restSeconds) })}`}
                     </div>
                   </div>
                   <ChevronRight
