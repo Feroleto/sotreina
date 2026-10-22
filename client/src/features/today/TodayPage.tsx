@@ -11,6 +11,7 @@ import { currentIntlLocale } from '@/lib/dateLocale';
 import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 import DrillStack from '@/components/DrillStack';
+import { PoweredByStrava } from '@/components/StravaBrand';
 import { useWorkoutHistory } from '@/features/gym/useWorkoutHistory';
 import { useWorkoutTemplates } from '@/features/gym/useWorkoutTemplates';
 import { pickNextRoutine } from '@/features/gym/routineFormat';
@@ -641,6 +642,11 @@ export default function TodayPage({
               </>
             )}
           </LoadingSwap>
+
+          {/* runs in the status/feed are Strava data — brand guidelines want attribution */}
+          {has('RUN') && user?.hasStravaAccount && (
+            <PoweredByStrava className="mt-8 justify-center" />
+          )}
         </div>
       )}
     </DrillStack>
