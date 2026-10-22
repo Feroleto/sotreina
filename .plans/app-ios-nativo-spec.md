@@ -1,6 +1,6 @@
 # Spec — SoTreina no iPhone: PWA + app nativo do treino ao vivo (via xtool, sem Mac)
 
-Data: 2026-10-18 · Status: **Fase A no ar** · **Fase 0 aprovada (2026-10-22)**: app + Live Activity rodando no iPhone, com os contornos de xtool/USB do `ios/README.md` · **Fase 1 implementada (2026-10-22)**: as 4 telas, `clientId`, timer + notificação local e aviso de expiração rodando no iPhone; falta o uso real por alguns dias e aplicar a migration `add_workout_set_client_id` no Neon · Fase 2 não iniciada
+Data: 2026-10-18 · Status: **Fase A no ar** · **Fase 0 aprovada (2026-10-22)**: app + Live Activity rodando no iPhone, com os contornos de xtool/USB do `ios/README.md` · **Fase 1 implementada (2026-10-22)**: as 4 telas, `clientId`, timer + notificação local e aviso de expiração rodando no iPhone · **Fase 2 implementada (2026-10-22)**: `restSeconds` por exercício (backend, web e app, em produção) e a Live Activity do treino com os botões como links que abrem o app (ver §6.7) · Falta o uso real por alguns dias
 Ferramenta-base do nativo: [xtool](https://github.com/xtool-org/xtool), que substitui o Xcode no Linux/WSL: builda pacotes SwiftPM, assina e instala no iPhone.
 
 ## 1. Objetivo
@@ -161,6 +161,8 @@ Fora do app (continuam no PWA): detalhe da rotina, detalhe do exercício, criar 
 
 ### 6.7 Live Activity (Fase 2)
 
+> **Como foi implementado (2026-10-22), divergindo do desenho abaixo nos botões:** `LiveActivityIntent` não funciona com o xtool. `Button(intent:)` depende dos metadados de App Intents que o Xcode extrai no build (`appintentsmetadataprocessor`, só macOS), e o xtool não gera (PR xtool#217 fechada sem merge). Testado no iPhone: o toque não faz nada e a extensão loga `Failed to fetch metadata`. Decisão do usuário: **opção B**, botões como links `sotreina://` (`ActivityLink`, `SoTreinaKit`) que abrem o app na ação, pedindo Face ID com o iPhone bloqueado. O `✓` carrega um `clientId` fixo por série proposta, então um toque repetido ou atrasado é deduplicado pelo servidor. Reabrir a ideia de botões sem desbloquear só se o xtool passar a gerar os metadados. Problema conhecido aceito: um descanso que termina com o iPhone bloqueado fica em `0:00` em vez de voltar pra "em série" (o `staleDate` não força o redesenho na hora). Detalhes em `ios/README.md` › Live Activity.
+
 - Começa ao iniciar ou retomar o treino e termina ao finalizar ou cancelar. Uma por treino. Fica dentro do limite de ~8 h do ActivityKit pra uma atividade ativa.
 - **`ContentState`**: exercício atual, "Série N de M", `restEndsAt` (ou `nil` = "em série") e a série proposta (peso e reps).
 - **Dynamic Island compacta**: ícone + `mm:ss` (`Text(timerInterval:)`). **Expandida e tela bloqueada**: exercício, série, timer e botões.
@@ -201,6 +203,8 @@ Saída: `ios/README.md` com o passo a passo do setup e um aprendizado no CLAUDE.
 ### Fase 2 — Timer completo
 
 §5.3 (`restSeconds`, com backend + editor de rotina da web + `useRestTimer` da web + app) e §6.7 (Live Activity com `+15s`, `Pular` e `✓`).
+
+**Implementada em 2026-10-22.** Decisão extra sobre o `restSeconds`: o descanso de um exercício **não** vira o padrão do timer (`startOverride` na web, `RestTimer.start(seconds:)` no app), e ±15s nele também não, senão um exercício de 3:00 mudaria o descanso de todos os outros.
 
 ### Fase condicional — Fila offline
 

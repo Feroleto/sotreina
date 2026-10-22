@@ -76,6 +76,8 @@ final class SessionStore {
 
     private func signOutLocally() {
         Keychain.deleteToken()
+        // the workout's Live Activity belongs to the account leaving
+        LiveActivityController.endEverything()
         state = .loggedOut
     }
 }

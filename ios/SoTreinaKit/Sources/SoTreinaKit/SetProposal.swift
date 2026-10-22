@@ -2,8 +2,8 @@ import Foundation
 
 /// The values a new set starts with, so logging the usual set is one tap
 /// (spec §6.7 — the Live Activity's "✓" will reuse it in Fase 2).
-public struct SetProposal: Equatable, Sendable {
-    public enum Source: Equatable, Sendable {
+public struct SetProposal: Codable, Hashable, Sendable {
+    public enum Source: String, Codable, Hashable, Sendable {
         /// the same set number, last time this exercise was done
         case lastTime
         /// the set just before it in this workout

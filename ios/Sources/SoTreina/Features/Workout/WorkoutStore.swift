@@ -30,13 +30,19 @@ final class WorkoutStore {
     }
 
     private(set) var templates: [TemplateSummary] = []
-    private(set) var active: WorkoutDetail?
+    private(set) var active: WorkoutDetail? {
+        didSet { refreshLiveActivity() }
+    }
     private(set) var loadState: LoadState = .idle
     /// set while `POST /workouts` runs, so only that row shows a spinner
     private(set) var startingTemplateId: String?
-    private(set) var pendingSets: [PendingSet] = []
+    private(set) var pendingSets: [PendingSet] = [] {
+        didSet { refreshLiveActivity() }
+    }
     /// keyed by exerciseId; fetched once per exercise per app run
-    private(set) var lastPerformance: [String: LastPerformance] = [:]
+    private(set) var lastPerformance: [String: LastPerformance] = [:] {
+        didSet { refreshLiveActivity() }
+    }
     /// the summary of the workout just finished, shown until dismissed
     private(set) var lastFinished: FinishedWorkout?
     private(set) var isFinishing = false
@@ -44,6 +50,10 @@ final class WorkoutStore {
     var actionError: String?
     /// one rest countdown for the whole app, like the web's single useRestTimer
     let rest = RestTimerController()
+    @ObservationIgnored private let liveActivity = LiveActivityController()
+    /// the "✓" link's clientId per proposed set ("<workoutExerciseId>#<setNumber>"),
+    /// stable across updates so a repeated or stale tap dedupes on the server
+    @ObservationIgnored private var activityClientIds: [String: UUID] = [:]
 
     private let session: SessionStore
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "workout")
@@ -54,6 +64,7 @@ final class WorkoutStore {
 
     init(session: SessionStore) {
         self.session = session
+        rest.onChange = { [weak self] in self?.refreshLiveActivity() }
     }
 
     var nextRoutineId: String? { RoutineFormat.nextRoutine(templates)?.id }
@@ -160,8 +171,8 @@ final class WorkoutStore {
 
     // MARK: - Sets
 
-    func addSet(workoutExerciseId: String, weightKg: Double?, reps: Int?) async {
-        let pending = PendingSet(clientId: UUID(), workoutExerciseId: workoutExerciseId, weightKg: weightKg, reps: reps)
+    func addSet(workoutExerciseId: String, weightKg: Double?, reps: Int?, clientId: UUID = UUID()) async {
+        let pending = PendingSet(clientId: clientId, workoutExerciseId: workoutExerciseId, weightKg: weightKg, reps: reps)
         pendingSets.append(pending)
         // the rest starts on the tap, not on the server's answer: a slow or
         // failed request must not cost the athlete their rest timing
@@ -221,6 +232,50 @@ final class WorkoutStore {
     func removeExercise(workoutExerciseId: String) async {
         pendingSets.removeAll { $0.workoutExerciseId == workoutExerciseId }
         await mutate("DELETE exercise", path: "exercises/\(workoutExerciseId)", method: .delete)
+    }
+
+    // MARK: - Live Activity
+
+    /// Rebuilt on every change of the workout, the unconfirmed sets, the
+    /// set proposals or the rest; the controller skips identical states.
+    private func refreshLiveActivity() {
+        guard let active else {
+            liveActivity.sync(workout: nil, state: nil)
+            activityClientIds = [:]
+            return
+        }
+        let pending = pendingSets.map {
+            WorkoutActivity.PendingSet(
+                workoutExerciseId: $0.workoutExerciseId, weightKg: $0.weightKg, reps: $0.reps, failed: $0.failed
+            )
+        }
+        let key = WorkoutActivity.cursor(in: active, pending: pending).map { "\($0.exercise.id)#\($0.setNumber)" } ?? ""
+        let clientId = activityClientIds[key] ?? UUID()
+        activityClientIds[key] = clientId
+        let state = WorkoutActivity.snapshot(
+            workout: active, pending: pending, lastPerformance: lastPerformance,
+            rest: rest.timer.active, clientId: clientId
+        )
+        liveActivity.sync(workout: active, state: state)
+    }
+
+    /// A Live Activity button, opened as a `sotreina://` link (see ActivityLink).
+    func handle(_ link: ActivityLink) async {
+        log.notice("activity link \(String(describing: link), privacy: .public)")
+        switch link {
+        case .addRest(let seconds):
+            rest.add(seconds: seconds)
+        case .skipRest:
+            rest.skip()
+        case let .logSet(workoutId, workoutExerciseId, weightKg, reps, clientId):
+            // a cold launch from the link: the workout may not be loaded yet
+            if active?.id != workoutId { await load() }
+            guard active?.id == workoutId,
+                  active?.exercises.contains(where: { $0.id == workoutExerciseId }) == true,
+                  !pendingSets.contains(where: { $0.clientId == clientId })
+            else { return }
+            await addSet(workoutExerciseId: workoutExerciseId, weightKg: weightKg, reps: reps, clientId: clientId)
+        }
     }
 
     // MARK: - Plumbing

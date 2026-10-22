@@ -11,6 +11,8 @@ import UserNotifications
 @Observable
 final class RestTimerController {
     private(set) var timer: RestTimer
+    /// the Live Activity mirrors the rest; set by WorkoutStore
+    @ObservationIgnored var onChange: (() -> Void)?
 
     private static let notificationId = "rest-timer"
     private static let durationKey = "restTimer.duration"
@@ -64,6 +66,7 @@ final class RestTimerController {
         persist()
         reschedule()
         scheduleExpiry()
+        onChange?()
     }
 
     private func persist() {
@@ -102,6 +105,7 @@ final class RestTimerController {
             guard !Task.isCancelled, let self, self.timer.active == active else { return }
             self.timer.skip()
             self.persist()
+            self.onChange?()
         }
     }
 }

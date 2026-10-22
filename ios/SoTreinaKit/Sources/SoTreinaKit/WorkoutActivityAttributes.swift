@@ -7,20 +7,14 @@ import ActivityKit
 /// widget extension (which renders it) — both must see the exact same type.
 /// No App Group needed: the app hands the state straight to ActivityKit.
 public struct WorkoutActivityAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable, Sendable {
-        /// `nil` = mid-set (no rest running)
-        public var restEndsAt: Date?
-        public var exerciseName: String
+    /// built (and tested) in WorkoutActivity.swift, free of ActivityKit
+    public typealias ContentState = WorkoutActivitySnapshot
 
-        public init(restEndsAt: Date?, exerciseName: String) {
-            self.restEndsAt = restEndsAt
-            self.exerciseName = exerciseName
-        }
-    }
-
+    public var workoutId: String
     public var workoutName: String
 
-    public init(workoutName: String) {
+    public init(workoutId: String, workoutName: String) {
+        self.workoutId = workoutId
         self.workoutName = workoutName
     }
 }

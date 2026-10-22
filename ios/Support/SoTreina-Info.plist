@@ -10,5 +10,18 @@
 	<true/>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<!-- the Live Activity's buttons are sotreina:// links (ActivityLink):
+	     intent buttons need AppIntents metadata xtool can't generate -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.feroleto.sotreina</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sotreina</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

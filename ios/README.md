@@ -84,6 +84,11 @@ O app expira **7 dias** depois de cada instalação (Apple ID grátis). Rodar o 
 
 O campo "Servidor" da tela de login aceita outra URL. O iPhone não alcança o `localhost` do WSL. É preciso expor o NestJS na rede local: `netsh interface portproxy` no Windows, apontando a porta 3000 do IP de LAN do PC pro IP do WSL. Depois, use `http://<IP-do-PC>:3000`. HTTP sem TLS exige uma exceção de ATS no Info.plist, o que ainda não foi feito. Por isso o caminho mais simples na Fase 0 é testar contra produção.
 
+## Live Activity
+
+- **Botões são links, não App Intents.** `Button(intent:)` precisa dos metadados de App Intents (`Metadata.appintents`) que o Xcode extrai no build, e o xtool não gera (PR xtool#217 com um gerador pra Linux foi fechada sem merge). Testado em 2026-10-22: o toque não faz nada, e a extensão loga `Failed to fetch metadata`. Por isso **+15s**, **Pular** e **✓** são `sotreina://` (`ActivityLink` no `SoTreinaKit`) que abrem o app na ação — com o iPhone bloqueado, pede Face ID. Se o xtool passar a gerar os metadados, dá pra voltar a botões que agem sem desbloquear.
+- **Problema conhecido**: quando o descanso acaba com o iPhone bloqueado, a contagem fica parada em `0:00` em vez de voltar pra "Em série". O `staleDate` marcado no fim do descanso não faz o iOS redesenhar na hora, e o app suspenso não consegue mandar o update. Aceito por enquanto.
+
 ## Checklist da Fase 0 (go/no-go)
 
 - [x] `deploy.sh` instala e abre o app no iPhone
