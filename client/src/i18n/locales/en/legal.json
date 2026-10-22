@@ -63,5 +63,50 @@
         "If this policy changes, the date at the top of the page will be updated."
       ]
     }
-  ]
+  ],
+  "support": {
+    "title": "Support",
+    "sections": [
+      {
+        "title": "Contact us",
+        "body": [
+          "Questions, problems or suggestions: write to contas@sotreina.com. We reply within 3 business days.",
+          "If the problem is with a specific activity, include its date and, if possible, its Strava link."
+        ]
+      },
+      {
+        "title": "How do I connect my Strava account?",
+        "body": [
+          "On the sign-in screen, tap \"Connect with Strava\" and authorize access on strava.com. If you already have a SoTreina account with email and password, connect from your Profile.",
+          "Access is read-only: SoTreina never posts anything to your Strava profile."
+        ]
+      },
+      {
+        "title": "My activities are not showing up",
+        "body": [
+          "SoTreina syncs with Strava automatically every 6 hours. To fetch right away, use the Sync button in Run → Activities.",
+          "On the first connection, a long history can take a few minutes to import because of Strava API usage limits. The screen shows the progress."
+        ]
+      },
+      {
+        "title": "How do I disconnect Strava?",
+        "body": [
+          "In Profile → Disconnect, or by revoking access at strava.com/settings/apps. Either way, all activities and other Strava data are deleted from SoTreina.",
+          "If your account has no password (Strava sign-in only), disconnecting deletes the whole account. To keep your strength training and diet data, add a password in your Profile first."
+        ]
+      },
+      {
+        "title": "I forgot my password",
+        "body": [
+          "On the sign-in screen, tap \"Forgot password\" and enter your email. You will receive a link to set a new password, valid for 30 minutes."
+        ]
+      },
+      {
+        "title": "How do I delete my account?",
+        "body": [
+          "Send an email to contas@sotreina.com from the address on your account. We delete the account and all your data and confirm in writing. See also the Privacy Policy at sotreina.com/privacidade."
+        ]
+      }
+    ]
+  }
 }

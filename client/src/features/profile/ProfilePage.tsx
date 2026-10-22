@@ -560,12 +560,17 @@ export default function ProfilePage({
             {t('logOut')}
           </button>
 
-          <a
-            href="/privacidade"
-            className="mt-5 block text-center text-[12.5px] text-muted-foreground underline-offset-4 hover:underline"
-          >
-            {t('profile.privacy')}
-          </a>
+          <div className="mt-5 flex justify-center gap-4 text-[12.5px] text-muted-foreground">
+            <a
+              href="/privacidade"
+              className="underline-offset-4 hover:underline"
+            >
+              {t('profile.privacy')}
+            </a>
+            <a href="/suporte" className="underline-offset-4 hover:underline">
+              {t('profile.support')}
+            </a>
+          </div>
         </div>
       )}
     </DrillStack>

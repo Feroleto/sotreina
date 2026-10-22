@@ -92,6 +92,7 @@ const DietHistoryPage = lazy(PAGE_IMPORTERS['diet/history']!);
 // preloads whichever one the localStorage hints predict will be needed
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
+const SupportPage = lazy(() => import('@/features/legal/SupportPage'));
 const ResetPasswordPage = lazy(
   () => import('@/features/auth/ResetPasswordPage'),
 );
@@ -330,6 +331,15 @@ function App() {
     return (
       <Suspense fallback={<BootSplash />}>
         <PrivacyPage />
+      </Suspense>
+    );
+  }
+
+  // public support page (Strava developer program "Support URL")
+  if (window.location.pathname === '/suporte') {
+    return (
+      <Suspense fallback={<BootSplash />}>
+        <SupportPage />
       </Suspense>
     );
   }

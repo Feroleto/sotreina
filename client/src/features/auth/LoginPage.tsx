@@ -468,6 +468,12 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
             >
               {t('login.privacy')}
             </a>
+            <a
+              href="/suporte"
+              className="text-[11.5px] text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {t('login.support')}
+            </a>
           </div>
         </div>
       </div>

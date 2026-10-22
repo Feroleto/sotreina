@@ -26,7 +26,7 @@ Isso evita manter duas UIs completas, numa linguagem nova, sem simulador e com r
 | --- | --- |
 | Estratégia | **PWA agora** + **nativo restrito ao treino ao vivo + Live Activity**. Sem "paridade gradual" |
 | Cold start | **`GET /health` sem banco + ping agendado**. Cache local no app vira "desejável", não requisito |
-| Público | **Só o usuário**, instalado via xtool. App Store não é objetivo |
+| Público | **Só o usuário**, instalado via xtool. App Store **não fechada** (revisão 2026-10-21): talvez um dia, gratuita e pequena, com o app **completo** em SwiftUI crescendo módulo a módulo (Treino → Dieta/VisionKit → Hoje → Corrida) — só depois de validar o treino ao vivo em uso pessoal. Conta paga (US$ 99/ano) + build final em macOS de CI na nuvem ficam pra quando publicar/TestFlight; até lá Apple ID grátis. Nenhuma decisão de agora pode fechar essa porta |
 | Conta Apple | **Apple ID grátis**: a assinatura expira a cada 7 dias, reinstalar em **1 comando**, e o app **avisa antes de vencer** (§6.5) |
 | Go/no-go | A Fase 0 só passa se uma **Live Activity mínima** aparecer no iPhone instalada pelo xtool |
 | Telas do nativo | **4**: login, rotinas (só leitura, iniciar/retomar), sessão, resumo simples |

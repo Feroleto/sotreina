@@ -63,5 +63,50 @@
         "Se esta política mudar, a data no topo da página será atualizada."
       ]
     }
-  ]
+  ],
+  "support": {
+    "title": "Suporte",
+    "sections": [
+      {
+        "title": "Fale com a gente",
+        "body": [
+          "Dúvidas, problemas ou sugestões: escreva para contas@sotreina.com. Respondemos em até 3 dias úteis.",
+          "Se o problema for com uma atividade específica, inclua a data e, se possível, o link dela no Strava."
+        ]
+      },
+      {
+        "title": "Como conecto minha conta do Strava?",
+        "body": [
+          "Na tela de entrada, toque em \"Connect with Strava\" e autorize o acesso em strava.com. Se você já tem conta no SoTreina com e-mail e senha, conecte pelo Perfil.",
+          "O acesso é somente leitura: o SoTreina nunca publica nada no seu perfil do Strava."
+        ]
+      },
+      {
+        "title": "Minhas atividades não aparecem",
+        "body": [
+          "O SoTreina sincroniza com o Strava automaticamente a cada 6 horas. Para buscar na hora, use o botão Sync em Corrida → Atividades.",
+          "Na primeira conexão, um histórico grande pode levar alguns minutos para importar por causa dos limites de uso da API do Strava. A tela mostra o progresso."
+        ]
+      },
+      {
+        "title": "Como desconecto o Strava?",
+        "body": [
+          "Em Perfil → Desconectar, ou revogando o acesso em strava.com/settings/apps. Nos dois casos, todas as atividades e demais dados vindos do Strava são apagados do SoTreina.",
+          "Se sua conta não tiver senha (entrada apenas pelo Strava), desconectar exclui a conta inteira. Para manter seus treinos de musculação e dieta, adicione uma senha no Perfil antes."
+        ]
+      },
+      {
+        "title": "Esqueci minha senha",
+        "body": [
+          "Na tela de entrada, toque em \"Esqueci a senha\" e informe seu e-mail. Você recebe um link para criar uma senha nova, válido por 30 minutos."
+        ]
+      },
+      {
+        "title": "Como excluo minha conta?",
+        "body": [
+          "Envie um e-mail para contas@sotreina.com a partir do endereço cadastrado. Apagamos a conta e todos os seus dados e confirmamos por escrito. Veja também a Política de Privacidade em sotreina.com/privacidade."
+        ]
+      }
+    ]
+  }
 }

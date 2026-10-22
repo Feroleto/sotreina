@@ -56,6 +56,8 @@ Os passos seguem a [documentação oficial](https://github.com/xtool-org/xtool/b
    ```
    - No login, escolha **1: Password** (Apple ID grátis). A opção API Key exige conta paga. Esse modo usa APIs privadas da Apple, e a própria documentação sugere um Apple ID descartável. O Apple ID de assinatura **não** precisa ser o que está logado no iPhone.
    - Depois ele pede o caminho do `Xcode.xip` e extrai o SDK (demora). Confira com `swift sdk list`, que deve listar `darwin`.
+   - O SDK também instala **sem login**: `xtool sdk install /mnt/c/Users/<você>/Downloads/Xcode_27.xip`. Rode num shell que tenha o Swift do swiftly no PATH (`source ~/.local/share/swiftly/env.sh`): sem o `swiftc` no PATH ele extrai tudo e só falha no fim (`Could not find executable 'swiftc'`), e o `swift sdk list` continua vazio.
+   - **Login por senha quebrado no xtool 1.22.2 (2026-10-21)**: depois do 2FA dá `This action cannot be completed at this time. (-80046)`, e tentativas seguintes nem recebem o código (às vezes `HTTP 403` em `verify/phone/put`). Bug aberto em [xtool#378](https://github.com/xtool-org/xtool/issues/378). Não insistir (risco de a Apple travar a conta): esperar uma versão nova e tentar uma vez. Dá pra adiantar o build sem login (`xtool dev build`).
 
 ### No iPhone (na primeira instalação)
 

@@ -2,7 +2,8 @@
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://sotreina.onrender.com/:path*" },
     { "source": "/redefinir-senha", "destination": "/index.html" },
-    { "source": "/privacidade", "destination": "/index.html" }
+    { "source": "/privacidade", "destination": "/index.html" },
+    { "source": "/suporte", "destination": "/index.html" }
   ],
   "headers": [
     {
