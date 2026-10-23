@@ -221,7 +221,9 @@ Peso em lb (`.scratch/app-ios-completo/issues/19-peso-lb-sessao.md`): as linhas 
 
 Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-livre-atualizar-rotina.md`): linhas 09–11.
 
-Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
+Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17.
+
+Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linhas 18–26. As capturas da web saem de um `--steps` que abre os editores e nunca toca em Salvar. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -242,6 +244,15 @@ Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): lin
 | 15 | Exercício › detalhe (foto, chips, metas, peso anterior em lb, como executar) | claro · PT | como a 12 + tocar no primeiro exercício | `--page gym/workouts` + "Upper" + primeiro exercício | ok (2026-10-23; peso anterior em lb no app, kg no banco local da web) |
 | 16 | Exercício › detalhe | escuro · EN | como a 13 + tocar no primeiro exercício | `--page gym/workouts --theme dark --lang en` + "Upper" + primeiro exercício | ok (2026-10-23) |
 | 17 | Rotina › detalhe | Dynamic Type máx. | `SOTREINA_SCREEN=gymRoutines` + tocar em "upper" | — | ok (2026-10-23; nome longo corta com "…", como na web) |
+| 18 | Rotinas com "N rotinas salvas · + Nova" no topo | claro · PT | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/workouts` | ok (2026-10-23) |
+| 19 | Nova rotina, vazia | claro · PT | como a 18 + "+ Nova" | `--page gym/workouts` + "Nova rotina" | ok (2026-10-23) |
+| 20 | Editar rotina (nome, exercícios com metas, + Adicionar exercício) | claro · PT | como a 18 + "upper" + lápis | `--page gym/workouts` + "Upper" + lápis | desvio aceito: linhas finas em vez de cartões (padrão das listas do app, arraste nativo), "≡" no lugar dos seis pontos, Cancelar/Salvar na barra (2026-10-23) |
+| 21 | Editar exercício (séries, faixa de reps, descanso) | claro · PT | como a 20 + tocar no primeiro exercício | como a 20 + primeiro exercício | ok (2026-10-23) |
+| 22 | Adicionar exercício: chip "Legs", selecionados | escuro · EN | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=dark SOTREINA_LANG=en` + "upper" + lápis + "Add exercise" + "Legs" | `--page gym/workouts --theme dark --lang en` + "Upper" + lápis + "Add exercise" + "Legs" | desvio aceito: folha sobre o editor em vez de tela cheia; chip selecionado com contorno (`Chip`) (2026-10-23) |
+| 23 | Editar rotina | escuro · EN | como a 22, antes de "Add exercise" | `--page gym/workouts --theme dark --lang en` + "Upper" + lápis | ok (2026-10-23) |
+| 24 | Cancelar com alteração: "Descartar alterações?" | claro · PT | como a 20 + mudar o nome + Cancelar | — (a web confirma numa faixa inline) | desvio aceito: folha de ações nativa no lugar da faixa inline (2026-10-23) |
+| 25 | Editar rotina | Dynamic Type máx. | como a 20 | — | ok (2026-10-23) |
+| 26 | Funcional: criar uma rotina, reordenar arrastando, mudar metas e salvar; editar e salvar uma existente | — | manual | — | ok (usuário, 2026-10-23: criou, arrastou, mudou metas, salvou; editou removendo um exercício; ordem e metas conferidas no detalhe) |
 
 ## Checklist da Fase 0 (go/no-go)
 
