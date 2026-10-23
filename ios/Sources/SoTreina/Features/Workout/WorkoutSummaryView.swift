@@ -7,6 +7,7 @@ import SwiftUI
 /// stay on the web.
 struct WorkoutSummaryView: View {
     let finished: FinishedWorkout
+    let weightUnit: WeightUnit
     let onDone: () -> Void
     @Environment(AppLanguageStore.self) private var language
 
@@ -24,7 +25,7 @@ struct WorkoutSummaryView: View {
                         .padding(.top, 18)
 
                     KPIStrip([
-                        KPI(L10n.string("gym.summary.volume", lang: lang), "\(WorkoutFormat.volume(summary.volumeKg, lang: lang)) kg"),
+                        KPI(L10n.string("gym.summary.volume", lang: lang), WorkoutFormat.volume(summary.volumeKg, unit: weightUnit, lang: lang)),
                         KPI(L10n.string("gym.summary.sets", lang: lang), "\(summary.setCount)"),
                         KPI(L10n.string("gym.summary.exercises", lang: lang), "\(summary.exerciseCount)"),
                     ])
@@ -39,12 +40,12 @@ struct WorkoutSummaryView: View {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(record.exerciseName)
                                         .font(DSFont.row)
-                                    Text("gym.summary.prFrom \(WorkoutFormat.set(weightKg: record.previousWeightKg, reps: record.previousReps, lang: lang))", bundle: .l10n)
+                                    Text("gym.summary.prFrom \(WorkoutFormat.set(weightKg: record.previousWeightKg, reps: record.previousReps, unit: weightUnit, lang: lang))", bundle: .l10n)
                                         .font(DSFont.caption)
                                         .foregroundStyle(Color.mutedFg)
                                 }
                                 Spacer()
-                                Text(WorkoutFormat.set(weightKg: record.weightKg, reps: record.reps, lang: lang))
+                                Text(WorkoutFormat.set(weightKg: record.weightKg, reps: record.reps, unit: weightUnit, lang: lang))
                                     .font(Font.geistMono(15, relativeTo: .body).weight(.medium))
                                 Badge("PR")
                             }

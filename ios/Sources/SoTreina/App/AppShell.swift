@@ -52,7 +52,7 @@ struct AppShell: View {
         .fullScreenCover(isPresented: sessionCovers) {
             Group {
                 if let finished = store.lastFinished {
-                    WorkoutSummaryView(finished: finished) { store.dismissSummary() }
+                    WorkoutSummaryView(finished: finished, weightUnit: store.weightUnit) { store.dismissSummary() }
                 } else if let workout = store.active {
                     WorkoutSessionView(store: store, workout: workout)
                 }
@@ -76,6 +76,10 @@ struct AppShell: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await store.load() } }
         }
+        // exercise names come localized from the API (`Accept-Language`):
+        // a language switch mid-workout refetches them, or they'd stay in the
+        // old language until the next mutation
+        .onChange(of: language.lang) { Task { await store.load() } }
         .alert(
             Text("app.error.title", bundle: .l10n),
             isPresented: Binding(get: { store.actionError != nil }, set: { if !$0 { store.actionError = nil } }),

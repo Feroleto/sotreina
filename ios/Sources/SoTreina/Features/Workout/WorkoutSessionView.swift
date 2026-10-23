@@ -9,6 +9,7 @@ struct WorkoutSessionView: View {
     let workout: WorkoutDetail
     @State private var confirmingDiscard = false
     @State private var confirmingFinish = false
+    @State private var confirmingSync = false
     @State private var addingExercise = false
     @State private var editing: EditingSet?
     @FocusState private var focus: SetField?
@@ -75,7 +76,16 @@ struct WorkoutSessionView: View {
                     if store.isFinishing {
                         ProgressView()
                     } else {
-                        Button { confirmingFinish = true } label: { Text("gym.session.finishShort", bundle: .l10n) }
+                        Button {
+                            Task {
+                                switch await store.finishPrompt() {
+                                case .confirm: confirmingFinish = true
+                                case .syncTemplate: confirmingSync = true
+                                }
+                            }
+                        } label: {
+                            Text("gym.session.finishShort", bundle: .l10n)
+                        }
                             .bold()
                             .disabled(!store.canFinish)
                     }
@@ -88,6 +98,13 @@ struct WorkoutSessionView: View {
             .confirmationDialog(Text("gym.session.finishConfirm", bundle: .l10n), isPresented: $confirmingFinish, titleVisibility: .visible) {
                 Button { Task { await store.finish() } } label: { Text("gym.session.finish", bundle: .l10n) }
                 Button(role: .cancel) {} label: { Text("gym.session.keepTraining", bundle: .l10n) }
+            }
+            // the workout drifted from its routine (web: `session.syncTemplate*`);
+            // either answer finishes, "Voltar" keeps training
+            .confirmationDialog(Text("gym.session.syncTemplatePrompt", bundle: .l10n), isPresented: $confirmingSync, titleVisibility: .visible) {
+                Button { Task { await store.finish(syncTemplate: true) } } label: { Text("gym.session.syncTemplateUpdate", bundle: .l10n) }
+                Button { Task { await store.finish(syncTemplate: false) } } label: { Text("gym.session.syncTemplateKeep", bundle: .l10n) }
+                Button(role: .cancel) {} label: { Text("gym.session.syncTemplateBack", bundle: .l10n) }
             }
             .confirmationDialog(Text("gym.session.cancelConfirm", bundle: .l10n), isPresented: $confirmingDiscard, titleVisibility: .visible) {
                 Button(role: .destructive) {
@@ -145,7 +162,7 @@ private struct ExerciseSection: View {
                 Button {
                     onEdit(set)
                 } label: {
-                    SetLine(number: set.setNumber, text: WorkoutFormat.set(weightKg: set.weightKg, reps: set.reps, lang: language.lang)) {
+                    SetLine(number: set.setNumber, text: WorkoutFormat.set(weightKg: set.weightKg, reps: set.reps, unit: store.weightUnit, lang: language.lang)) {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.pos)
                     }
                 }
@@ -258,7 +275,7 @@ private struct PendingSetRow: View {
     @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
-        SetLine(number: number, text: WorkoutFormat.set(weightKg: pending.weightKg, reps: pending.reps, lang: language.lang)) {
+        SetLine(number: number, text: WorkoutFormat.set(weightKg: pending.weightKg, reps: pending.reps, unit: store.weightUnit, lang: language.lang)) {
             if pending.failed {
                 Button {
                     Task { await store.retry(pending) }
@@ -293,13 +310,14 @@ private struct NewSetRow: View {
 
     var body: some View {
         let lang = language.lang
+        let unit = store.weightUnit
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 Text(verbatim: "\(setNumber)")
                     .font(DSFont.monoBody)
                     .foregroundStyle(Color.mutedFg)
                     .frame(width: 24, alignment: .leading)
-                field("kg", text: $weightText, placeholder: proposal?.weightKg.map { WorkoutFormat.weight($0, lang: lang) }, keyboard: .decimalPad)
+                field(UnitConversion.label(unit), text: $weightText, placeholder: proposal?.weightKg.map { WorkoutFormat.weight($0, unit: unit, lang: lang) }, keyboard: .decimalPad)
                     .focused(focus, equals: .weight(exercise.id))
                 Text(verbatim: "×").foregroundStyle(Color.mutedFg)
                 field("reps", text: $repsText, placeholder: proposal?.reps.map(String.init), keyboard: .numberPad)
@@ -316,7 +334,7 @@ private struct NewSetRow: View {
                 .disabled(!canLog)
             }
             if let proposal, proposal.source == .lastTime {
-                Text("gym.session.lastTime \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: lang))", bundle: .l10n)
+                Text("gym.session.lastTime \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, unit: unit, lang: lang))", bundle: .l10n)
                     .font(DSFont.caption)
                     .foregroundStyle(Color.mutedFg)
                     .padding(.leading, 32)
@@ -341,10 +359,10 @@ private struct NewSetRow: View {
         }
     }
 
-    /// typed value, else the proposal's
+    /// typed value (in the display unit), else the proposal's (already kg)
     private var resolved: (weightKg: Double?, reps: Int?) {
         (
-            weightText.isEmpty ? proposal?.weightKg : SetInput.weight(weightText),
+            weightText.isEmpty ? proposal?.weightKg : SetInput.weightKg(weightText, unit: store.weightUnit),
             repsText.isEmpty ? proposal?.reps : SetInput.reps(repsText)
         )
     }
@@ -370,7 +388,7 @@ private struct SetEditSheet: View {
         self.editing = editing
         // the sheet's decimal pad types the app language's separator
         let lang = AppLanguageStore.shared.lang
-        _weightText = State(initialValue: editing.workoutSet.weightKg.map { WorkoutFormat.weight($0, lang: lang) } ?? "")
+        _weightText = State(initialValue: editing.workoutSet.weightKg.map { WorkoutFormat.weight($0, unit: store.weightUnit, lang: lang) } ?? "")
         _repsText = State(initialValue: editing.workoutSet.reps.map(String.init) ?? "")
     }
 
@@ -383,7 +401,7 @@ private struct SetEditSheet: View {
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                     } label: {
-                        Text("gym.entry.weightLabel \("kg")", bundle: .l10n)
+                        Text("gym.entry.weightLabel \(UnitConversion.label(store.weightUnit))", bundle: .l10n)
                     }
                     LabeledContent {
                         TextField("–", text: $repsText)
@@ -416,7 +434,10 @@ private struct SetEditSheet: View {
                             await store.updateSet(
                                 workoutExerciseId: editing.exerciseId,
                                 setId: editing.workoutSet.id,
-                                weightKg: SetInput.weight(weightText),
+                                weightKg: SetInput.editedWeightKg(
+                                    weightText, original: editing.workoutSet.weightKg,
+                                    unit: store.weightUnit, lang: AppLanguageStore.shared.lang
+                                ),
                                 reps: SetInput.reps(repsText)
                             )
                         }

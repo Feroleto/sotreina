@@ -223,3 +223,37 @@ public struct UpdateSetRequest: Codable, Equatable, Sendable {
         self.rpe = rpe
     }
 }
+
+/// `PATCH /workouts/:id/finish`. `syncTemplate: true` rewrites the routine the
+/// workout came from (exercises, order, sets done) before finishing.
+public struct FinishWorkoutRequest: Codable, Equatable, Sendable {
+    public var syncTemplate: Bool
+
+    public init(syncTemplate: Bool) {
+        self.syncTemplate = syncTemplate
+    }
+}
+
+/// `GET /workouts/:id/template-drift`: whether the workout differs from its
+/// routine (exercises added/removed, order, sets vs. `targetSets`). The rule
+/// lives on the server, shared with the web.
+public struct TemplateDriftResponse: Codable, Equatable, Sendable {
+    public var diverged: Bool
+}
+
+/// Which dialog "Finalizar" opens (the web's `handleFinishClick`).
+public enum FinishPrompt: Equatable, Sendable {
+    /// "Finalizar o treino?"
+    case confirm
+    /// "Este treino ficou diferente da rotina…": update / keep / back
+    case syncTemplate
+
+    /// a free workout has nothing to compare against
+    public static func needsDriftCheck(templateId: String?) -> Bool { templateId != nil }
+
+    /// `diverged` nil = not checked or the check failed (the web treats a
+    /// failed check as "didn't drift", so finishing never gets stuck)
+    public static func `for`(templateId: String?, diverged: Bool?) -> FinishPrompt {
+        templateId != nil && diverged == true ? .syncTemplate : .confirm
+    }
+}

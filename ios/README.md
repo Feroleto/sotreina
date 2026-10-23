@@ -206,14 +206,34 @@ explorer.exe "$(wslpath -w ios/validation/S/index.html)"
 | 04 | Treino minimizado (barra acima da tab bar) | claro · PT | `SOTREINA_SCREEN=sessionMinimized SOTREINA_THEME=light SOTREINA_LANG=pt` (precisa de treino aberto) | — | ok (manual, 2026-10-22) |
 | 05 | Perfil (aba, conteúdo provisório da Conta) | claro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=pt` | — | ok (manual, 2026-10-22) |
 | 06 | Treino › Rotinas | Dynamic Type máx. | `SOTREINA_SCREEN=gymRoutines` | — | ok (manual, 2026-10-22) |
-| 07 | Perfil (substitui a 05) | claro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page profile` | |
-| 08 | Perfil | escuro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=dark SOTREINA_LANG=pt` | `--page profile --theme dark` | |
-| 09 | Perfil | claro · EN | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=en` | `--page profile --lang en` | |
-| 10 | Perfil com uma área só (chave travada, só a meta dela) | claro · PT | usuário desliga duas áreas | `--page profile` (conta com uma área) | |
-| 11 | Perfil › Dados pessoais | claro · PT | usuário toca na linha do nome | `--page profile` + toque no nome | |
-| 12 | Perfil › Metas semanais (em mi) | claro · PT | usuário troca pra mi e toca na meta da Corrida | `--page profile` + toque na meta | |
-| 13 | Perfil › Meta diária (fora da meta, em vermelho) | escuro · PT | usuário toca na meta da Dieta | `--page profile --theme dark` + toque na meta | |
-| 14 | Perfil | Dynamic Type máx. | `SOTREINA_SCREEN=profile` | — | |
+| 07 | Perfil (substitui a 05) | claro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page profile` | ok (2026-10-23; fim da página em `07b-app.png`) |
+| 08 | Perfil | escuro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=dark SOTREINA_LANG=pt` | `--page profile --theme dark` | ok (2026-10-23) |
+| 09 | Perfil | claro · EN | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=en` | `--page profile --lang en` | ok (2026-10-23) |
+| 10 | Perfil com uma área só (chave travada, só a meta dela) | claro · PT | usuário desliga duas áreas | `--page profile` (conta com uma área) | ok (2026-10-23; abas viram Hoje + Perfil, como a web) |
+| 11 | Perfil › Dados pessoais | claro · PT | usuário toca na linha do nome | `--page profile` + toque no nome | ok (2026-10-23; campos em cartão como o login do app: nativo) |
+| 12 | Perfil › Metas semanais (em mi) | claro · PT | usuário troca pra mi e toca na meta da Corrida | `--page profile` + toque na meta | ok (usuário testou em mi depois do deploy, 2026-10-23) |
+| 13 | Perfil › Meta diária (fora da meta, em vermelho) | escuro · PT | usuário toca na meta da Dieta | `--page profile --theme dark` + toque na meta | ok (2026-10-23) |
+| 14 | Perfil | Dynamic Type máx. | `SOTREINA_SCREEN=profile` | — | ok (2026-10-23; os seletores segmentados não crescem com o texto: nativo; fim em `14b-app.png`) |
+
+### Fase T
+
+Peso em lb (`.scratch/app-ios-completo/issues/19-peso-lb-sessao.md`): as linhas 01–07 pedem um treino aberto e a conta em lb (Perfil › Unidades). A Sessão também cobre a conferência em EN que ficou pendente no ticket das strings da Navegação.
+
+Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-livre-atualizar-rotina.md`): linhas 09–11. O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Sessão em lb (séries, proposta no placeholder, "última vez") | claro · EN | `SOTREINA_SCREEN=session SOTREINA_THEME=light SOTREINA_LANG=en` (treino aberto, conta em lb) | `--page gym/workouts --lang en` (sessão aberta, conta em lb) | ok (2026-10-23; web em grade e app em lista é anterior a este ticket) |
+| 02 | Sessão em lb | escuro · PT | `SOTREINA_SCREEN=session SOTREINA_THEME=dark SOTREINA_LANG=pt` | `--page gym/workouts --theme dark` (sessão aberta, conta em lb) | ok (2026-10-23) |
+| 03 | Sessão › editar série em lb (sheet) | claro · EN | manual: tocar numa série registrada | — | ok (2026-10-23; 44.1 → 45 lb salvo voltou "45 lb × 5") |
+| 04 | Sessão › diálogos Finalizar e Cancelar | claro · EN | manual | — | ok (2026-10-23; Cancelar em `04b-app.png`) |
+| 05 | Treino minimizado (barra acima das abas) | claro · EN | `SOTREINA_SCREEN=sessionMinimized SOTREINA_THEME=light SOTREINA_LANG=en` | — | ok (2026-10-23) |
+| 06 | Live Activity em lb (tela bloqueada, proposta e "✓") | — | manual: bloquear o iPhone com o treino aberto | — | ok (2026-10-23) |
+| 07 | Resumo em lb (volume em k lb, PRs) | claro · PT | manual: finalizar o treino | `--page gym/workouts` (resumo, conta em lb) | ok (2026-10-23; recorde "45 lb × 5 · antes 44,1 lb × 5" conferido num resumo anterior em EN; a web escreve "0.2" com ponto em PT, o app "0,2") |
+| 08 | Sessão de volta em kg (regressão) | claro · PT | `SOTREINA_SCREEN=session SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em kg) | — | ok (2026-10-23) |
+| 09 | Rotinas com a linha "Treino livre" no fim | claro · PT | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/workouts` (a web não tem treino livre: exceção registrada) | ok (2026-10-23) |
+| 10 | Sessão de treino livre, ainda sem exercício | claro · EN | manual: "Iniciar" na linha "Treino livre" | — | ok (2026-10-23; capturada no escuro, o app seguia o sistema) |
+| 11 | Finalizar uma rotina que mudou: "Atualizar rotina / Manter rotina / Voltar" | claro · PT | manual: tirar ou acrescentar um exercício de uma rotina e tocar em Finalizar | `--page gym/workouts` (sessão divergente + "Finalizar treino") | desvio aceito: folha de ações nativa no lugar do cartão da web, como os diálogos da linha 04 (2026-10-23; capturada no escuro) |
 
 ## Checklist da Fase 0 (go/no-go)
 

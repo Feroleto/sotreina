@@ -113,8 +113,8 @@ private struct LockScreenView: View {
                     Text(state.exerciseName ?? tr("gym.live.addExercise", state))
                         .font(Font.geist(17, relativeTo: .headline).weight(.semibold))
                         .lineLimit(1)
-                    if let proposal = state.proposal {
-                        Text(tr("gym.live.next %@", state, WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: state.lang ?? .pt)))
+                    if let proposal = state.proposalText {
+                        Text(tr("gym.live.next %@", state, proposal))
                             .font(Font.geist(12, relativeTo: .caption))
                             .foregroundStyle(.secondary)
                     }
@@ -158,9 +158,9 @@ private struct ActionRow: View {
                 LinkButton(title: tr("gym.rest.skip", state), url: ActivityLink.skipRest.url, prominent: false)
             }
             Spacer(minLength: 0)
-            if let url = state.logSetURL, let proposal = state.proposal {
+            if let url = state.logSetURL, let proposal = state.proposalText {
                 LinkButton(
-                    title: "✓ \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: state.lang ?? .pt))",
+                    title: "✓ \(proposal)",
                     url: url,
                     prominent: true
                 )

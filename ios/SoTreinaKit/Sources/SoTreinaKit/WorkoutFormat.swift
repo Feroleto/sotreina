@@ -12,25 +12,23 @@ public enum WorkoutFormat {
             : "\(m):\(pad(sec))"
     }
 
-    /// Weight: "20", "22,5" in PT, "22.5" in EN — never "20.0".
-    public static func weight(_ kg: Double, lang: Lang) -> String {
-        let rounded = (kg * 100).rounded() / 100
-        if rounded == rounded.rounded() { return String(Int(rounded)) }
-        let text = String(rounded)
+    /// A stored weight in the display unit (`UnitConversion.display`): "20",
+    /// "22,5" in PT, "22.5" in EN — never "20.0". No unit suffix.
+    public static func weight(_ kg: Double, unit: WeightUnit = .kg, lang: Lang) -> String {
+        let shown = UnitConversion.display(kg: kg, in: unit)
+        if shown == shown.rounded() { return String(Int(shown)) }
+        let text = String(shown)
         return lang == .pt ? text.replacingOccurrences(of: ".", with: ",") : text
     }
 
-    /// PT, for `.map(WorkoutFormat.weight)` (a defaulted `lang` doesn't
-    /// convert to `(Double) -> String`).
-    public static func weight(_ kg: Double) -> String { weight(kg, lang: .pt) }
-
-    /// "20 kg × 5", "× 12" (bodyweight), "20 kg" (reps not logged).
-    public static func set(weightKg: Double?, reps: Int?, lang: Lang = .pt) -> String {
+    /// "20 kg × 5", "45 lb × 5", "× 12" (bodyweight), "20 kg" (reps not logged).
+    public static func set(weightKg: Double?, reps: Int?, unit: WeightUnit = .kg, lang: Lang = .pt) -> String {
+        let label = UnitConversion.label(unit)
         switch (weightKg, reps) {
-        case let (kg?, reps?): "\(weight(kg, lang: lang)) kg × \(reps)"
-        case let (kg?, nil): "\(weight(kg, lang: lang)) kg"
-        case let (nil, reps?): "× \(reps)"
-        case (nil, nil): "—"
+        case let (kg?, reps?): return "\(weight(kg, unit: unit, lang: lang)) \(label) × \(reps)"
+        case let (kg?, nil): return "\(weight(kg, unit: unit, lang: lang)) \(label)"
+        case let (nil, reps?): return "× \(reps)"
+        case (nil, nil): return "—"
         }
     }
 
@@ -67,21 +65,14 @@ public enum WorkoutFormat {
         return h > 0 ? "\(h)h\(pad(m))" : "\(m)min"
     }
 
-    /// Volume, at most one decimal: "1.820", "12.345,5" in PT; "1,820",
-    /// "12,345.5" in EN. Hand-rolled instead of NumberFormatter so it follows
-    /// the app's language, not the device locale (and reads the same in
-    /// `swift test` on Linux).
-    public static func volume(_ kg: Double, lang: Lang = .pt) -> String {
-        let (thousands, decimal) = lang == .pt ? (".", ",") : (",", ".")
-        let tenths = Int((max(0, kg) * 10).rounded())
-        var digits = String(tenths / 10)
-        var grouped = ""
-        while digits.count > 3 {
-            grouped = thousands + digits.suffix(3) + grouped
-            digits.removeLast(3)
-        }
-        grouped = digits + grouped
-        return tenths % 10 == 0 ? grouped : "\(grouped)\(decimal)\(tenths % 10)"
+    /// Training volume like the web's `formatVolume` + `volumeLabel`:
+    /// thousands of the display unit, always one decimal — "1,8 t" in PT,
+    /// "4.0 k lb" in EN. The separator follows the app's language, not the
+    /// device locale.
+    public static func volume(_ kg: Double, unit: WeightUnit = .kg, lang: Lang = .pt) -> String {
+        let tenths = Int((UnitConversion.volumeThousands(kg: max(0, kg), in: unit) * 10).rounded())
+        let decimal = lang == .pt ? "," : "."
+        return "\(tenths / 10)\(decimal)\(tenths % 10) \(UnitConversion.volumeLabel(unit))"
     }
 
     private static func pad(_ n: Int) -> String { n < 10 ? "0\(n)" : "\(n)" }

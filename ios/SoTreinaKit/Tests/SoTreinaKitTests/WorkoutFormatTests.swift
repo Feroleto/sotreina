@@ -9,7 +9,7 @@ import Testing
 
     @Test(arguments: [(20.0, "20"), (22.5, "22,5"), (1.25, "1,25"), (80.004, "80"), (0.0, "0")])
     func weightUsesCommaAndDropsTrailingZero(kg: Double, expected: String) {
-        #expect(WorkoutFormat.weight(kg) == expected)
+        #expect(WorkoutFormat.weight(kg, lang: .pt) == expected)
     }
 
     @Test func setLine() {
@@ -24,9 +24,29 @@ import Testing
         #expect(WorkoutFormat.durationShort(seconds) == expected)
     }
 
-    @Test(arguments: [(0.0, "0"), (950.0, "950"), (1820.0, "1.820"), (12345.5, "12.345,5"), (1_234_567.04, "1.234.567")])
-    func volumeGroupsThousands(kg: Double, expected: String) {
-        #expect(WorkoutFormat.volume(kg) == expected)
+    @Test func weightInPounds() {
+        // 45 lb is stored as 20.41 kg and has to read back as 45
+        #expect(WorkoutFormat.weight(20.41, unit: .lb, lang: .pt) == "45")
+        #expect(WorkoutFormat.weight(20, unit: .lb, lang: .pt) == "44,1")
+        #expect(WorkoutFormat.weight(20, unit: .lb, lang: .en) == "44.1")
+        #expect(WorkoutFormat.weight(22.5, unit: .kg, lang: .en) == "22.5")
+    }
+
+    @Test func setLineInPounds() {
+        #expect(WorkoutFormat.set(weightKg: 20.41, reps: 5, unit: .lb) == "45 lb × 5")
+        #expect(WorkoutFormat.set(weightKg: 20.41, reps: nil, unit: .lb, lang: .en) == "45 lb")
+        #expect(WorkoutFormat.set(weightKg: nil, reps: 12, unit: .lb) == "× 12")
+    }
+
+    /// Same as the web's `formatVolume` + `volumeLabel`: thousands of the
+    /// display unit, always one decimal
+    @Test func volumeInThousandsLikeTheWeb() {
+        #expect(WorkoutFormat.volume(1820, unit: .kg, lang: .pt) == "1,8 t")
+        #expect(WorkoutFormat.volume(1820, unit: .kg, lang: .en) == "1.8 t")
+        #expect(WorkoutFormat.volume(0, unit: .kg, lang: .pt) == "0,0 t")
+        #expect(WorkoutFormat.volume(12345.5, unit: .kg, lang: .en) == "12.3 t")
+        // 1814.37 kg = 4000 lb
+        #expect(WorkoutFormat.volume(1814.37, unit: .lb, lang: .en) == "4.0 k lb")
     }
 
     @Test func targetLine() {

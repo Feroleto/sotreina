@@ -1,7 +1,7 @@
 # Strings das telas da Navegação em PT/EN
 
 Type: task
-Status: claimed
+Status: resolved
 Blocked by: 07
 
 ## Question
@@ -13,7 +13,11 @@ Terminar a migração de [Strings das telas em PT/EN](15-strings-telas.md) nos a
 
 ## Answer
 
-**Migrado e compilando (2026-10-22). Falta conferir no iPhone.** Outra sessão instalou no aparelho ao mesmo tempo ("IXSimpleInstaller canceling existing coordinator"), então o `deploy.sh` desta foi cancelado.
+**Feito (2026-10-23).** Migrado e compilando desde 2026-10-22. A conferência no iPhone foi parcial, e o usuário decidiu fechar assim.
+
+- **Conferido no iPhone em EN** (2026-10-23, capturas em `ios/validation/N17/`): Treino › Rotinas (header, abas de texto, tab bar, linhas com "N exercises · today", "Next", "not done yet") e Corrida › Atividades ("Coming soon to the app"). Tudo em inglês.
+- **Não conferido**: a Sessão (botões, diálogos, sheet de edição), a barra de treino minimizado e os alertas de erro, porque não havia treino aberto e abrir um gravaria na conta real. Isso passou pra [Peso em lb na sessão, no resumo e na Live Activity](19-peso-lb-sessao.md), que valida essa mesma tela.
+- **Grep do critério, refeito em 2026-10-23**: está limpo. O `SettingsView` foi apagado pelo [Perfil do app](11-perfil.md). Sobram só o `DesignCatalog` (só em debug) e um `accessibilityValue` com `%`.
 
 - **Strings novas**: um bloco acrescentado no fim dos `.strings` PT/EN, mais o plural `gym.routines.exerciseCount %lld` no `.stringsdict`. As chaves PT e EN batem, e o build copia tudo pro bundle do app e da `.appex`. O texto PT é o que o usuário já tinha aprovado nas telas. O EN segue a web onde ela tem o mesmo conceito, como "Return to your active workout" e "Try again".
   - `common.ok`, `common.retry`, `common.save` e `common.delete`.
@@ -27,7 +31,6 @@ Terminar a migração de [Strings das telas em PT/EN](15-strings-telas.md) nos a
   - **`RoutinesView`**: agora com `RoutineFormat.lastPerformed(…, lang:)` e `MuscleGroup.label(_, lang:)`.
   - **`WorkoutSessionView`**: todos os botões, diálogos, rótulos e o sheet de edição, mais `WorkoutFormat.set/weight/target(…, lang:)`.
   - **`WorkoutStore.message(for:lang:)`**.
-- **Não migrados**: `RootView` não tem texto de interface. O `SettingsView` ficou de fora de propósito, porque o [Perfil do app](11-perfil.md) está substituindo esse arquivo em outra sessão.
-- **Grep do critério**: `Text("` sem `bundle: .l10n`/`verbatim:` e `pt ?` em `ios/Sources` só acham o `SettingsView`. Números, "×", "S3" e "PR" viraram `verbatim:`.
+- **Não migrados**: `RootView` não tem texto de interface. Números, "×", "S3" e "PR" viraram `verbatim:`.
 - **Ainda em kg**: o rótulo "Peso (kg)" e as séries. O lb é da Fase T, e a chave `gym.entry.weightLabel %@` já recebe a unidade.
 - `xtool dev build` passa, e os 115 testes do Kit passam.

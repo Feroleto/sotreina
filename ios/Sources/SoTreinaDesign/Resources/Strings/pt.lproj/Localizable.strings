@@ -188,3 +188,11 @@
 "diet.macro.protein" = "Proteína";
 "diet.macro.carbs" = "Carboidrato";
 "diet.macro.fat" = "Gordura";
+
+/* Treino livre e atualizar rotina ao finalizar */
+"gym.routines.freeHint" = "Sem rotina: adicione os exercícios durante o treino";
+"gym.routines.startFree" = "Começar treino livre";
+"gym.session.syncTemplatePrompt" = "Este treino ficou diferente da rotina (exercícios, séries ou ordem). Atualizar a rotina para refletir isso?";
+"gym.session.syncTemplateBack" = "Voltar";
+"gym.session.syncTemplateKeep" = "Manter rotina";
+"gym.session.syncTemplateUpdate" = "Atualizar rotina";

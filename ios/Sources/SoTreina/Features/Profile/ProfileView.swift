@@ -25,6 +25,7 @@ struct ProfileView: View {
                 } label: {
                     userRow
                 }
+                .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                 .listRowBackground(Color.pageBg)
 
                 areasSection
@@ -281,6 +282,7 @@ struct ProfileView: View {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
                     Text("nav.logOut", bundle: .l10n)
                 }
+                .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                 .font(DSFont.row)
                 .foregroundStyle(Color.neg)
             }

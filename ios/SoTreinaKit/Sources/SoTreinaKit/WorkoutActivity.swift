@@ -26,6 +26,15 @@ public struct WorkoutActivitySnapshot: Codable, Hashable, Sendable {
     /// state saved by an older build still decodes (nil reads as PT)
     public var lang: Lang?
 
+    /// the user's weight unit, for the same reason as `lang` (nil reads as
+    /// kg). Display only: the proposal and the "✓" link stay in kg
+    public var weightUnit: WeightUnit? = nil
+
+    /// "20 kg × 5" / "45 lb × 5": the proposal as the activity shows it
+    public var proposalText: String? {
+        proposal.map { WorkoutFormat.set(weightKg: $0.weightKg, reps: $0.reps, unit: weightUnit ?? .kg, lang: lang ?? .pt) }
+    }
+
     /// "Série 2 de 3", or "Série 4" without a target / past it
     public var setLabel: String {
         let pt = (lang ?? .pt) == .pt
@@ -96,6 +105,7 @@ public enum WorkoutActivity {
         rest: RestTimer.Active?,
         clientId: UUID,
         lang: Lang = .pt,
+        weightUnit: WeightUnit = .kg,
         now: Date = .now
     ) -> WorkoutActivitySnapshot {
         let restRunning = rest.flatMap { $0.endsAt > now ? $0 : nil }
@@ -103,7 +113,7 @@ public enum WorkoutActivity {
             return WorkoutActivitySnapshot(
                 exerciseName: nil, workoutExerciseId: nil, setNumber: 1, targetSets: nil,
                 restEndsAt: restRunning?.endsAt, restDuration: restRunning?.duration, proposal: nil,
-                hasFailedSet: pending.contains { $0.failed }, logSetURL: nil, lang: lang
+                hasFailedSet: pending.contains { $0.failed }, logSetURL: nil, lang: lang, weightUnit: weightUnit
             )
         }
 
@@ -131,7 +141,8 @@ public enum WorkoutActivity {
             proposal: proposal,
             hasFailedSet: pending.contains { $0.failed },
             logSetURL: logSetURL,
-            lang: lang
+            lang: lang,
+            weightUnit: weightUnit
         )
     }
 }

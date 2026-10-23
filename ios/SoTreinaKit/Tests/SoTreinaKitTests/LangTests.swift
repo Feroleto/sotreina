@@ -51,13 +51,12 @@ import Testing
         #expect(WorkoutFormat.target(sets: 2, repsMin: 5, repsMax: 9, lang: .en) == "2 × 5–9")
     }
 
-    @Test func numbersInEnglishUseDotDecimalsAndCommaThousands() {
+    @Test func numbersInEnglishUseDotDecimals() {
         #expect(WorkoutFormat.weight(22.5, lang: .en) == "22.5")
         #expect(WorkoutFormat.weight(20, lang: .en) == "20")
         #expect(WorkoutFormat.set(weightKg: 22.5, reps: 8, lang: .en) == "22.5 kg × 8")
-        #expect(WorkoutFormat.volume(12_345.5, lang: .en) == "12,345.5")
-        #expect(WorkoutFormat.volume(1820, lang: .en) == "1,820")
-        #expect(WorkoutFormat.volume(1820) == "1.820")
+        #expect(WorkoutFormat.volume(12_345.5, lang: .en) == "12.3 t")
+        #expect(WorkoutFormat.volume(1820) == "1,8 t")
     }
 
     @Test func expiryBannerInEnglish() {
@@ -89,6 +88,7 @@ import Testing
         let json = Data(#"{"setNumber":1,"hasFailedSet":false}"#.utf8)
         let snapshot = try JSONDecoder().decode(WorkoutActivitySnapshot.self, from: json)
         #expect(snapshot.lang == nil)
+        #expect(snapshot.weightUnit == nil)
         #expect(snapshot.setLabel == "Série 1")
     }
 }

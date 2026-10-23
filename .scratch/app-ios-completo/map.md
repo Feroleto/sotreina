@@ -37,12 +37,16 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Navegação: abas, header de área e sessão minimizável](issues/07-navegacao.md): feito e validado no iPhone — `AppTab` no Kit (regra do `mobileTabsFor`), `AppShell` + `AreaScreen` com header de área e "Em breve no app", sessão em `fullScreenCover` minimizável pra barra acima das abas; cada fase registra suas páginas em `AreaScreen.portedPages`
 - [Fatiamento da Fase T (Treino completo)](issues/18-fatiamento-fase-t.md): sete tarefas em fila — lb no que existe → Sessão (livre + atualizar rotina) → Rotinas leitura → Editor → Histórico → Visão geral → Uso real; nenhuma mexe no backend
 - [Entrada: cadastro, esqueci a senha e escolha de áreas](issues/10-entrada.md): feito e conferido no iPhone — `LoginView` com Entrar/Criar conta (`register` + `token`), `ForgotPasswordView`, `AreaPickerView` com gate no `RootView` quando `enabledAreas` vazio; `SessionStore.saveAreas` serve ao Perfil; regras no Kit (`Entry.swift`)
+- [Perfil do app](issues/11-perfil.md): feito e validado — `ProfileView` + nome/metas semanais/meta diária, `MeSettings`/`ProfileRules` no Kit, saves otimistas que atualizam o `Me` da sessão; fixou os padrões de lista plana (fundo, título como linha, separador desde a borda)
+- [Strings das telas da Navegação em PT/EN](issues/17-strings-telas-navegacao.md): feito — Shell, Rotinas, Sessão, barra ativa e mensagens do `WorkoutStore` no L10n, grep limpo; conferido em EN no iPhone só Rotinas e "Em breve", a Sessão ficou pra [Peso em lb na sessão, no resumo e na Live Activity](issues/19-peso-lb-sessao.md)
+- [Peso em lb na sessão, no resumo e na Live Activity](issues/19-peso-lb-sessao.md): feito e validado — `WorkoutFormat` com `unit:`, entrada convertida pra kg na borda, sheet de edição preserva o kg intacto, volume do resumo como na web ("1,8 t"/"0,2 k lb"), unidade no estado da Live Activity; corrigiu o "última vez" preso depois de finalizar
+- [Sessão: treino livre e atualizar rotina ao finalizar](issues/20-sessao-livre-atualizar-rotina.md): feito e validado — linha "Treino livre" no fim de Rotinas (só no app), diálogo Atualizar/Manter/Voltar a partir do `template-drift` do servidor (`FinishPrompt` no Kit); trocar o idioma com treino aberto agora recarrega os nomes dos exercícios
+- [Fatiamento da Fase D (Dieta)](issues/26-fatiamento-fase-d.md): seis tarefas em fila depois da Visão geral do Treino (junto do Uso real da Fase T): o dia + edição → adicionar Registros → manual + scanner → Refeições salvas → histórico → Uso real; `clientId` nos Registros (único backend da fase)
+- [Fatiamento da Fase C (Corrida)](issues/33-fatiamento-fase-c.md): cinco tarefas em fila depois do histórico da Dieta (junto do Uso real da Fase D): Atividades → detalhe com MapKit → editor de voltas (fica em metros/segundos, sem mi) → Visão geral (com a comemoração de recorde) → Uso real; sem backend
 
 ## Not yet specified
 
-- **Fatiamento da Fase D (Dieta)**: o dia, adicionar refeição com QuantitySheet, o scanner nativo (VisionKit), refeições salvas, histórico e meta. Também em aberto: se `POST /food-logs` precisa de `clientId` pra reenvio seguro.
-- **Fatiamento da Fase C (Corrida)**: visão geral, lista, detalhe com MapKit, editor de voltas e os selos da Strava. O editor de voltas da web ainda é só em km (ver o ticket de unidades): decidir se ganha mi junto com o port.
-- **Fase H (Hoje)**: port de `todayStatus.ts` e a tela; depende das três áreas prontas.
+- **Proposta de série depois de um exercício pulado**: `GET /exercises/:id/last-performance` devolve o último treino finalizado com o exercício mesmo sem séries, então pular um exercício apaga a proposta dele no treino seguinte (web e app). Decidir se o backend deve pular treinos sem série; mexe no backend, que a Fase T deixou de fora.
 
 ## Out of scope
 

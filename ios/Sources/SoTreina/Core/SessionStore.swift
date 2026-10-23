@@ -95,6 +95,13 @@ final class SessionStore {
         }
     }
 
+    /// The signed-in user's weight unit (`.kg` signed out): display and entry
+    /// only, the API always speaks kg.
+    var weightUnit: WeightUnit {
+        guard case .loggedIn(let me) = state else { return .kg }
+        return me.weightUnit
+    }
+
     /// Perfil's saves (`ProfileStore`): the signed-in `Me` with the name,
     /// areas or units already applied — optimistically, then the server's.
     func setMe(_ me: Me) {

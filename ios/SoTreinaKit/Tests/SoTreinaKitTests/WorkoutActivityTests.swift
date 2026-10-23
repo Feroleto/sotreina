@@ -111,6 +111,20 @@ import Testing
         #expect(link == .logSet(workoutId: "w1", workoutExerciseId: "a", weightKg: 20, reps: 5, clientId: clientId))
     }
 
+    @Test func snapshotCarriesTheWeightUnitForTheProposal() throws {
+        let w = workout([exercise("a", order: 1, target: 3, sets: [set(1, 20.41, 5, at: 1)])])
+        let snapshot = WorkoutActivity.snapshot(
+            workout: w, pending: [], lastPerformance: [:], rest: nil, clientId: UUID(),
+            lang: .en, weightUnit: .lb, now: t0
+        )
+        #expect(snapshot.weightUnit == .lb)
+        #expect(snapshot.proposalText == "45 lb × 5")
+        // the "✓" link still carries kg: it goes straight to the API
+        let link = try #require(snapshot.logSetURL.flatMap(ActivityLink.init(url:)))
+        guard case let .logSet(_, _, weightKg, _, _) = link else { Issue.record("not a logSet link"); return }
+        #expect(weightKg == 20.41)
+    }
+
     @Test func snapshotDropsAnElapsedRestAndFlagsFailedSets() {
         let w = workout([exercise("a", order: 1, target: 3)])
         let rest = RestTimer.Active(endsAt: t0, duration: 90)

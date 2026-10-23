@@ -110,3 +110,28 @@ private func fixture<T: Decodable>(_ name: String, as type: T.Type) throws -> T 
         #expect(try json(StartWorkoutRequest(templateId: "t1"))["templateId"] as? String == "t1")
     }
 }
+
+@Suite struct FinishFlowTests {
+    @Test func finishSendsSyncTemplate() throws {
+        let data = try APICoding.makeEncoder().encode(FinishWorkoutRequest(syncTemplate: true))
+        let body = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(body["syncTemplate"] as? Bool == true)
+    }
+
+    @Test func templateDriftDecodes() throws {
+        let drift = try APICoding.makeDecoder().decode(TemplateDriftResponse.self, from: Data(#"{"diverged":true}"#.utf8))
+        #expect(drift.diverged)
+    }
+
+    /// Same as the web's `handleFinishClick`: only a templated workout that
+    /// drifted asks about the routine; a free workout and a failed check
+    /// fall back to the plain confirmation
+    @Test func whichDialogFinishOpens() {
+        #expect(FinishPrompt.for(templateId: nil, diverged: nil) == .confirm)
+        #expect(FinishPrompt.for(templateId: "t1", diverged: false) == .confirm)
+        #expect(FinishPrompt.for(templateId: "t1", diverged: nil) == .confirm)
+        #expect(FinishPrompt.for(templateId: "t1", diverged: true) == .syncTemplate)
+        #expect(!FinishPrompt.needsDriftCheck(templateId: nil))
+        #expect(FinishPrompt.needsDriftCheck(templateId: "t1"))
+    }
+}

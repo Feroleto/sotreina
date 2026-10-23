@@ -60,4 +60,17 @@ public enum SetInput {
         guard let value = Int(text.trimmingCharacters(in: .whitespaces)), value >= 0, value < 10_000 else { return nil }
         return value
     }
+
+    /// A weight typed in the display unit → what goes into `weightKg`.
+    public static func weightKg(_ text: String, unit: WeightUnit) -> Double? {
+        weight(text).map { UnitConversion.kg(fromDisplay: $0, in: unit) }
+    }
+
+    /// Saving an edited set: the field started as `original` shown in the
+    /// display unit, so an untouched field sends `original` back as is — in
+    /// lb (1 decimal) the round trip could move it by a few grams.
+    public static func editedWeightKg(_ text: String, original: Double?, unit: WeightUnit, lang: Lang) -> Double? {
+        if let original, text == WorkoutFormat.weight(original, unit: unit, lang: lang) { return original }
+        return weightKg(text, unit: unit)
+    }
 }

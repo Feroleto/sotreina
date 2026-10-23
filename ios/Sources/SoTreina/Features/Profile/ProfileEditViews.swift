@@ -194,6 +194,8 @@ struct DietGoalView: View {
                     Spacer()
                 }
                 .padding(.vertical, 6)
+                // the row's separators run from the edge, not from the stepper
+                .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
             } header: {
                 Text("diet.goal.calories", bundle: .l10n).font(DSFont.sectionTitle).foregroundStyle(Color.fg).textCase(nil)
             }

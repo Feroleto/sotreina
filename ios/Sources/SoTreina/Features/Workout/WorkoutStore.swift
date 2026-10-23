@@ -54,7 +54,7 @@ final class WorkoutStore {
     private(set) var pendingSets: [PendingSet] = [] {
         didSet { refreshLiveActivity() }
     }
-    /// keyed by exerciseId; fetched once per exercise per app run
+    /// keyed by exerciseId; fetched once per exercise, again after a finish
     private(set) var lastPerformance: [String: LastPerformance] = [:] {
         didSet { refreshLiveActivity() }
     }
@@ -83,6 +83,9 @@ final class WorkoutStore {
         self.session = session
         rest.onChange = { [weak self] in self?.refreshLiveActivity() }
     }
+
+    /// for every weight the session shows or reads (`UnitConversion`)
+    var weightUnit: WeightUnit { session.weightUnit }
 
     var nextRoutineId: String? { RoutineFormat.nextRoutine(templates)?.id }
 
@@ -178,17 +181,36 @@ final class WorkoutStore {
         }
     }
 
-    func finish() async {
+    /// Which dialog "Finalizar" opens: asks the server whether a templated
+    /// workout drifted from its routine. A failed check falls back to the
+    /// plain confirmation, like the web — finishing never gets stuck on it.
+    func finishPrompt() async -> FinishPrompt {
+        guard let workout = active else { return .confirm }
+        guard FinishPrompt.needsDriftCheck(templateId: workout.templateId) else {
+            return FinishPrompt.for(templateId: nil, diverged: nil)
+        }
+        isFinishing = true
+        defer { isFinishing = false }
+        let drift: TemplateDriftResponse? = try? await session.api.get("workouts/\(workout.id)/template-drift")
+        return FinishPrompt.for(templateId: workout.templateId, diverged: drift?.diverged)
+    }
+
+    /// `syncTemplate` = the answer to "update the routine too?"
+    func finish(syncTemplate: Bool = false) async {
         guard let id = active?.id, pendingSets.isEmpty else { return }
         isFinishing = true
         defer { isFinishing = false }
         await enqueue {
             do {
                 let finished: FinishedWorkout? = try await self.session.api.patch(
-                    "workouts/\(id)/finish", body: EmptyBody()
+                    "workouts/\(id)/finish", body: FinishWorkoutRequest(syncTemplate: syncTemplate)
                 )
                 self.lastFinished = finished
                 self.active = nil
+                // this workout is now everyone's "last time": the next one
+                // must fetch it again, not propose from the one before
+                self.lastPerformance = [:]
+                self.lastPerformanceRequested = []
                 self.rest.skip()
                 self.log.notice("workout finished")
                 await self.load()
@@ -287,7 +309,8 @@ final class WorkoutStore {
         activityClientIds[key] = clientId
         let state = WorkoutActivity.snapshot(
             workout: active, pending: pending, lastPerformance: lastPerformance,
-            rest: rest.timer.active, clientId: clientId, lang: AppLanguageStore.shared.lang
+            rest: rest.timer.active, clientId: clientId, lang: AppLanguageStore.shared.lang,
+            weightUnit: weightUnit
         )
         liveActivity.sync(workout: active, state: state)
     }
@@ -379,5 +402,3 @@ final class WorkoutStore {
         }
     }
 }
-
-private struct EmptyBody: Encodable, Sendable {}

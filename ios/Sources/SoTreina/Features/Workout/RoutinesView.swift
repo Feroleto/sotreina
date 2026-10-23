@@ -2,7 +2,9 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// Treino › Rotinas: the user's routines with "Iniciar" (spec §6.4, tela 2).
+/// Treino › Rotinas: the user's routines with "Iniciar" (spec §6.4, tela 2),
+/// and a last row for a free workout (no routine) — app only, a registered
+/// exception to web parity.
 /// Creating and editing routines stays on the web for now. Lives under the
 /// area header of `AreaScreen`, which owns the navigation stack.
 struct RoutinesView: View {
@@ -38,6 +40,12 @@ struct RoutinesView: View {
                     Label { Text("gym.routines.emptyTitle", bundle: .l10n) } icon: { Image(systemName: "list.bullet.rectangle") }
                 } description: {
                     Text("gym.routines.emptyBody", bundle: .l10n)
+                } actions: {
+                    Button { Task { await store.start(templateId: nil) } } label: {
+                        Text("gym.routines.startFree", bundle: .l10n)
+                    }
+                    .buttonStyle(.pill)
+                    .disabled(store.startingTemplateId != nil)
                 }
                 .refreshable { await store.load() }
             } else {
@@ -47,14 +55,23 @@ struct RoutinesView: View {
     }
 
     private var list: some View {
-        List(store.templates) { template in
-            RoutineRow(
-                template: template,
-                isNext: template.id == store.nextRoutineId && store.templates.count > 1,
-                isStarting: store.startingTemplateId == template.id,
+        List {
+            ForEach(store.templates) { template in
+                RoutineRow(
+                    template: template,
+                    isNext: template.id == store.nextRoutineId && store.templates.count > 1,
+                    isStarting: store.startingTemplateId == template.id,
+                    isDisabled: store.startingTemplateId != nil
+                ) {
+                    Task { await store.start(templateId: template.id) }
+                }
+            }
+            FreeWorkoutRow(
+                // `start(templateId: nil)` marks itself with ""
+                isStarting: store.startingTemplateId == "",
                 isDisabled: store.startingTemplateId != nil
             ) {
-                Task { await store.start(templateId: template.id) }
+                Task { await store.start(templateId: nil) }
             }
         }
         .monolitoList()
@@ -88,6 +105,44 @@ private struct RoutineRow: View {
                         .lineLimit(1)
                 }
                 Text(verbatim: "\(L10n.string("gym.routines.exerciseCount %lld", lang: lang, template.exerciseCount)) · \(RoutineFormat.lastPerformed(template.lastPerformedAt, lang: lang))")
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.mutedFg)
+            }
+
+            Spacer(minLength: 8)
+
+            Button(action: onStart) {
+                if isStarting {
+                    ProgressView()
+                        .tint(Color.accFg)
+                        .frame(minWidth: 52)
+                } else {
+                    Text("gym.routines.start", bundle: .l10n)
+                        .frame(minWidth: 52)
+                }
+            }
+            .buttonStyle(.pill)
+            .disabled(isDisabled)
+        }
+        .padding(.vertical, 10)
+        .listRowInsets(EdgeInsets(top: 0, leading: pageGutter, bottom: 0, trailing: pageGutter))
+        .listRowBackground(Color.pageBg)
+    }
+}
+
+/// "Treino livre": a workout with no routine, exercises added as it goes.
+private struct FreeWorkoutRow: View {
+    let isStarting: Bool
+    let isDisabled: Bool
+    let onStart: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("gym.freeWorkout", bundle: .l10n)
+                    .font(DSFont.rowTitle)
+                    .tracking(-0.17)
+                Text("gym.routines.freeHint", bundle: .l10n)
                     .font(DSFont.caption)
                     .foregroundStyle(Color.mutedFg)
             }

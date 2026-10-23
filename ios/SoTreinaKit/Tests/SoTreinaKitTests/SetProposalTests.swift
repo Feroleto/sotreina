@@ -64,4 +64,23 @@ import Testing
         #expect(SetInput.reps("12,5") == nil)
         #expect(SetInput.reps("") == nil)
     }
+
+    // MARK: entry in the display unit
+
+    @Test func typedWeightIsConvertedToKg() {
+        #expect(SetInput.weightKg("45", unit: .lb) == 20.41)
+        #expect(SetInput.weightKg("22,5", unit: .kg) == 22.5)
+        #expect(SetInput.weightKg("", unit: .lb) == nil)
+        #expect(SetInput.weightKg("abc", unit: .lb) == nil)
+    }
+
+    /// The edit sheet shows the stored weight in lb (1 decimal); saving it
+    /// untouched must not drift the kg value through the round trip
+    @Test func anUntouchedEditKeepsTheStoredKg() {
+        let original = 20.03 // 44.2 lb, which would come back as 20.05 kg
+        let shown = WorkoutFormat.weight(original, unit: .lb, lang: .pt)
+        #expect(SetInput.editedWeightKg(shown, original: original, unit: .lb, lang: .pt) == original)
+        #expect(SetInput.editedWeightKg("50", original: original, unit: .lb, lang: .pt) == 22.68)
+        #expect(SetInput.editedWeightKg("", original: original, unit: .lb, lang: .pt) == nil)
+    }
 }
