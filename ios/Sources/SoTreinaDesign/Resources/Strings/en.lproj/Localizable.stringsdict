@@ -194,5 +194,21 @@
 			<string>%lld areas selected</string>
 		</dict>
 	</dict>
+	<key>activity.laps.count %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@laps@</string>
+		<key>laps</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Lap</string>
+			<key>other</key>
+			<string>%lld Laps</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

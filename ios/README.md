@@ -266,7 +266,7 @@ Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 2
 
 ### Fase C
 
-Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–06. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
+Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–07. Detalhe da atividade (`35-corrida-detalhe.md`): linhas 08–13. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -277,6 +277,12 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 | 05 | Período aplicado (chip, barras e lista do período) | claro · PT | manual: escolher "Mês Passado" | — |  ok (2026-10-23; "Últimos 3 Meses": 14 semanas, chip "9 corridas · 54,6 mi · 93 dias") |
 | 06 | Corrida › Atividades em mi | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em mi) | — |  ok (2026-10-23; coberta pelas linhas 01–05, todas com a conta em mi) |
 | 07 | Corrida › Atividades | Dynamic Type máx. | `SOTREINA_SCREEN=runActivities` | — |  ok (2026-10-23; saiu no escuro, que era o tema do sistema) |
+| 08 | Detalhe de corrida com GPS (badge, stats, mapa, voltas, "View on Strava") | claro · PT | manual: tocar numa corrida com mapa | `--page run/activities --steps …` (abrir a primeira) |  ok (2026-10-23; mapa MapKit estático, com o logo "Maps"/"Legal" obrigatórios no lugar da atribuição Leaflet/OSM; selo do tipo na barra de navegação no lugar do "← Voltar"; "Km N" com mi como na web) |
+| 09 | Detalhe de corrida com GPS | escuro · EN | manual: idem | `--page run/activities --theme dark --lang en --steps …` |  ok (2026-10-23; o mapa escuro é o estilo escuro do MapKit, mais azulado que o OSM filtrado da web) |
+| 10 | Detalhe de esteira (grade "Sem dados de GPS") | claro · PT | manual: tocar numa esteira | — |  pulada pelo usuário: conferir no Uso real da Fase C |
+| 11 | Detalhe de intervalado (badge mostarda, "Tiro N"/"Rec.") | claro · PT | manual: tocar num intervalado | — |  ok (2026-10-23; selo mostarda, "Aquecimento N"/"Tiro N"/"Rec. N") |
+| 12 | "View on Strava" abre a atividade na Strava | — | manual: tocar no link | — |  ok (2026-10-23; abriu a atividade no app da Strava) |
+| 13 | Detalhe | Dynamic Type máx. | manual | — |  ok (2026-10-23; a tabela de voltas para de crescer em `.xLarge` e a coluna FC média ficou com 52 pt; o resto da tela segue o Dynamic Type) |
 
 ## Checklist da Fase 0 (go/no-go)
 

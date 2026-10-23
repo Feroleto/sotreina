@@ -49,6 +49,30 @@ final class RunStore {
         }
     }
 
+    /// The cached detail, to draw before the fetch answers.
+    func cachedDetail(_ id: String) -> ActivityDetail? {
+        let hit: ResponseCache.Hit<ActivityDetail>? = session.cachedAPI?.cached("activities/\(id)")
+        return hit?.value ?? nil
+    }
+
+    /// `GET /activities/:id`. The failure carries a message to show, nil on a 401.
+    func detail(_ id: String) async -> Result<ActivityDetail, WorkoutStore.DetailError> {
+        guard let api = session.cachedAPI else { return .failure(.init(message: nil)) }
+        let lang = AppLanguageStore.shared.lang
+        do {
+            guard let detail: ActivityDetail = try await api.get("activities/\(id)") else {
+                return .failure(.init(message: WorkoutStore.message(for: APIError.http(status: 404), lang: lang)))
+            }
+            return .success(detail)
+        } catch APIError.unauthorized {
+            session.expire()
+            return .failure(.init(message: nil))
+        } catch {
+            log.error("activity \(id, privacy: .public) failed: \(String(describing: error), privacy: .public)")
+            return .failure(.init(message: WorkoutStore.message(for: error, lang: lang)))
+        }
+    }
+
     /// First load only: the last answer at once (spec §5.2), replaced by the fetch.
     private func restoreFromCacheOnce(_ api: CachedAPI) {
         guard !restoredFromCache else { return }

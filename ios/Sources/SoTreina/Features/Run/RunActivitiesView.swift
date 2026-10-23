@@ -5,8 +5,7 @@ import SwiftUI
 /// Corrida › Atividades, the web's mobile `Dashboard` (Redesign 17b
 /// "Monolito"): this week against the last, the weekly bars and the runs
 /// grouped by week. A custom period drives the bars and the list; the hero
-/// always stays on the current week. Tapping a run opens nothing yet (the
-/// detail is the next ticket).
+/// always stays on the current week. Tapping a run pushes its detail.
 struct RunActivitiesView: View {
     let store: RunStore
     @Environment(SessionStore.self) private var session
@@ -23,6 +22,9 @@ struct RunActivitiesView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
             .task { await store.load() }
+            .navigationDestination(for: ActivityListItem.self) { run in
+                RunActivityDetailView(item: run, store: store)
+            }
             .sheet(isPresented: $pickingRange) {
                 RangePickerSheet(range: range, earliest: store.activities.map(\.startDate).min()) { picked in
                     range = picked
@@ -251,8 +253,12 @@ private struct WeekGroup: View {
 
             // newest first inside the week too, like the list's order
             ForEach(week.runs.sorted { $0.startDate > $1.startDate }) { run in
-                ActivityRow(run: run, unit: unit, calendar: calendar)
-                    .overlay(alignment: .bottom) { Hairline() }
+                NavigationLink(value: run) {
+                    ActivityRow(run: run, unit: unit, calendar: calendar)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .overlay(alignment: .bottom) { Hairline() }
             }
         }
     }

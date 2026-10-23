@@ -284,3 +284,30 @@
 "gym.history.sets.bestSet" = "Best set";
 "gym.history.sets.bestSetValue %lld %@ %@" = "#%1$lld · %2$@ × %3$@ reps";
 "gym.history.sets.plannedReps" = "Planned rep range";
+
+/* Corrida › detalhe (web: activity.json, common.json workout.*) */
+"common.workout.easyLong" = "Easy/Long";
+"common.workout.interval" = "Interval";
+"common.workout.hillRepeats" = "Hill Repeats";
+"activity.lapType.warmup" = "Warmup";
+"activity.lapType.cooldown" = "Cooldown";
+"activity.lapType.workout" = "Run";
+"activity.lapType.rest" = "Rec";
+"activity.lapType.run" = "Lap";
+"activity.lapType.steady" = "Km";
+"activity.lapType.activity" = "Activity";
+"activity.noGps" = "No GPS data for this activity";
+"activity.stats.distance" = "Distance";
+"activity.stats.time" = "Time";
+"activity.stats.pace" = "Pace";
+"activity.stats.elevation" = "Elevation";
+"activity.stats.avgHr" = "Avg HR";
+"activity.stats.cadence" = "Cadence";
+"activity.laps.title" = "Laps";
+"activity.laps.index" = "#";
+"activity.laps.lap" = "Lap";
+"activity.laps.dist" = "Dist";
+"activity.laps.time" = "Time";
+"activity.laps.pace" = "Pace";
+"activity.laps.avgHr" = "Avg HR";
+"activity.loadFailed" = "Couldn't load the activity";
