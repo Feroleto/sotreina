@@ -36,6 +36,10 @@ struct AreaScreen<Content: View>: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(Color.pageBg)
+            // never shown (the header above is the title), but it's what a
+            // pushed screen's back button says, in the app's language;
+            // without it the system writes "Back" in the iPhone's
+            .navigationTitle(tab.label(language.lang))
             .toolbar(.hidden, for: .navigationBar)
         }
     }

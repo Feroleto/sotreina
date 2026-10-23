@@ -5,15 +5,23 @@ import SwiftUI
 /// Treino › Rotinas: the user's routines with "Iniciar" (spec §6.4, tela 2),
 /// and a last row for a free workout (no routine) — app only, a registered
 /// exception to web parity.
-/// Creating and editing routines stays on the web for now. Lives under the
-/// area header of `AreaScreen`, which owns the navigation stack.
+/// Tapping a routine (outside "Iniciar") pushes its detail. Creating and
+/// editing routines stays on the web for now. Lives under the area header of
+/// `AreaScreen`, which owns the navigation stack.
 struct RoutinesView: View {
     let store: WorkoutStore
+    /// the routine whose detail is pushed
+    @State private var viewingId: String?
 
     var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
+            .navigationDestination(item: $viewingId) { id in
+                if let template = store.templates.first(where: { $0.id == id }) {
+                    RoutineDetailView(template: template, store: store)
+                }
+            }
     }
 
     @ViewBuilder private var content: some View {
@@ -61,7 +69,8 @@ struct RoutinesView: View {
                     template: template,
                     isNext: template.id == store.nextRoutineId && store.templates.count > 1,
                     isStarting: store.startingTemplateId == template.id,
-                    isDisabled: store.startingTemplateId != nil
+                    isDisabled: store.startingTemplateId != nil,
+                    onOpen: { viewingId = template.id }
                 ) {
                     Task { await store.start(templateId: template.id) }
                 }
@@ -84,6 +93,7 @@ private struct RoutineRow: View {
     let isNext: Bool
     let isStarting: Bool
     let isDisabled: Bool
+    let onOpen: () -> Void
     let onStart: () -> Void
     @Environment(AppLanguageStore.self) private var language
 
@@ -125,6 +135,10 @@ private struct RoutineRow: View {
             .disabled(isDisabled)
         }
         .padding(.vertical, 10)
+        // the whole row opens the detail; "Iniciar" keeps its own tap
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
+        .accessibilityAction(named: Text("gym.routineDetail.open", bundle: .l10n), onOpen)
         .listRowInsets(EdgeInsets(top: 0, leading: pageGutter, bottom: 0, trailing: pageGutter))
         .listRowBackground(Color.pageBg)
     }

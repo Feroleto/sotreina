@@ -26,3 +26,5 @@ Em que tickets `task` de construção a Fase C se divide, em que ordem e com que
 - **Lógica pura vai pro Kit com os testes da web traduzidos**: `bins.ts` e `activityFormat.ts` (tarefa 1), `polyline.ts` (tarefa 2), `lapBoundaryMath.ts` (tarefa 3) e `prSnapshot.ts` (tarefa 4).
 - **Os selos da Strava são SVG**, que o SwiftUI não desenha solto. A tarefa 1 converte pra PDF/PNG sem alterar o desenho. Antes de adotar o MapKit (tarefa 2), checar se ele depende de ferramenta exclusiva do Xcode.
 - **Validação por tarefa**, com as linhas da Fase C no checklist do README.
+
+**Emenda (2026-10-23, com o usuário):** a regra "começa depois da Dieta: histórico 7/14 dias" caiu. A fila era só de ferramenta, então a Corrida roda em paralelo com o Treino, num git worktree próprio (`../strava_dashboard-corrida`, branch `fase-c`). As regras de convivência estão nas Notes do mapa. [Corrida: Atividades](34-corrida-atividades.md) deixou de esperar a Dieta.

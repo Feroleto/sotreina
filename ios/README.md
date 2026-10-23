@@ -219,7 +219,9 @@ explorer.exe "$(wslpath -w ios/validation/S/index.html)"
 
 Peso em lb (`.scratch/app-ios-completo/issues/19-peso-lb-sessao.md`): as linhas 01–07 pedem um treino aberto e a conta em lb (Perfil › Unidades). A Sessão também cobre a conferência em EN que ficou pendente no ticket das strings da Navegação.
 
-Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-livre-atualizar-rotina.md`): linhas 09–11. O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
+Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-livre-atualizar-rotina.md`): linhas 09–11.
+
+Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -234,6 +236,12 @@ Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-liv
 | 09 | Rotinas com a linha "Treino livre" no fim | claro · PT | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/workouts` (a web não tem treino livre: exceção registrada) | ok (2026-10-23) |
 | 10 | Sessão de treino livre, ainda sem exercício | claro · EN | manual: "Iniciar" na linha "Treino livre" | — | ok (2026-10-23; capturada no escuro, o app seguia o sistema) |
 | 11 | Finalizar uma rotina que mudou: "Atualizar rotina / Manter rotina / Voltar" | claro · PT | manual: tirar ou acrescentar um exercício de uma rotina e tocar em Finalizar | `--page gym/workouts` (sessão divergente + "Finalizar treino") | desvio aceito: folha de ações nativa no lugar do cartão da web, como os diálogos da linha 04 (2026-10-23; capturada no escuro) |
+| 12 | Rotina › detalhe (chips, exercícios com metas, "Iniciar treino") | claro · PT | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=pt` + tocar em "upper" | `--page gym/workouts` + tocar em "Upper" | ok (2026-10-23; chips do app maiores: `Chip` do design system) |
+| 13 | Rotina › detalhe | escuro · EN | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=dark SOTREINA_LANG=en` + tocar em "upper" | `--page gym/workouts --theme dark --lang en` + tocar em "Upper" | ok (2026-10-23) |
+| 14 | Rotina › confirmação de excluir | claro · PT | como a 12 + lixeira | — (a web confirma numa faixa inline) | desvio aceito: folha de ações nativa no lugar da faixa inline da web (2026-10-23; exclusão real conferida pelo usuário) |
+| 15 | Exercício › detalhe (foto, chips, metas, peso anterior em lb, como executar) | claro · PT | como a 12 + tocar no primeiro exercício | `--page gym/workouts` + "Upper" + primeiro exercício | ok (2026-10-23; peso anterior em lb no app, kg no banco local da web) |
+| 16 | Exercício › detalhe | escuro · EN | como a 13 + tocar no primeiro exercício | `--page gym/workouts --theme dark --lang en` + "Upper" + primeiro exercício | ok (2026-10-23) |
+| 17 | Rotina › detalhe | Dynamic Type máx. | `SOTREINA_SCREEN=gymRoutines` + tocar em "upper" | — | ok (2026-10-23; nome longo corta com "…", como na web) |
 
 ### Fase C
 

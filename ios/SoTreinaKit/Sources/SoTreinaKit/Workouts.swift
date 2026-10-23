@@ -156,12 +156,38 @@ public struct ExerciseListItem: Codable, Equatable, Sendable, Identifiable {
     public var source: String
 }
 
+/// `GET /exercises/:id` — `ExerciseDetail`: the list item plus the steps
+/// (already in the `Accept-Language` language) and the dataset's images.
+public struct ExerciseDetail: Codable, Equatable, Sendable, Identifiable {
+    public var id: String
+    public var name: String
+    public var equipment: String?
+    public var primaryMuscles: [String]
+    public var secondaryMuscles: [String]
+    public var instructions: [String]
+    public var imageUrls: [URL]
+
+    /// The steps as one paragraph, or the web's `exerciseDetail.instrFallback`
+    /// when the library entry has none (custom exercises).
+    public static func instructionsText(_ steps: [String], lang: Lang) -> String {
+        let text = steps.filter { !$0.isEmpty }.joined(separator: " ")
+        guard text.isEmpty else { return text }
+        return lang == .pt
+            ? "Execute o movimento com controle, priorizando amplitude completa e boa técnica."
+            : "Perform the movement with control, using a full range of motion and good form."
+    }
+}
+
 /// `GET /exercises/:id/last-performance` — `LastPerformance`, or an empty
 /// body when the exercise was never done (the source of the set suggestions).
 public struct LastPerformance: Codable, Equatable, Sendable {
     public var workoutId: String
     public var startedAt: Date
     public var sets: [LastPerformanceSet]
+
+    /// "Peso anterior" in the exercise detail: the heaviest set; sets with no
+    /// weight (bodyweight) don't count.
+    public var heaviestWeightKg: Double? { sets.compactMap(\.weightKg).max() }
 }
 
 /// `LastPerformanceSet`.

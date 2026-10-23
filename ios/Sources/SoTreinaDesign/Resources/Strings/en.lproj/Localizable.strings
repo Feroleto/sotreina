@@ -197,6 +197,19 @@
 "gym.session.syncTemplateKeep" = "Keep routine";
 "gym.session.syncTemplateUpdate" = "Update routine";
 
+"gym.routineDetail.open" = "View routine";
+"gym.routineDetail.exercises" = "Exercises";
+"gym.routineDetail.lastPerformed %@" = "last done %@";
+"gym.routineDetail.spec %@ %@" = "%1$@ sets · %2$@ reps";
+"gym.routineDetail.rest %@" = "rest %@";
+"gym.routineDetail.start" = "Start workout";
+"gym.routineDetail.delete" = "Delete";
+"gym.routineDetail.deleteConfirm" = "Delete this routine?";
+"gym.exerciseDetail.sets" = "Sets";
+"gym.exerciseDetail.reps" = "Reps";
+"gym.exerciseDetail.prevWeight" = "Previous weight";
+"gym.exerciseDetail.howTo" = "How to perform";
+
 /* Corrida › Atividades (web: dashboard.json) */
 "dashboard.hero.thisWeek %@" = "This week · %@";
 "dashboard.hero.lastWeek %@ %@" = "last week %1$@ %2$@";
