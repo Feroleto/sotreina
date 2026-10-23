@@ -2,10 +2,13 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// Search the exercise library (`GET /exercises?search=`) and add one to the
-/// open workout. The server matches the PT and the English name.
+/// Search the exercise library (`GET /exercises?search=`) and pick one: the
+/// open workout adds it, the Visão geral reads its personal record. The
+/// server matches the PT and the English name.
 struct ExercisePickerView: View {
-    let store: WorkoutStore
+    var title: LocalizedStringKey = "gym.picker.title"
+    /// runs before the sheet closes (the row spins meanwhile)
+    let onPick: (ExerciseListItem) async -> Void
     @Environment(SessionStore.self) private var session
     @Environment(\.dismiss) private var dismiss
     @Environment(AppLanguageStore.self) private var language
@@ -21,7 +24,7 @@ struct ExercisePickerView: View {
                 Button {
                     adding = exercise.id
                     Task {
-                        await store.addExercise(exerciseId: exercise.id)
+                        await onPick(exercise)
                         dismiss()
                     }
                 } label: {
@@ -54,7 +57,7 @@ struct ExercisePickerView: View {
                 }
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("gym.picker.searchPlaceholder", bundle: .l10n))
-            .navigationTitle(Text("gym.picker.title", bundle: .l10n))
+            .navigationTitle(Text(title, bundle: .l10n))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

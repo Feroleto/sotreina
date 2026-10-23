@@ -351,3 +351,25 @@
 "overview.shoes.ofLifespan %lld %@" = "of %1$lld %2$@";
 "overview.shoes.dateRange %@ %@" = "%1$@ – %2$@";
 "overview.loadFailed" = "Couldn't load the overview";
+
+
+/* Treino › Visão geral (web: gym.json overviewPage, overview.calendar, overview.records) */
+"gym.overview.thisWeek %@" = "This week · %@";
+"gym.overview.noLastWeek" = "no workouts last week";
+"gym.overview.exercises" = "Exercises";
+"gym.overview.next" = "Next workout";
+"gym.overview.inProgress" = "Workout in progress";
+"gym.overview.start" = "Start";
+"gym.overview.resume" = "Resume";
+"gym.overview.newRoutine" = "New";
+"gym.overview.routines" = "Routines";
+"gym.overview.routinesEmpty" = "No routines yet. Create one to get started.";
+"gym.overview.loadFailed" = "Couldn't load the overview";
+"gym.calendar.daySingle %@ %@ %@" = "%1$@ · %2$@ · %3$@";
+"gym.records.title" = "Personal records";
+"gym.records.searchLabel" = "Search exercise";
+"gym.records.emptyPrompt" = "Search an exercise to see your personal record";
+"gym.records.meta %@ %@" = "%1$@ · %2$@";
+"gym.records.reps %lld" = "%lld reps";
+"gym.records.noRecordYet" = "No record yet";
+"gym.records.loading" = "Loading…";

@@ -351,3 +351,25 @@
 "overview.shoes.ofLifespan %lld %@" = "de %1$lld %2$@";
 "overview.shoes.dateRange %@ %@" = "%1$@ – %2$@";
 "overview.loadFailed" = "Não foi possível carregar a visão geral";
+
+
+/* Treino › Visão geral (web: gym.json overviewPage, overview.calendar, overview.records) */
+"gym.overview.thisWeek %@" = "Esta semana · %@";
+"gym.overview.noLastWeek" = "nenhum treino na semana passada";
+"gym.overview.exercises" = "Exercícios";
+"gym.overview.next" = "Próximo treino";
+"gym.overview.inProgress" = "Treino em andamento";
+"gym.overview.start" = "Iniciar";
+"gym.overview.resume" = "Continuar";
+"gym.overview.newRoutine" = "Nova";
+"gym.overview.routines" = "Rotinas";
+"gym.overview.routinesEmpty" = "Nenhuma rotina ainda. Crie uma para começar.";
+"gym.overview.loadFailed" = "Não foi possível carregar a visão geral";
+"gym.calendar.daySingle %@ %@ %@" = "%1$@ · %2$@ · %3$@";
+"gym.records.title" = "Recordes pessoais";
+"gym.records.searchLabel" = "Pesquisar exercício";
+"gym.records.emptyPrompt" = "Pesquisar um exercício para ver seu recorde pessoal";
+"gym.records.meta %@ %@" = "%1$@ · %2$@";
+"gym.records.reps %lld" = "%lld reps";
+"gym.records.noRecordYet" = "Nenhum registro ainda";
+"gym.records.loading" = "Carregando…";

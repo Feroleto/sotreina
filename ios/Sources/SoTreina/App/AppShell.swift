@@ -117,6 +117,7 @@ struct AppShell: View {
         case .gym:
             AreaScreen(tab: tab) { page in
                 switch page {
+                case .gymOverview: GymOverviewView(store: store, history: history)
                 case .gymRoutines: RoutinesView(store: store)
                 case .gymHistory: GymHistoryView(store: history)
                 default: ComingSoonView()

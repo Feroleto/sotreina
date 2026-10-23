@@ -117,7 +117,7 @@ struct WorkoutSessionView: View {
                 Text("gym.session.cancelMessage", bundle: .l10n)
             }
             .sheet(isPresented: $addingExercise) {
-                ExercisePickerView(store: store)
+                ExercisePickerView { await store.addExercise(exerciseId: $0.id) }
             }
             .sheet(item: $editing) { editing in
                 SetEditSheet(store: store, editing: editing)

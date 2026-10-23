@@ -227,6 +227,8 @@ Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linha
 
 Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 27–34. A lista tem destino próprio (`gymHistory`); os detalhes são por toque. As capturas da web saem de um `--steps` que abre os editores e nunca toca em Salvar. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
 
+Visão geral (`.scratch/app-ios-completo/issues/24-visao-geral-treino.md`): linhas 35–41. A aba Treino agora abre nela. Linha de rotina empilha o detalhe na própria Visão geral (a web pula pra Rotinas). O seletor do recorde é o mesmo da sessão.
+
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
 | 01 | Sessão em lb (séries, proposta no placeholder, "última vez") | claro · EN | `SOTREINA_SCREEN=session SOTREINA_THEME=light SOTREINA_LANG=en` (treino aberto, conta em lb) | `--page gym/workouts --lang en` (sessão aberta, conta em lb) | ok (2026-10-23; web em grade e app em lista é anterior a este ticket) |
@@ -263,6 +265,13 @@ Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 2
 | 32 | Treino finalizado › detalhe | escuro · EN | como a 31 + primeira linha | como a 31 + primeira linha | ok (2026-10-23) |
 | 33 | Exercício no treino | escuro · EN | como a 32 + primeiro exercício | como a 32 + primeiro exercício | ok (2026-10-23) |
 | 34 | Histórico | Dynamic Type máx. | `SOTREINA_SCREEN=gymHistory` | — | ok (2026-10-23); desvios aceitos por enquanto na fase: sem animação de entrada das barras/semanas, barras desenhadas à mão (não Swift Charts) |
+| 35 | Visão geral (semana, Próximo treino, Rotinas) | claro · PT | `SOTREINA_SCREEN=gymOverview SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/overview` || ok (2026-10-23; "última vez hoje" corrigido na validação) |
+| 36 | Visão geral | escuro · EN | `SOTREINA_SCREEN=gymOverview SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page gym/overview --theme dark --lang en` || ok (2026-10-23) |
+| 37 | Visão geral › rolada (calendário, Recordes pessoais vazio) | claro · PT | como a 35 + rolar até o fim | como a 35 + rolar até o fim || ok (2026-10-23) |
+| 38 | Calendário › dia tocado e mês anterior | claro · PT | como a 37 + tocar num dia com treino, depois ‹ | — || ok (2026-10-23) |
+| 39 | Recordes pessoais › exercício escolhido (recorde e "Nenhum registro ainda") | claro · PT | como a 37 + lupa + buscar e escolher | — || ok (2026-10-23) |
+| 40 | Funcional: "Iniciar" abre a sessão; minimizada, o slot vira "Treino em andamento" com "Continuar"; linha de rotina abre o detalhe; "+ Nova" abre o editor | — | manual | — || ok (usuário, 2026-10-23); desvio aceito: linha de rotina empilha o detalhe na Visão geral (a web pula pra Rotinas) |
+| 41 | Visão geral | Dynamic Type máx. | `SOTREINA_SCREEN=gymOverview` | — || ok (2026-10-23) |
 
 ### Fase C
 

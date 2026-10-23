@@ -66,6 +66,17 @@ final class GymHistoryStore {
         try? await session.api.get("exercises/\(id)")
     }
 
+    /// Visão geral › Recordes pessoais: `GET /exercises/:id/personal-record`.
+    /// `.success(nil)` is "no record yet"; a failure carries the message.
+    func personalRecord(exerciseId: String) async -> Result<ExercisePersonalRecord?, WorkoutStore.DetailError> {
+        do {
+            let record: ExercisePersonalRecord? = try await session.api.get("exercises/\(exerciseId)/personal-record")
+            return .success(record)
+        } catch {
+            return .failure(.init(message: handle(error)))
+        }
+    }
+
     private func handle(_ error: Error) -> String? {
         if case APIError.unauthorized = error {
             session.expire()
