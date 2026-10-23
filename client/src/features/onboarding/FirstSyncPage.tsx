@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '@/lib/api';
-import { formatKm } from '@/lib/activityFormat';
+import { formatDistance } from '@/lib/activityFormat';
 import type { ActivitiesResponse, SyncStatus } from '@/lib/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { FIRST_SYNC_FLAG } from './firstSyncFlag';
@@ -10,6 +10,7 @@ import MotionProvider from '@/components/MotionProvider';
 import CountUp from '@/components/CountUp';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { Logo } from '@/components/Logo';
+import { distanceLabel } from '@/lib/units';
 
 const POLL_MS = 2000;
 
@@ -335,7 +336,9 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                   ) : (
                     <div
                       className="h-full bg-acc ease-linear motion-safe:transition-[clip-path] motion-safe:duration-[120ms]"
-                      style={{ clipPath: `inset(0 ${100 - percent}% 0 0 round 999px)` }}
+                      style={{
+                        clipPath: `inset(0 ${100 - percent}% 0 0 round 999px)`,
+                      }}
                     />
                   )}
                 </div>
@@ -398,7 +401,9 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                     <div className="mt-4 text-[44px] leading-none font-bold tracking-[-.03em] text-foreground tabular-nums">
                       <CountUp
                         value={summary.count}
-                        format={(v) => Math.round(v).toLocaleString(currentIntlLocale())}
+                        format={(v) =>
+                          Math.round(v).toLocaleString(currentIntlLocale())
+                        }
                         delay={0.2}
                         celebrate={!reduceMotion}
                         pop
@@ -407,7 +412,10 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                     <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground tabular-nums">
                       {[
                         t('done.importedLabel', { count: summary.count }),
-                        t('done.distanceKm', { km: formatKm(summary.km) }),
+                        t('done.distanceKm', {
+                          unit: distanceLabel(),
+                          km: formatDistance(summary.km),
+                        }),
                         summary.firstYear != null
                           ? summary.firstYear === summary.lastYear
                             ? `${summary.firstYear}`
@@ -419,7 +427,9 @@ export default function FirstSyncPage({ onDone }: FirstSyncPageProps) {
                     </p>
                   </MotionProvider>
                 ) : (
-                  <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground">{'\u00a0'}</p>
+                  <p className="mt-2 text-[13.5px] leading-[1.55] text-muted-foreground">
+                    {'\u00a0'}
+                  </p>
                 )}
                 <button
                   type="button"

@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
   formatDayMonth,
   formatDurationShort,
-  formatKm,
+  formatDistance,
   formatMonthShort,
-  formatPace,
+  formatPaceValue,
 } from '@/lib/activityFormat';
 import type { BinAgg } from './WeeklyChart';
 import { endOfWeek } from './bins';
+import { distanceLabel } from '@/lib/units';
 
 interface MobileWeeklySummaryProps {
   /** the current (partial) week — the hero number */
@@ -62,10 +63,15 @@ export default function MobileWeeklySummary({
   const reading =
     sel !== null
       ? t('chart.barReading', {
+          unit: distanceLabel(),
           range: `${formatDayMonth(weeks[sel].start)} – ${formatDayMonth(endOfWeek(weeks[sel].start))}`,
-          km: formatKm(weeks[sel].km),
+          km: formatDistance(weeks[sel].km),
         })
-      : t('chart.barHint', { km: formatKm(totalKm), count: weeks.length });
+      : t('chart.barHint', {
+          unit: distanceLabel(),
+          km: formatDistance(totalKm),
+          count: weeks.length,
+        });
 
   // progress against last week — no target exists in the data, so the
   // previous week is the bar the current one is measured against
@@ -82,15 +88,18 @@ export default function MobileWeeklySummary({
 
       <div className="mt-[22px] flex items-baseline gap-2">
         <span className="font-mono text-[64px] leading-none font-medium tracking-[-.05em] text-foreground">
-          {formatKm(thisWeek.km)}
+          {formatDistance(thisWeek.km)}
         </span>
-        <span className="text-[17px] text-muted-foreground">km</span>
+        <span className="text-[17px] text-muted-foreground">{distanceLabel()}</span>
       </div>
 
       <div className="mt-3 flex justify-between text-[12.5px] text-muted-foreground">
         <span>
           {lastWeek.km > 0
-            ? t('hero.lastWeek', { km: formatKm(lastWeek.km) })
+            ? t('hero.lastWeek', {
+                unit: distanceLabel(),
+                km: formatDistance(lastWeek.km),
+              })
             : t('hero.noLastWeek')}
         </span>
         {pct !== null && (
@@ -118,9 +127,9 @@ export default function MobileWeeklySummary({
         <Stat
           label={t('kpis.avgPace')}
           // the label already says pace; the unit would crowd the column
-          value={formatPace(
+          value={formatPaceValue(
             thisWeek.km > 0 ? thisWeek.sec / thisWeek.km : null,
-          ).replace(' /km', '')}
+          )}
         />
         <Stat
           label={t('kpis.time')}
@@ -149,7 +158,7 @@ export default function MobileWeeklySummary({
             <button
               key={w.start.getTime()}
               onClick={() => setSelected((cur) => (cur === i ? null : i))}
-              aria-label={`${formatDayMonth(w.start)} · ${formatKm(w.km)} km`}
+              aria-label={`${formatDayMonth(w.start)} · ${formatDistance(w.km)} ${distanceLabel()}`}
               aria-pressed={sel === i}
               className="flex h-full flex-1 cursor-pointer items-end"
             >

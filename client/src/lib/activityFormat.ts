@@ -1,5 +1,11 @@
 import { currentIntlLocale } from '@/lib/dateLocale';
 import type { ActivityLap } from '@/lib/types';
+import {
+  distanceLabel,
+  kmToDisplay,
+  paceToDisplay,
+  type DistanceUnit,
+} from '@/lib/units';
 
 // dot/badge colors per workout type (tokens from index.css); labelKey points
 // into the 'common' i18n namespace, translate at render time
@@ -75,19 +81,35 @@ export function lapLabels(
   });
 }
 
-export function formatKm(km: number): string {
-  return km.toFixed(1);
+// km in → the user's distance unit out ("12.4"), no suffix — pair with
+// distanceLabel() from lib/units
+export function formatDistance(km: number, unit?: DistanceUnit): string {
+  return kmToDisplay(km, unit).toFixed(1);
 }
 
-export function formatPace(secPerKm: number | null): string {
+// "5:12" — pace in the user's distance unit, no suffix
+export function formatPaceValue(
+  secPerKm: number | null,
+  unit?: DistanceUnit,
+): string {
   if (!secPerKm || !isFinite(secPerKm)) return '—';
-  let min = Math.floor(secPerKm / 60);
-  let sec = Math.round(secPerKm % 60);
+  const secPerUnit = paceToDisplay(secPerKm, unit);
+  let min = Math.floor(secPerUnit / 60);
+  let sec = Math.round(secPerUnit % 60);
   if (sec === 60) {
     min++;
     sec = 0;
   }
-  return `${min}:${sec.toString().padStart(2, '0')} /km`;
+  return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+// "5:12 /km" | "8:23 /mi"
+export function formatPace(
+  secPerKm: number | null,
+  unit?: DistanceUnit,
+): string {
+  const value = formatPaceValue(secPerKm, unit);
+  return value === '—' ? value : `${value} /${distanceLabel(unit)}`;
 }
 
 // "29h 16m" | "42min" — rail totals

@@ -16,10 +16,12 @@ import { cn } from '@/lib/utils';
 import type { Area } from '@/lib/types';
 import { AREAS } from '@/features/areas/areas';
 import { useAreas } from '@/features/areas/useAreas';
+import { useUnits } from '@/lib/useUnits';
 import { useUserGoals } from '@/features/today/useUserGoals';
 import WeeklyGoalsPage from '@/features/today/WeeklyGoalsPage';
 import GoalPage from '@/features/diet/GoalPage';
 import EditNamePage from './EditNamePage';
+import { distanceLabel, goalToDisplay } from '@/lib/units';
 
 interface ProfilePageProps {
   themePref: ThemePref;
@@ -116,6 +118,7 @@ export default function ProfilePage({
   const { t } = useTranslation(['nav', 'auth', 'today']);
   const { user, logout, setUser } = useAuth();
   const { areas, has, save: saveAreas, error: areasError } = useAreas();
+  const units = useUnits();
   const { goals, saveWeekly, saveDaily } = useUserGoals();
   const [view, setView] = useState<ProfileView>('main');
   const { language, setLanguage } = useAppLanguage();
@@ -222,7 +225,9 @@ export default function ProfilePage({
       key: 'RUN',
       name: t('tabs.run'),
       detail: t('profile.goalRunDetail'),
-      value: goals ? `${goals.weeklyRunKmGoal} km` : '—',
+      value: goals
+        ? `${goalToDisplay(goals.weeklyRunKmGoal)} ${distanceLabel()}`
+        : '—',
       view: 'weeklyGoals' as const,
     },
     has('GYM') && {
@@ -383,11 +388,38 @@ export default function ProfilePage({
                 onPick={setLanguage}
               />
             </PrefRow>
-            <PrefRow label={t('profile.units')}>
-              <span className="text-[13.5px] text-muted-foreground">
-                {t('profile.unitsKm')}
-              </span>
-            </PrefRow>
+            {/* each unit only matters to its area: km/mi to Corrida, kg/lb to Treino */}
+            {has('RUN') && (
+              <PrefRow label={t('profile.unitsDistance')}>
+                <SegmentedControl
+                  size="compact"
+                  items={[
+                    ['KM', 'km'],
+                    ['MI', 'mi'],
+                  ]}
+                  active={units.distanceUnit}
+                  onPick={(distanceUnit) => void units.save({ distanceUnit })}
+                />
+              </PrefRow>
+            )}
+            {has('GYM') && (
+              <PrefRow label={t('profile.unitsWeight')}>
+                <SegmentedControl
+                  size="compact"
+                  items={[
+                    ['KG', 'kg'],
+                    ['LB', 'lb'],
+                  ]}
+                  active={units.weightUnit}
+                  onPick={(weightUnit) => void units.save({ weightUnit })}
+                />
+              </PrefRow>
+            )}
+            {units.error && (
+              <p className="py-2 text-[12px] text-neg">
+                {t('profile.unitsError')}
+              </p>
+            )}
           </div>
 
           <SectionTitle>{t('profile.account')}</SectionTitle>

@@ -11,6 +11,7 @@ import DrillStack from '@/components/DrillStack';
 import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 import type { WorkoutHistoryItem } from '@/lib/types';
+import { formatVolume, volumeLabel } from '@/lib/units';
 
 const WEEKS = 12;
 const RECENT_WEEK_GROUPS = 4;
@@ -18,11 +19,12 @@ const RECENT_WEEK_GROUPS = 4;
 // get the neutral --dot-easy token instead of cycling into this palette.
 // --chart-1 goes last: in dark mode its hue sits close to --acc's blue, so
 // it's the one most likely to look redundant next to the accent-colored dot
-const ROUTINE_DOT_COLORS = ['var(--acc)', 'var(--chart-2)', 'var(--chart-4)', 'var(--chart-1)'];
-
-function formatTons(kg: number): string {
-  return (kg / 1000).toFixed(1);
-}
+const ROUTINE_DOT_COLORS = [
+  'var(--acc)',
+  'var(--chart-2)',
+  'var(--chart-4)',
+  'var(--chart-1)',
+];
 
 // always shows both parts, unlike lib/activityFormat's formatDuration —
 // this card's spec calls for "{h}h {min}min" literally, every time
@@ -32,13 +34,23 @@ function formatTotalDuration(sec: number): string {
   return `${h}h ${m}min`;
 }
 
-function KpiCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+function KpiCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
   return (
     <div className="w-[150px] flex-none rounded-[14px] border border-border bg-card p-[14px_15px]">
       <div className="text-[10.5px] font-semibold tracking-[.07em] text-muted-foreground uppercase">
         {label}
       </div>
-      <div className="mt-1 text-[20px] font-bold tracking-[-.02em] text-foreground">{value}</div>
+      <div className="mt-1 text-[20px] font-bold tracking-[-.02em] text-foreground">
+        {value}
+      </div>
       <div className="mt-[2px] text-[11px] text-muted-foreground">{sub}</div>
     </div>
   );
@@ -50,14 +62,20 @@ function HistorySkeleton() {
     <div className="px-5 pt-[18px] pb-[44px]">
       <div className="-mx-5 flex gap-3 overflow-hidden px-5">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-[86px] w-[150px] flex-none rounded-[14px]" />
+          <Skeleton
+            key={i}
+            className="h-[86px] w-[150px] flex-none rounded-[14px]"
+          />
         ))}
       </div>
       <Skeleton className="mt-3 h-[178px] rounded-[14px]" />
       <div className="mt-6">
         <Skeleton className="mb-3 h-[11px] w-[110px]" />
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-3 border-b border-border py-[14px]">
+          <div
+            key={i}
+            className="flex items-center gap-3 border-b border-border py-[14px]"
+          >
             <Skeleton className="h-2 w-2 flex-none rounded-full" />
             <div className="flex-1">
               <Skeleton className="h-[13px] w-[45%]" />
@@ -75,7 +93,8 @@ export default function GymHistoryPage() {
   const { t } = useTranslation('gym');
   const { items, loading, error } = useWorkoutHistory();
   const [selected, setSelected] = useState<number | null>(null);
-  const [viewingWorkout, setViewingWorkout] = useState<WorkoutHistoryItem | null>(null);
+  const [viewingWorkout, setViewingWorkout] =
+    useState<WorkoutHistoryItem | null>(null);
 
   const weeks = useMemo(() => aggregateWeeklyVolume(items, WEEKS), [items]);
   const windowStart = weeks[0]?.start ?? new Date();
@@ -94,17 +113,25 @@ export default function GymHistoryPage() {
   const reading =
     sel !== null
       ? t('history.barReading', {
+          unit: volumeLabel(),
           range: `${formatDayMonth(weeks[sel].start)} – ${formatDayMonth(endOfWeek(weeks[sel].start))}`,
-          volume: formatTons(weeks[sel].volumeKg),
+          volume: formatVolume(weeks[sel].volumeKg),
         })
-      : t('history.barHint', { volume: formatTons(volumeKg), count: weeks.length });
+      : t('history.barHint', {
+          unit: volumeLabel(),
+          volume: formatVolume(volumeKg),
+          count: weeks.length,
+        });
 
   const routineColorById = useMemo(() => {
     const map = new Map<string, string>();
     let i = 0;
     for (const w of items) {
       if (w.templateId && !map.has(w.templateId)) {
-        map.set(w.templateId, ROUTINE_DOT_COLORS[i % ROUTINE_DOT_COLORS.length]);
+        map.set(
+          w.templateId,
+          ROUTINE_DOT_COLORS[i % ROUTINE_DOT_COLORS.length],
+        );
         i++;
       }
     }
@@ -113,13 +140,19 @@ export default function GymHistoryPage() {
 
   const weekGroups = useMemo(() => groupWorkoutsByWeek(items), [items]);
   // volume bars grow and the week groups rise, once per session
-  const { attach: enterRef, state: enterState } = useEntrance('gym/history', { ready: !loading });
+  const { attach: enterRef, state: enterState } = useEntrance('gym/history', {
+    ready: !loading,
+  });
   const visibleGroups = weekGroups.slice(0, RECENT_WEEK_GROUPS);
   const olderWeekGroups = Math.max(0, weekGroups.length - RECENT_WEEK_GROUPS);
 
   const list = (
     <LoadingSwap loading={loading} skeleton={<HistorySkeleton />}>
-      <div ref={enterRef} data-enter={enterState} className="px-5 pt-[18px] pb-[44px]">
+      <div
+        ref={enterRef}
+        data-enter={enterState}
+        className="px-5 pt-[18px] pb-[44px]"
+      >
         {error && <p className="text-[12.5px] text-neg">{error}</p>}
 
         {!error && items.length === 0 && (
@@ -139,7 +172,7 @@ export default function GymHistoryPage() {
               />
               <KpiCard
                 label={t('history.kpiVolume')}
-                value={`${formatTons(volumeKg)} t`}
+                value={`${formatVolume(volumeKg)} ${volumeLabel()}`}
                 sub={t('history.weeksCount', { count: weeks.length })}
               />
               <KpiCard
@@ -167,19 +200,21 @@ export default function GymHistoryPage() {
                     key={w.start.getTime()}
                     type="button"
                     onClick={() => setSelected((cur) => (cur === i ? null : i))}
-                    aria-label={`${formatDayMonth(w.start)} · ${formatTons(w.volumeKg)} t`}
+                    aria-label={`${formatDayMonth(w.start)} · ${formatVolume(w.volumeKg)} ${volumeLabel()}`}
                     className="flex h-full flex-1 cursor-pointer items-end"
                   >
                     <span
                       className="chart-bar w-full rounded-t-[4px]"
-                      style={{
-                        '--i': i,
-                        height: `${((w.volumeKg / maxVolume) * 100).toFixed(1)}%`,
-                        background:
-                          sel === i
-                            ? 'color-mix(in oklab, var(--acc) 70%, white)'
-                            : 'var(--acc)',
-                      } as CSSProperties}
+                      style={
+                        {
+                          '--i': i,
+                          height: `${((w.volumeKg / maxVolume) * 100).toFixed(1)}%`,
+                          background:
+                            sel === i
+                              ? 'color-mix(in oklab, var(--acc) 70%, white)'
+                              : 'var(--acc)',
+                        } as CSSProperties
+                      }
                     />
                   </button>
                 ))}
@@ -207,10 +242,12 @@ export default function GymHistoryPage() {
                 >
                   <div className="flex items-baseline justify-between border-b border-border pb-[9px]">
                     <div className="text-[11.5px] font-semibold tracking-[.05em] text-muted-foreground uppercase">
-                      {t('history.weekOf', { date: formatDayMonth(group.start) })}
+                      {t('history.weekOf', {
+                        date: formatDayMonth(group.start),
+                      })}
                     </div>
                     <div className="text-[12px] text-muted-foreground">
-                      {formatTons(group.volumeKg)} t
+                      {formatVolume(group.volumeKg)} {volumeLabel()}
                     </div>
                   </div>
                   {group.workouts.map((w) => (
@@ -240,7 +277,7 @@ export default function GymHistoryPage() {
                         </div>
                       </div>
                       <div className="flex-none text-[14px] font-semibold text-foreground">
-                        {formatTons(w.volumeKg)} t
+                        {formatVolume(w.volumeKg)} {volumeLabel()}
                       </div>
                       <ChevronRight
                         className="h-4 w-4 flex-none text-muted-foreground"
@@ -268,7 +305,10 @@ export default function GymHistoryPage() {
       viewKey={viewingWorkout ? `workout:${viewingWorkout.id}` : 'list'}
     >
       {viewingWorkout ? (
-        <WorkoutDetailPage item={viewingWorkout} onBack={() => setViewingWorkout(null)} />
+        <WorkoutDetailPage
+          item={viewingWorkout}
+          onBack={() => setViewingWorkout(null)}
+        />
       ) : (
         list
       )}

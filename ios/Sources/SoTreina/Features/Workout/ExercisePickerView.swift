@@ -1,5 +1,6 @@
-import SwiftUI
+import SoTreinaDesign
 import SoTreinaKit
+import SwiftUI
 
 /// Search the exercise library (`GET /exercises?search=`) and add one to the
 /// open workout. The server matches the PT and the English name.
@@ -7,6 +8,7 @@ struct ExercisePickerView: View {
     let store: WorkoutStore
     @Environment(SessionStore.self) private var session
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppLanguageStore.self) private var language
     @State private var query = ""
     @State private var results: [ExerciseListItem] = []
     @State private var isSearching = false
@@ -26,31 +28,37 @@ struct ExercisePickerView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(exercise.name)
-                                .foregroundStyle(.primary)
-                            Text(exercise.primaryMuscles.map(MuscleGroup.label).joined(separator: " · "))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(DSFont.row)
+                                .foregroundStyle(Color.fg)
+                            Text(exercise.primaryMuscles.map { MuscleGroup.label($0, lang: language.lang) }.joined(separator: " · "))
+                                .font(DSFont.caption)
+                                .foregroundStyle(Color.mutedFg)
                         }
                         Spacer()
                         if adding == exercise.id { ProgressView() }
                     }
                 }
                 .disabled(adding != nil)
+                .listRowBackground(Color.pageBg)
             }
+            .monolitoList()
             .overlay {
                 if failed {
-                    ContentUnavailableView("Não carregou", systemImage: "wifi.exclamationmark",
-                                           description: Text("Verifique a conexão e tente de novo."))
+                    ContentUnavailableView {
+                        Label { Text("gym.picker.loadFailed", bundle: .l10n) } icon: { Image(systemName: "wifi.exclamationmark") }
+                    } description: {
+                        Text("gym.picker.checkConnection", bundle: .l10n)
+                    }
                 } else if !isSearching, results.isEmpty, !query.isEmpty {
                     ContentUnavailableView.search(text: query)
                 }
             }
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Buscar exercício")
-            .navigationTitle("Adicionar exercício")
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("gym.picker.searchPlaceholder", bundle: .l10n))
+            .navigationTitle(Text("gym.picker.title", bundle: .l10n))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button { dismiss() } label: { Text("common.cancel", bundle: .l10n) }
                 }
             }
             .task(id: query) { await search() }

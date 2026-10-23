@@ -20,5 +20,8 @@ server/.env
 # Geral
 .DS_Store
 
+# iOS validation screenshots (app × web pairs, see ios/README.md)
+ios/validation/
+
 # database
 *.db

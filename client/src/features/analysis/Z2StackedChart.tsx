@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatDayMonth, formatKm } from '@/lib/activityFormat';
+import { formatDayMonth, formatDistance } from '@/lib/activityFormat';
 import { sliceByPeriod, type AnalysisPeriod } from './period';
 import type { WeekMetrics } from './useTrainingMetrics';
 import AnalysisCard from './AnalysisCard';
@@ -72,8 +72,8 @@ export default function Z2StackedChart({
           const pct = w.km > 0 ? (w.z2Km / w.km) * 100 : 0;
           return t('z2Stacked.hoverReading', {
             date: formatDayMonth(w.start),
-            z2km: formatKm(w.z2Km),
-            km: formatKm(w.km),
+            z2km: formatDistance(w.z2Km, 'KM'),
+            km: formatDistance(w.km, 'KM'),
             pct: pct.toFixed(0),
           });
         })()
@@ -93,11 +93,27 @@ export default function Z2StackedChart({
 
           <g>
             <circle cx={VB_W - 132} cy={16} r={3.5} fill="var(--pos)" />
-            <text x={VB_W - 124} y={19.5} fontSize="10" fill="var(--muted-foreground)">
+            <text
+              x={VB_W - 124}
+              y={19.5}
+              fontSize="10"
+              fill="var(--muted-foreground)"
+            >
               {t('z2Stacked.legendZ2')}
             </text>
-            <circle cx={VB_W - 96} cy={16} r={3.5} fill="var(--neg)" fillOpacity={0.45} />
-            <text x={VB_W - 88} y={19.5} fontSize="10" fill="var(--muted-foreground)">
+            <circle
+              cx={VB_W - 96}
+              cy={16}
+              r={3.5}
+              fill="var(--neg)"
+              fillOpacity={0.45}
+            />
+            <text
+              x={VB_W - 88}
+              y={19.5}
+              fontSize="10"
+              fill="var(--muted-foreground)"
+            >
               {t('z2Stacked.legendAboveZ2')}
             </text>
           </g>
@@ -135,14 +151,18 @@ export default function Z2StackedChart({
                     textAnchor="middle"
                     fill="var(--muted-foreground)"
                   >
-                    {formatKm(w.km)}
+                    {formatDistance(w.km, 'KM')}
                   </text>
                 )}
               </g>
             );
           })}
         </svg>
-        <HoverStrip count={n} onEnter={setHover} onLeave={() => setHover(null)} />
+        <HoverStrip
+          count={n}
+          onEnter={setHover}
+          onLeave={() => setHover(null)}
+        />
       </div>
       <AxisLabels dates={visible.map((w) => w.start)} />
     </AnalysisCard>

@@ -1,5 +1,6 @@
-import SwiftUI
+import SoTreinaDesign
 import SoTreinaKit
+import SwiftUI
 
 struct RootView: View {
     @Environment(SessionStore.self) private var session
@@ -12,11 +13,15 @@ struct RootView: View {
             switch session.state {
             case .loading:
                 ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.pageBg)
                     .task { await session.bootstrap() }
             case .loggedOut:
                 LoginView()
+            case .loggedIn(let me) where me.enabledAreas.isEmpty:
+                AreaPickerView()
             case .loggedIn(let me):
-                WorkoutRootView(session: session, me: me, pendingLink: $pendingLink)
+                AppShell(session: session, me: me, pendingLink: $pendingLink)
             }
         }
         .safeAreaInset(edge: .top, spacing: 0) { ExpiryBanner() }

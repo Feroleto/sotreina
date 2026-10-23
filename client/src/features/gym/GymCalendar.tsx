@@ -5,6 +5,7 @@ import type { WorkoutHistoryItem } from '@/lib/types';
 import { formatMonthDay } from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { useEntrance } from '@/lib/useEntrance';
+import { formatVolume, volumeLabel } from '@/lib/units';
 
 interface GymCalendarProps {
   items: WorkoutHistoryItem[];
@@ -38,9 +39,6 @@ function sameDay(a: Date, b: Date): boolean {
 function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
-function formatTons(kg: number): string {
-  return (kg / 1000).toFixed(1);
-}
 
 // month-grid calendar for finished workouts — same shape as
 // overview/RunCalendar.tsx (month nav bounded by the earliest session,
@@ -51,8 +49,13 @@ export default function GymCalendar({ items }: GymCalendarProps) {
   const { t } = useTranslation('gym');
   // training days fade in week by week, once per session; month navigation
   // afterwards is instant
-  const { attach: enterRef, state: enterState } = useEntrance('gym/overview:calendar', { ready: items.length > 0 });
-  const weekdays = t('overview.calendar.weekdaysMin', { returnObjects: true }) as string[];
+  const { attach: enterRef, state: enterState } = useEntrance(
+    'gym/overview:calendar',
+    { ready: items.length > 0 },
+  );
+  const weekdays = t('overview.calendar.weekdaysMin', {
+    returnObjects: true,
+  }) as string[];
 
   const earliestDate = useMemo(
     () =>
@@ -67,7 +70,9 @@ export default function GymCalendar({ items }: GymCalendarProps) {
     [items],
   );
 
-  const [visibleMonth, setVisibleMonth] = useState<Date>(() => monthStart(new Date()));
+  const [visibleMonth, setVisibleMonth] = useState<Date>(() =>
+    monthStart(new Date()),
+  );
   const [hoverDay, setHoverDay] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
@@ -122,24 +127,35 @@ export default function GymCalendar({ items }: GymCalendarProps) {
   const footer = dayList
     ? dayList.length > 1
       ? t('overview.calendar.dayMultiWorkouts', {
+          unit: volumeLabel(),
           count: dayList.length,
-          volume: formatTons(dayList.reduce((s, w) => s + w.volumeKg, 0)),
+          volume: formatVolume(dayList.reduce((s, w) => s + w.volumeKg, 0)),
         })
       : t('overview.calendar.daySingleWorkout', {
+          unit: volumeLabel(),
           date: formatMonthDay(new Date(dayList[0].startedAt)),
           name: dayList[0].templateName ?? t('start.freeWorkout'),
-          volume: formatTons(dayList[0].volumeKg),
+          volume: formatVolume(dayList[0].volumeKg),
         })
     : t('overview.calendar.monthSummary', {
+        unit: volumeLabel(),
         count: monthTotals.count,
-        volume: formatTons(monthTotals.volumeKg),
-        month: visibleMonth.toLocaleDateString(currentIntlLocale(), { month: 'long' }),
+        volume: formatVolume(monthTotals.volumeKg),
+        month: visibleMonth.toLocaleDateString(currentIntlLocale(), {
+          month: 'long',
+        }),
       });
 
   return (
-    <div ref={enterRef} data-enter={enterState} className="rounded-[14px] border border-border bg-card p-[16px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0">
+    <div
+      ref={enterRef}
+      data-enter={enterState}
+      className="rounded-[14px] border border-border bg-card p-[16px] max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:bg-transparent max-md:px-0"
+    >
       <div className="flex items-center justify-between">
-        <div className="text-[13.5px] font-semibold text-foreground">{monthLabel}</div>
+        <div className="text-[13.5px] font-semibold text-foreground">
+          {monthLabel}
+        </div>
         <div className="flex gap-1">
           <button
             type="button"
@@ -184,7 +200,11 @@ export default function GymCalendar({ items }: GymCalendarProps) {
           if (day == null) {
             return <div key={`empty-${i}`} className="h-[34px]" />;
           }
-          const date = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day);
+          const date = new Date(
+            visibleMonth.getFullYear(),
+            visibleMonth.getMonth(),
+            day,
+          );
           const key = dayKey(date);
           const list = byDay.get(key);
           const hasWorkout = !!list && list.length > 0;

@@ -5,11 +5,12 @@ import {
   WORKOUT_META,
   formatDayMonth,
   formatDurationShort,
-  formatKm,
+  formatDistance,
   formatPace,
 } from '@/lib/activityFormat';
 import type { BinWithRuns } from './bins';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
+import { distanceLabel } from '@/lib/units';
 
 function PeekCard({ label, value }: { label: string; value: string }) {
   return (
@@ -79,8 +80,8 @@ function ActivityListBody({
               )}
             </div>
             <div className="text-[12.5px] text-muted-foreground">
-              {t('list.runsCount', { count: week.count })} · {formatKm(week.km)}{' '}
-              km
+              {t('list.runsCount', { count: week.count })} ·{' '}
+              {formatDistance(week.km)} {distanceLabel()}
             </div>
           </div>
           {week.runs.map((a) => {
@@ -116,7 +117,7 @@ function ActivityListBody({
                     </div>
                     <div className="hidden w-[72px] text-right text-[13.5px] text-muted-foreground md:block">
                       {a.distanceKm != null
-                        ? `${formatKm(a.distanceKm)} km`
+                        ? `${formatDistance(a.distanceKm)} ${distanceLabel()}`
                         : '—'}
                     </div>
                     <div className="hidden w-16 text-right text-[13.5px] text-muted-foreground md:block">
@@ -129,7 +130,7 @@ function ActivityListBody({
                     <div className="flex-none text-right font-mono md:hidden">
                       <div className="text-[14.5px] font-medium text-foreground">
                         {a.distanceKm != null
-                          ? `${formatKm(a.distanceKm)} km`
+                          ? `${formatDistance(a.distanceKm)} ${distanceLabel()}`
                           : '—'}
                       </div>
                       <div className="mt-0.5 text-[12px] text-muted-foreground">

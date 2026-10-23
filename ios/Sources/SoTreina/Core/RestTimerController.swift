@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import os
+import SoTreinaDesign
 import SoTreinaKit
 import UserNotifications
 
@@ -87,8 +88,9 @@ final class RestTimerController {
         guard let remaining = timer.remaining(), remaining > 0 else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Descanso acabou"
-        content.body = "Hora da próxima série."
+        let lang = AppLanguageStore.current
+        content.title = L10n.string("gym.rest.notificationTitle", lang: lang)
+        content.body = L10n.string("gym.rest.notificationBody", lang: lang)
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: remaining, repeats: false)
         let request = UNNotificationRequest(identifier: Self.notificationId, content: content, trigger: trigger)

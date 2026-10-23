@@ -1,5 +1,6 @@
-import SwiftUI
+import SoTreinaDesign
 import SoTreinaKit
+import SwiftUI
 
 /// The open workout (spec §6.4, tela 3): one section per exercise with its
 /// sets, a row to log the next one, add/remove exercises, cancel and finish.
@@ -11,21 +12,26 @@ struct WorkoutSessionView: View {
     @State private var addingExercise = false
     @State private var editing: EditingSet?
     @FocusState private var focus: SetField?
+    @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
+        let lang = language.lang
         NavigationStack {
             List {
                 Section {
-                    LabeledContent("Duração") {
-                        // startedAt comes from the server, so the clock
-                        // survives relaunches and matches the web
-                        TimelineView(.periodic(from: .now, by: 1)) { context in
-                            Text(WorkoutFormat.elapsed(Int(context.date.timeIntervalSince(workout.startedAt))))
-                                .monospacedDigit()
-                        }
+                    // startedAt comes from the server, so the clock
+                    // survives relaunches and matches the web
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        KPIStrip([
+                            KPI(L10n.string("gym.session.duration", lang: lang), WorkoutFormat.elapsed(Int(context.date.timeIntervalSince(workout.startedAt)))),
+                            KPI(L10n.string("gym.summary.sets", lang: lang), "\(workout.exercises.reduce(0) { $0 + $1.sets.count })"),
+                            KPI(L10n.string("gym.summary.exercises", lang: lang), "\(workout.exercises.count)"),
+                        ])
                     }
-                    LabeledContent("Séries", value: "\(workout.exercises.reduce(0) { $0 + $1.sets.count })")
+                    .listRowInsets(EdgeInsets(top: 4, leading: pageGutter, bottom: 12, trailing: pageGutter))
+                    .listRowSeparator(.hidden)
                 }
+                .listRowBackground(Color.pageBg)
 
                 ForEach(workout.exercises) { exercise in
                     ExerciseSection(
@@ -40,47 +46,58 @@ struct WorkoutSessionView: View {
                     Button {
                         addingExercise = true
                     } label: {
-                        Label("Adicionar exercício", systemImage: "plus")
+                        Label { Text("gym.picker.title", bundle: .l10n) } icon: { Image(systemName: "plus") }
+                            .font(DSFont.row)
                     }
+                    .listRowBackground(Color.pageBg)
                 } footer: {
                     if !store.pendingSets.isEmpty {
-                        Text("Envie ou descarte as séries com ⚠ antes de finalizar.")
+                        Text("gym.session.pendingFooter", bundle: .l10n)
                     }
                 }
             }
-            .listStyle(.insetGrouped)
+            .monolitoList()
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle(workout.templateName ?? "Treino livre")
+            .navigationTitle(workout.templateName ?? L10n.string("gym.freeWorkout", lang: lang))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancelar", role: .destructive) { confirmingDiscard = true }
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    // back to the tabs; the session keeps running in the bar
+                    Button {
+                        store.sessionMinimized = true
+                    } label: {
+                        Image(systemName: "chevron.down")
+                    }
+                    .accessibilityLabel(Text("gym.session.minimize", bundle: .l10n))
+                    Button(role: .destructive) { confirmingDiscard = true } label: { Text("common.cancel", bundle: .l10n) }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if store.isFinishing {
                         ProgressView()
                     } else {
-                        Button("Finalizar") { confirmingFinish = true }
+                        Button { confirmingFinish = true } label: { Text("gym.session.finishShort", bundle: .l10n) }
                             .bold()
                             .disabled(!store.canFinish)
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("OK") { focus = nil }
+                    Button { focus = nil } label: { Text("common.ok", bundle: .l10n) }
                 }
             }
-            .confirmationDialog("Finalizar o treino?", isPresented: $confirmingFinish, titleVisibility: .visible) {
-                Button("Finalizar treino") { Task { await store.finish() } }
-                Button("Continuar treinando", role: .cancel) {}
+            .confirmationDialog(Text("gym.session.finishConfirm", bundle: .l10n), isPresented: $confirmingFinish, titleVisibility: .visible) {
+                Button { Task { await store.finish() } } label: { Text("gym.session.finish", bundle: .l10n) }
+                Button(role: .cancel) {} label: { Text("gym.session.keepTraining", bundle: .l10n) }
             }
-            .confirmationDialog("Cancelar o treino?", isPresented: $confirmingDiscard, titleVisibility: .visible) {
-                Button("Cancelar treino e apagar as séries", role: .destructive) {
+            .confirmationDialog(Text("gym.session.cancelConfirm", bundle: .l10n), isPresented: $confirmingDiscard, titleVisibility: .visible) {
+                Button(role: .destructive) {
                     Task { await store.discard() }
+                } label: {
+                    Text("gym.session.cancelAndDelete", bundle: .l10n)
                 }
-                Button("Continuar treinando", role: .cancel) {}
+                Button(role: .cancel) {} label: { Text("gym.session.keepTraining", bundle: .l10n) }
             } message: {
-                Text("Tudo o que foi registrado neste treino será apagado, aqui e na web.")
+                Text("gym.session.cancelMessage", bundle: .l10n)
             }
             .sheet(isPresented: $addingExercise) {
                 ExercisePickerView(store: store)
@@ -118,6 +135,7 @@ private struct ExerciseSection: View {
     var focus: FocusState<SetField?>.Binding
     let onEdit: (WorkoutSet) -> Void
     @State private var confirmingRemove = false
+    @Environment(AppLanguageStore.self) private var language
 
     private var pending: [WorkoutStore.PendingSet] { store.pendingSets(for: exercise.id) }
 
@@ -127,14 +145,16 @@ private struct ExerciseSection: View {
                 Button {
                     onEdit(set)
                 } label: {
-                    SetLine(number: set.setNumber, text: WorkoutFormat.set(weightKg: set.weightKg, reps: set.reps)) {
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    SetLine(number: set.setNumber, text: WorkoutFormat.set(weightKg: set.weightKg, reps: set.reps, lang: language.lang)) {
+                        Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.pos)
                     }
                 }
                 .tint(.primary)
                 .swipeActions {
-                    Button("Apagar", role: .destructive) {
+                    Button(role: .destructive) {
                         Task { await store.deleteSet(workoutExerciseId: exercise.id, setId: set.id) }
+                    } label: {
+                        Text("common.delete", bundle: .l10n)
                     }
                 }
             }
@@ -155,37 +175,48 @@ private struct ExerciseSection: View {
         } header: {
             HStack {
                 Text(exercise.exerciseName)
+                    .font(DSFont.rowTitle)
+                    .foregroundStyle(Color.fg)
+                    .textCase(nil)
                 Spacer()
                 Menu {
-                    Button("Remover exercício", systemImage: "trash", role: .destructive) {
+                    Button(role: .destructive) {
                         if exercise.sets.isEmpty {
                             Task { await store.removeExercise(workoutExerciseId: exercise.id) }
                         } else {
                             confirmingRemove = true
                         }
+                    } label: {
+                        Label { Text("gym.session.removeExercise", bundle: .l10n) } icon: { Image(systemName: "trash") }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .imageScale(.large)
                 }
-                .accessibilityLabel("Opções de \(exercise.exerciseName)")
+                .accessibilityLabel(Text("gym.session.exerciseOptions \(exercise.exerciseName)", bundle: .l10n))
             }
         } footer: {
+            let lang = language.lang
             let parts = [
-                WorkoutFormat.target(exercise.target).map { "Meta: \($0)" },
-                exercise.target?.restSeconds.map { "descanso \(WorkoutFormat.elapsed($0))" },
+                WorkoutFormat.target(exercise.target, lang: lang).map { L10n.string("gym.session.target %@", lang: lang, $0) },
+                exercise.target?.restSeconds.map { L10n.string("gym.session.rest %@", lang: lang, WorkoutFormat.elapsed($0)) },
             ].compactMap { $0 }
             if !parts.isEmpty {
                 Text(parts.joined(separator: " · "))
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.mutedFg)
             }
         }
+        .listRowBackground(Color.pageBg)
         .confirmationDialog(
-            "Remover \(exercise.exerciseName)?",
+            Text("gym.session.removeConfirm \(exercise.exerciseName)", bundle: .l10n),
             isPresented: $confirmingRemove,
             titleVisibility: .visible
         ) {
-            Button("Remover e apagar as séries", role: .destructive) {
+            Button(role: .destructive) {
                 Task { await store.removeExercise(workoutExerciseId: exercise.id) }
+            } label: {
+                Text("gym.session.removeAndDelete", bundle: .l10n)
             }
         }
     }
@@ -208,11 +239,12 @@ private struct SetLine<Trailing: View>: View {
 
     var body: some View {
         HStack {
-            Text("\(number)")
-                .foregroundStyle(.secondary)
+            Text(verbatim: "\(number)")
+                .font(DSFont.monoBody)
+                .foregroundStyle(Color.mutedFg)
                 .frame(width: 24, alignment: .leading)
             Text(text)
-                .monospacedDigit()
+                .font(DSFont.monoBody)
             Spacer()
             trailing
         }
@@ -223,15 +255,16 @@ private struct PendingSetRow: View {
     let number: Int
     let pending: WorkoutStore.PendingSet
     let store: WorkoutStore
+    @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
-        SetLine(number: number, text: WorkoutFormat.set(weightKg: pending.weightKg, reps: pending.reps)) {
+        SetLine(number: number, text: WorkoutFormat.set(weightKg: pending.weightKg, reps: pending.reps, lang: language.lang)) {
             if pending.failed {
                 Button {
                     Task { await store.retry(pending) }
                 } label: {
-                    Label("Reenviar", systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
+                    Label { Text("gym.session.resend", bundle: .l10n) } icon: { Image(systemName: "exclamationmark.triangle.fill") }
+                        .foregroundStyle(Color.neg)
                 }
                 .buttonStyle(.borderless)
             } else {
@@ -240,7 +273,7 @@ private struct PendingSetRow: View {
         }
         .swipeActions {
             if pending.failed {
-                Button("Descartar", role: .destructive) { store.dropPending(pending) }
+                Button(role: .destructive) { store.dropPending(pending) } label: { Text("gym.session.discard", bundle: .l10n) }
             }
         }
     }
@@ -256,31 +289,36 @@ private struct NewSetRow: View {
     var focus: FocusState<SetField?>.Binding
     @State private var weightText = ""
     @State private var repsText = ""
+    @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
+        let lang = language.lang
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Text("\(setNumber)")
-                    .foregroundStyle(.secondary)
+                Text(verbatim: "\(setNumber)")
+                    .font(DSFont.monoBody)
+                    .foregroundStyle(Color.mutedFg)
                     .frame(width: 24, alignment: .leading)
-                field("kg", text: $weightText, placeholder: proposal?.weightKg.map(WorkoutFormat.weight), keyboard: .decimalPad)
+                field("kg", text: $weightText, placeholder: proposal?.weightKg.map { WorkoutFormat.weight($0, lang: lang) }, keyboard: .decimalPad)
                     .focused(focus, equals: .weight(exercise.id))
-                Text("×").foregroundStyle(.secondary)
+                Text(verbatim: "×").foregroundStyle(Color.mutedFg)
                 field("reps", text: $repsText, placeholder: proposal?.reps.map(String.init), keyboard: .numberPad)
                     .focused(focus, equals: .reps(exercise.id))
                 Spacer(minLength: 4)
-                Button("Registrar") {
+                Button {
                     let values = resolved
                     focus.wrappedValue = nil
                     Task { await store.addSet(workoutExerciseId: exercise.id, weightKg: values.weightKg, reps: values.reps) }
+                } label: {
+                    Text("gym.session.log", bundle: .l10n)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.pill)
                 .disabled(!canLog)
             }
             if let proposal, proposal.source == .lastTime {
-                Text("Última vez: \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text("gym.session.lastTime \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: lang))", bundle: .l10n)
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.mutedFg)
                     .padding(.leading, 32)
             }
         }
@@ -292,14 +330,14 @@ private struct NewSetRow: View {
             TextField(placeholder ?? "–", text: text)
                 .keyboardType(keyboard)
                 .multilineTextAlignment(.trailing)
-                .monospacedDigit()
+                .font(DSFont.monoBody)
                 .frame(width: 52)
-                .padding(.vertical, 6)
+                .padding(.vertical, 7)
                 .padding(.horizontal, 6)
-                .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 8))
+                .background(Color.chip, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
             Text(unit)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(DSFont.caption)
+                .foregroundStyle(Color.mutedFg)
         }
     }
 
@@ -330,7 +368,9 @@ private struct SetEditSheet: View {
     init(store: WorkoutStore, editing: EditingSet) {
         self.store = store
         self.editing = editing
-        _weightText = State(initialValue: editing.workoutSet.weightKg.map(WorkoutFormat.weight) ?? "")
+        // the sheet's decimal pad types the app language's separator
+        let lang = AppLanguageStore.shared.lang
+        _weightText = State(initialValue: editing.workoutSet.weightKg.map { WorkoutFormat.weight($0, lang: lang) } ?? "")
         _repsText = State(initialValue: editing.workoutSet.reps.map(String.init) ?? "")
     }
 
@@ -338,32 +378,39 @@ private struct SetEditSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    LabeledContent("Peso (kg)") {
+                    LabeledContent {
                         TextField("–", text: $weightText)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("gym.entry.weightLabel \("kg")", bundle: .l10n)
                     }
-                    LabeledContent("Repetições") {
+                    LabeledContent {
                         TextField("–", text: $repsText)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("gym.entry.repsLabel", bundle: .l10n)
                     }
                 }
                 Section {
-                    Button("Apagar série", role: .destructive) {
+                    Button(role: .destructive) {
                         dismiss()
                         Task { await store.deleteSet(workoutExerciseId: editing.exerciseId, setId: editing.workoutSet.id) }
+                    } label: {
+                        Text("gym.entry.deleteSet", bundle: .l10n)
                     }
                 }
             }
-            .navigationTitle("Série \(editing.workoutSet.setNumber)")
+            .monolitoForm()
+            .navigationTitle(Text("gym.session.setTitle \(editing.workoutSet.setNumber)", bundle: .l10n))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancelar") { dismiss() }
+                    Button { dismiss() } label: { Text("common.cancel", bundle: .l10n) }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Salvar") {
+                    Button {
                         dismiss()
                         Task {
                             await store.updateSet(
@@ -373,6 +420,8 @@ private struct SetEditSheet: View {
                                 reps: SetInput.reps(repsText)
                             )
                         }
+                    } label: {
+                        Text("common.save", bundle: .l10n)
                     }
                     .disabled(!isValid)
                 }

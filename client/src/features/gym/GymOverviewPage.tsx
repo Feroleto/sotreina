@@ -12,10 +12,7 @@ import GymCalendar from './GymCalendar';
 import GymPersonalRecordCard from './GymPersonalRecordCard';
 import { useEntrance } from '@/lib/useEntrance';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
-
-function formatTons(kg: number): string {
-  return (kg / 1000).toFixed(1);
-}
+import { formatVolume, volumeLabel } from '@/lib/units';
 
 function formatShortDuration(sec: number): string {
   const h = Math.floor(sec / 3600);
@@ -23,11 +20,21 @@ function formatShortDuration(sec: number): string {
   return h > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${m}min`;
 }
 
-function Stat({ label, value, first }: { label: string; value: string; first?: boolean }) {
+function Stat({
+  label,
+  value,
+  first,
+}: {
+  label: string;
+  value: string;
+  first?: boolean;
+}) {
   return (
     <div className={first ? 'py-3.5' : 'border-l border-border py-3.5 pl-3.5'}>
       <div className="text-[12px] text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">{value}</div>
+      <div className="mt-1 font-mono text-[20px] font-medium text-foreground">
+        {value}
+      </div>
     </div>
   );
 }
@@ -39,7 +46,10 @@ function HeroSkeleton() {
       <Skeleton className="mt-3 h-[12px] w-[60%]" />
       <div className="mt-[22px] grid grid-cols-3 border-y border-border">
         {[0, 1, 2].map((i) => (
-          <div key={i} className={i ? 'border-l border-border py-3.5 pl-3.5' : 'py-3.5'}>
+          <div
+            key={i}
+            className={i ? 'border-l border-border py-3.5 pl-3.5' : 'py-3.5'}
+          >
             <Skeleton className="h-[11px] w-[55%]" />
             <Skeleton className="mt-2 h-[20px] w-[60%]" />
           </div>
@@ -103,7 +113,8 @@ export default function GymOverviewPage({
   const volumeKg = thisWeek.reduce((s, w) => s + w.volumeKg, 0);
   const exercises = thisWeek.reduce((s, w) => s + w.exerciseCount, 0);
   const durationSec = thisWeek.reduce((s, w) => s + w.durationSec, 0);
-  const pct = lastWeekCount > 0 ? Math.round((count / lastWeekCount) * 100) : null;
+  const pct =
+    lastWeekCount > 0 ? Math.round((count / lastWeekCount) * 100) : null;
 
   const next = useMemo(() => pickNextRoutine(templates), [templates]);
   const lastPerformed = (tpl: TemplateSummary) =>
@@ -140,7 +151,9 @@ export default function GymOverviewPage({
               ? t('overviewPage.lastWeek', { count: lastWeekCount })
               : t('overviewPage.noLastWeek')}
           </span>
-          {pct !== null && <span className="font-medium text-foreground">{pct}%</span>}
+          {pct !== null && (
+            <span className="font-medium text-foreground">{pct}%</span>
+          )}
         </div>
         {pct !== null && (
           <div className="mt-[7px] h-[3px] rounded-[2px] bg-border">
@@ -154,16 +167,25 @@ export default function GymOverviewPage({
         )}
 
         <div className="mt-[22px] grid grid-cols-3 border-y border-border">
-          <Stat first label={t('history.kpiVolume')} value={`${formatTons(volumeKg)} t`} />
+          <Stat
+            first
+            label={t('history.kpiVolume')}
+            value={`${formatVolume(volumeKg)} ${volumeLabel()}`}
+          />
           <Stat label={t('overviewPage.exercises')} value={String(exercises)} />
-          <Stat label={t('history.kpiTime')} value={formatShortDuration(durationSec)} />
+          <Stat
+            label={t('history.kpiTime')}
+            value={formatShortDuration(durationSec)}
+          />
         </div>
       </LoadingSwap>
 
       {(activeWorkoutName != null || next) && (
         <>
           <div className="mt-6 text-[14px] font-semibold text-foreground">
-            {activeWorkoutName != null ? t('overviewPage.inProgress') : t('overviewPage.next')}
+            {activeWorkoutName != null
+              ? t('overviewPage.inProgress')
+              : t('overviewPage.next')}
           </div>
           <div className="mt-2.5 flex items-center gap-3 border-b border-border py-4">
             <div className="min-w-0 flex-1">
@@ -180,11 +202,15 @@ export default function GymOverviewPage({
             <button
               type="button"
               onClick={() =>
-                activeWorkoutName != null ? onResumeWorkout() : onStartWorkout(next!.id)
+                activeWorkoutName != null
+                  ? onResumeWorkout()
+                  : onStartWorkout(next!.id)
               }
               className="press flex h-10 flex-none cursor-pointer items-center rounded-full bg-acc px-[18px] text-[13.5px] font-semibold text-acc-fg"
             >
-              {activeWorkoutName != null ? t('overviewPage.resume') : t('overviewPage.start')}
+              {activeWorkoutName != null
+                ? t('overviewPage.resume')
+                : t('overviewPage.start')}
             </button>
           </div>
         </>
@@ -212,9 +238,12 @@ export default function GymOverviewPage({
             style={{ '--i': i } as CSSProperties}
           >
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[14.5px] font-medium text-foreground">{tpl.name}</div>
+              <div className="truncate text-[14.5px] font-medium text-foreground">
+                {tpl.name}
+              </div>
               <div className="mt-0.5 truncate text-[12px] text-muted-foreground">
-                {t('routines.exerciseCount', { count: tpl.exerciseCount })} · {lastPerformed(tpl)}
+                {t('routines.exerciseCount', { count: tpl.exerciseCount })} ·{' '}
+                {lastPerformed(tpl)}
               </div>
             </div>
             <svg

@@ -14,9 +14,10 @@ ios/
 ├── Resources/AppIcon.png  # 1024×1024, sem alfa
 ├── Sources/
 │   ├── SoTreina/              # app (SwiftUI)
+│   ├── SoTreinaDesign/        # design system Monolito (cores, fontes, componentes), usado pelo app e pela extensão
 │   └── SoTreinaLiveActivity/  # extensão WidgetKit: UI da Live Activity
 ├── SoTreinaKit/           # pacote local de lógica pura, testável no Linux
-└── scripts/               # deploy.sh (instalar), logs.sh (ver logs)
+└── scripts/               # deploy.sh (instalar), logs.sh (ver logs), screenshot.sh (capturar tela), gallery.mjs (galeria de validação)
 ```
 
 `SoTreinaKit` é um **pacote separado** de propósito. O pacote raiz só compila pra iOS, e não existe simulador fora do macOS. Então a lógica sem tela fica onde `swift test` roda no Linux:
@@ -49,6 +50,10 @@ Os passos seguem a [documentação oficial](https://github.com/xtool-org/xtool/b
    ```bash
    sudo apt-get install libimobiledevice-utils
    USBMUXD_SOCKET_ADDRESS="$(ip route list default | awk '{print $3}'):27015" ideviceinfo -k DeviceName   # nome do iPhone
+   # screenshot.sh: pymobiledevice3 num venv do usuário (sem pipx no Ubuntu)
+   python3 -m venv ~/.local/share/pymobiledevice3
+   ~/.local/share/pymobiledevice3/bin/pip install pymobiledevice3
+   ln -s ~/.local/share/pymobiledevice3/bin/pymobiledevice3 ~/.local/bin/
    ```
 5. **xtool**:
    ```bash
@@ -75,10 +80,26 @@ Os passos seguem a [documentação oficial](https://github.com/xtool-org/xtool/b
 ```bash
 ios/scripts/deploy.sh   # build + assinatura + instalação (toda semana)
 ios/scripts/logs.sh     # stream de logs do app e da extensão
+ios/scripts/screenshot.sh [saida.png]   # screenshot do iPhone pelo cabo
+ios/scripts/launch.sh [CHAVE=VALOR ...]  # reabre o app com variáveis de ambiente
 idevicecrashreport -e -k /tmp/sotreina-crashes   # puxar crash logs
 ```
 
+**Desinstalar um app do xtool** exige o bundle ID **com o prefixo que o xtool acrescenta** na conta grátis (`XTL-<team>.`, ex. `XTL-KBVDP58W3Z.com.feroleto.sotreina`). Com o ID do `xtool.yml`, `xtool uninstall` responde `Success!` sem remover nada. O ID real aparece em `pymobiledevice3 apps list -t User`.
+
 O app expira **7 dias** depois de cada instalação (Apple ID grátis). Rodar o `deploy.sh` de novo reinstala por cima e mantém os dados (token no Keychain, URL da API).
+
+### Screenshot pelo cabo
+
+Testado em 2026-10-22 (iPhone 15, iOS 27.0.1, pymobiledevice3 11.43.1): `screenshot.sh` devolve um PNG na resolução nativa (1179×2556) em cerca de 1,7 s, **sem root e sem montar a Developer Disk Image à mão**. O `idevicescreenshot` do libimobiledevice **não funciona**: o serviço `screenshotr` do lockdown não existe mais desde o iOS 17 (`Could not start screenshotr service!`). O script usa o serviço DVT do Instruments por um túnel CoreDevice em espaço de usuário (`pymobiledevice3 developer dvt screenshot --userspace`), pelo mesmo usbmux do Windows que o `deploy.sh` usa. Precisa do Modo de Desenvolvedor ligado e da tela desbloqueada pra mostrar o app.
+
+### Abrir o app com variáveis de ambiente
+
+Testado em 2026-10-22 (iPhone 15, iOS 27.0.1): `scripts/launch.sh [CHAVE=VALOR ...]` encerra o app se estiver aberto e o abre de novo pelo mesmo túnel do `screenshot.sh` (`pymobiledevice3 developer dvt launch --userspace --env ...`), em ~5 s. **As variáveis chegam ao processo**: com `CFNETWORK_DIAGNOSTICS=3` o log do app passou a ter linhas `CFNetwork Diagnostics`, e sem a variável não teve nenhuma. Elas valem só pra esse lançamento. Abrir o app pela Tela de Início depois disso não passa variável nenhuma.
+
+- O bundle ID é o que o xtool instala (`XTL-KBVDP58W3Z.com.feroleto.sotreina`), não o do `xtool.yml`. Pra trocar, use `SOTREINA_BUNDLE_ID`.
+- O `deploy.sh` builda em **debug** por padrão (`xtool dev run`), então um modo de validação atrás de `#if DEBUG` existe no app instalado.
+- O app lê `SOTREINA_SCREEN`/`SOTREINA_THEME`/`SOTREINA_LANG` (ver "Modo de validação" em "Validação visual").
 
 ### Testar contra a API local
 
@@ -88,6 +109,111 @@ O campo "Servidor" da tela de login aceita outra URL. O iPhone não alcança o `
 
 - **Botões são links, não App Intents.** `Button(intent:)` precisa dos metadados de App Intents (`Metadata.appintents`) que o Xcode extrai no build, e o xtool não gera (PR xtool#217 com um gerador pra Linux foi fechada sem merge). Testado em 2026-10-22: o toque não faz nada, e a extensão loga `Failed to fetch metadata`. Por isso **+15s**, **Pular** e **✓** são `sotreina://` (`ActivityLink` no `SoTreinaKit`) que abrem o app na ação — com o iPhone bloqueado, pede Face ID. Se o xtool passar a gerar os metadados, dá pra voltar a botões que agem sem desbloquear.
 - **Problema conhecido**: quando o descanso acaba com o iPhone bloqueado, a contagem fica parada em `0:00` em vez de voltar pra "Em série". O `staleDate` marcado no fim do descanso não faz o iOS redesenhar na hora, e o app suspenso não consegue mandar o update. Aceito por enquanto.
+
+## Localização (PT/EN)
+
+Testado em 2026-10-22 num app mínimo à parte, instalado no iPhone e depois removido:
+
+- **`.xcstrings` não funciona.** O build chama o `xcstringstool` do Xcode, que o xtool não tem (`xtool/.xtool-tmp/xcstringstool is not an executable file`).
+- **`Localizable.strings` + `Localizable.stringsdict` em `pt.lproj`/`en.lproj` funcionam**, como recurso SwiftPM (`resources: [.process("Resources")]`). Os arquivos são copiados como estão pro bundle do módulo (`<App>.app/<Pacote>_<Target>.bundle/{pt,en}.lproj/`), e o plural via `.stringsdict` resolve certo (`1 série`/`2 séries`, `1 set`/`2 sets`).
+- **O idioma troca em runtime, sem reiniciar.** Um seletor Auto/PT/EN (`@AppStorage`) na raiz atualiza a tela na hora, com qualquer uma destas três formas:
+  - `Text("chave", bundle: .module)` com `.environment(\.locale, Locale(identifier: lang))` na raiz. O SwiftUI escolhe o `.lproj` pelo `\.locale`. É a forma mais simples pras views.
+  - `Text("chave", bundle: bundleDoIdioma)`, em que `bundleDoIdioma` é `Bundle(path: Bundle.module.path(forResource: lang, ofType: "lproj")!)`.
+  - `String(localized: "chave", bundle: bundleDoIdioma)` **fora das views** (mensagens de erro, notificações). Aqui o `\.locale` não chega, então só o bundle do `.lproj` garante o idioma escolhido.
+- O "Auto" escolhe pelo `Locale.preferredLanguages.first`: começa com `pt` → PT; qualquer outro idioma → EN, a mesma regra da web. A escolha é sempre explícita, então o `defaultLocalization` do pacote não decide o fallback.
+- Não testado: a Live Activity (outro processo, não vê o `@AppStorage` do app) e o seletor de idioma por app nos Ajustes do iOS (exigiria `CFBundleLocalizations` no Info.plist).
+
+## Design system (Monolito)
+
+Target `SoTreinaDesign` (`Sources/SoTreinaDesign/`), dependência do app **e** da extensão da Live Activity. Não é produto: o xtool copia o bundle de recursos dele pros dois (`SoTreina.app/SoTreina_SoTreinaDesign.bundle` e `PlugIns/SoTreinaLiveActivity.appex/SoTreina_SoTreinaDesign.bundle`), então a extensão registra as fontes no próprio processo. Conferido no iPhone em 2026-10-22: a Live Activity aparece em Geist/Geist Mono e mostarda.
+
+- **Cores**: os valores são do Kit (`Monolito`, hex claro/escuro). O `MonolitoTests` lê o `client/src/index.css` e falha se algum token espelhado divergir da web. `--acc-tx` do claro é derivado com `color-mix` na web, então fica pré-calculado (`#674C1A`) e travado por teste. No app, `Colors.swift` expõe `Color.pageBg`, `.fg`, `.card`, `.mutedFg`, `.border`, `.chip`, `.bar`, `.acc`, `.accFg`, `.accTx`, `.accBg`, `.pos`, `.neg`, cores dinâmicas por `UITraitCollection`. **Texto sobre `acc` é sempre `accFg`**, nunca branco.
+- **Tema**: `ThemePreference` (Kit) com os mesmos valores do `localStorage.theme` da web (`auto`/`light`/`dark`), em `@AppStorage("theme")`, por dispositivo. `.monolitoTheme()` na raiz aplica a escolha via `overrideUserInterfaceStyle` nas janelas, e não via `preferredColorScheme`, que não alcança sheets direito e não volta do `nil`. Ele também põe `accTx` como tint, Geist como fonte padrão e títulos da barra de navegação em Geist. `ThemePicker` é o seletor Auto/Claro/Escuro (hoje na tela Conta).
+- **Não pôr `foregroundStyle` na raiz**: ele passa por cima do tint de todo botão (ações da toolbar, vermelho destrutivo). Visto no iPhone.
+- **Tipografia**: `DSFont` com os tamanhos da web mobile (título 28, número grande Mono 64, KPI Mono 20, linha 17/14,5, legenda 12…), todos com Dynamic Type.
+- **Componentes**: `BigNumber`, `KPIStrip`/`KPI`, `ProgressLine` (vira `--neg` acima de 100%), `Hairline`, `Chip`, `Badge`, `ValueStepper`, `SectionTitle`; estilos de botão `.primary` (bloco mostarda), `.pill` ("Iniciar") e `.chip` (secundário), com o `press` da web (0,96, desligado com Reduzir Movimento); `.monolitoList()` (lista plana com linhas finas) e `.monolitoForm()` (formulário agrupado sobre o fundo da página).
+- **Catálogo**: Conta › Desenvolvimento › Design system mostra todos os componentes numa tela, pra conferir claro/escuro e Dynamic Type no iPhone.
+
+## Fontes (Geist e Geist Mono)
+
+Testado em 2026-10-22 no iPhone, dentro do próprio app:
+
+- **Os arquivos são os TTF variáveis do pacote npm `geist`** (1.4.2, `dist/fonts/geist-sans/Geist-Variable.ttf` e `geist-mono/GeistMono-Variable.ttf`), não os da web. O `@fontsource-variable/geist*` da web só tem `.woff2` cortados por faixa de Unicode (latin, latin-ext, cyrillic…), cada um com só parte dos caracteres. A família e os desenhos são os mesmos. Licença OFL 1.1, copiada como `Resources/Fonts/OFL.txt` (a OFL permite embutir num app, com a licença junto).
+- **Recurso SwiftPM + registro em runtime funcionam**, sem `UIAppFonts` no Info.plist: `resources: [.copy("Resources/Fonts")]`, hoje no target `SoTreinaDesign` (ver "Design system"). O xtool copia a pasta pro bundle do módulo (`SoTreina.app/SoTreina_SoTreinaDesign.bundle/Fonts/`), e `CTFontManagerRegisterFontsForURL(url, .process, …)` registra. Tudo isso fica em `Sources/SoTreinaDesign/Fonts.swift`, que registra as duas fontes no primeiro uso de `Font.geist(_:relativeTo:)` ou `Font.geistMono(_:relativeTo:)`.
+- **A fonte variável responde ao `.fontWeight`**: `Font.custom("Geist", …)` com `.fontWeight(.light)` até `.black` deu seis pesos distintos. Por isso bastam 2 arquivos (~250 KB), sem precisar dos TTF estáticos por peso.
+- **O Dynamic Type funciona** com `Font.custom(_:size:relativeTo:)`: o texto acompanha o tamanho de texto do sistema, inclusive o número grande em Mono.
+- Nomes de família pro `Font.custom`: `Geist` e `Geist Mono` (constantes em `AppFonts`).
+- **Live Activity**: ver "Design system".
+- As fontes moraram no target `SoTreina` até o design system; hoje ficam no `SoTreinaDesign`, então os `.lproj` do app não disputam a mesma pasta de recursos com elas.
+- **Peso no UIKit (barra de navegação)**: a fonte variável ignora o traço de peso do `UIFontDescriptor`. O peso vai pelo eixo de variação `wght` (`kCTFontVariationAttribute`), em `AppFonts.uiFont(_:weight:relativeTo:)`, com peso CSS (600 = semibold). No SwiftUI, `.weight(...)` funciona direto.
+
+## Widgets: inviáveis com Apple ID grátis
+
+Testado em 2026-10-22 (`.scratch/app-ios-completo/issues/01-teste-app-group.md`): não há canal entre o app e um widget da Tela de Início.
+- **App Group**: o xtool marca o recurso como pago (`AppGroupEntitlement` → `isFree: false`) e **remove o entitlement em silêncio** numa conta grátis. O provisionamento passa sem erro, mas o perfil sai sem `com.apple.security.application-groups`, e `containerURL(forSecurityApplicationGroupIdentifier:)` devolve nil (`client is not entitled`). Ele também reescreveria o ID pra `group.XTL-<team>.com.feroleto.sotreina`.
+- **Keychain compartilhado**: o perfil até concede `keychain-access-groups = KBVDP58W3Z.*`, mas o xtool **sobrescreve** o entitlement com `TEAM.<bundle ID do alvo>`, então app e extensão ficam em grupos diferentes.
+- A Live Activity não sofre disso: o ActivityKit entrega o estado à extensão.
+- Reabrir só com conta paga ou um patch no xtool que preserve grupos de Keychain declarados.
+
+## Validação visual
+
+Cada tela portada é comparada com a web mobile por **pares de capturas**: o app pelo cabo e a web no `run-sotreina`, na mesma largura e escala (1179×2556). O par compara **estrutura, não dados**: layout, hierarquia, cores, tipografia e estados. O app roda contra produção e a web contra o banco local, então os números não batem e não precisam bater. As regras (matriz de estados, classes de diferença, quem aprova) estão no ticket "Formato da validação visual por fase" do mapa em `.scratch/app-ios-completo/`.
+
+**O checklist de cada fase, logo abaixo, é a lista de capturas.** O agente escreve as linhas quando o ticket que constrói a tela começa. Cada linha da tabela segue este formato:
+
+```
+| # | Tela | Estado | App | Web | Resultado |
+| 03 | Perfil | escuro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=dark SOTREINA_LANG=pt` | `--page profile --theme dark` | ✓ |
+| 04 | Perfil | Dynamic Type máx. | `SOTREINA_SCREEN=profile` | — | desvio aceito: rótulo quebra em 2 linhas |
+```
+
+- **#**: número da linha e prefixo das imagens: `ios/validation/<fase>/03-app.png` e `03-web.png`.
+- **Estado**: tema, idioma, vazio/com dado, ou "Dynamic Type máx." (último degrau da régua normal, só no app).
+- **App**: argumentos do `scripts/launch.sh` que abrem o app nesse estado (ver "Modo de validação" abaixo). Use `manual` quando a tela não tem destino próprio (ex.: Live Activity, um sheet aberto) e o usuário precisa levar o app até ela.
+- **Web**: argumentos do driver do `run-sotreina` (`--page`, `--theme`, `--lang`, `--steps`). Use `—` para superfície sem web (Live Activity, notificação, sheet nativo, Dynamic Type), comparada com a spec e o design system.
+- **Resultado**: vazio enquanto não foi conferido, `✓`, `desvio aceito: <motivo>` ou `bug: <o quê>` (bug é corrigido antes de fechar o ticket).
+
+**Quem navega é o agente**, linha por linha: `launch.sh` com os argumentos da coluna App, depois `screenshot.sh`, depois a próxima linha. O usuário só desbloqueia o iPhone, ajusta o Dynamic Type quando uma linha pede (é ajuste do sistema, não tem variável), leva o app às linhas `manual` e aprova a galeria.
+
+### Modo de validação
+
+Num build de debug (o que o `deploy.sh` instala), o app lê três variáveis de ambiente na abertura (`ValidationLaunch` no Kit). Elas **sobrepõem a preferência salva sem gravá-la**: abrir de novo sem elas volta ao que o usuário escolheu (conferido em 2026-10-22: tema forçado claro com o seletor ainda em "Auto", e escuro de novo na abertura seguinte). Valor desconhecido é ignorado.
+
+- `SOTREINA_SCREEN`: um `AppPage` (`runOverview`, `runActivities`, `gymOverview`, `gymRoutines`, `gymHistory`, `dietOverview`, `dietHistory`), que abre a aba dele já nessa sub-página, mesmo que ela ainda não tenha sido portada; uma aba (`today`, `run`, `gym`, `diet`, `profile`), que abre a raiz dela; `session` (o treino aberto em tela cheia); ou `sessionMinimized` (o treino na barra acima das abas). Com treino aberto, todo destino que não é `session` abre com ele minimizado, senão a sessão cobriria a tela. Sem treino aberto, `session`/`sessionMinimized` não abrem nada além da aba salva. O resumo do treino não tem destino: só existe logo depois de finalizar.
+- `SOTREINA_THEME`: `light` ou `dark`.
+- `SOTREINA_LANG`: `pt` ou `en`.
+
+Capturar e montar a galeria (`ios/validation/` fica fora do git):
+
+```bash
+# app: abre no estado da linha e captura (iPhone desbloqueado)
+ios/scripts/launch.sh SOTREINA_SCREEN=profile SOTREINA_THEME=dark SOTREINA_LANG=pt && sleep 6
+ios/scripts/screenshot.sh ios/validation/S/03-app.png
+# web: mesma tela, viewport do iPhone 15
+node .claude/skills/run-sotreina/driver.mjs --iphone --page profile --theme dark --file ios/validation/S/03-web.png
+# galeria app | web, uma linha por par, gerada desta tabela
+node ios/scripts/gallery.mjs S
+explorer.exe "$(wslpath -w ios/validation/S/index.html)"
+```
+
+### Fase S
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Treino › Rotinas (header da área, abas de texto, tab bar) | claro · EN | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=en` | `--page gym/workouts --lang en` | ok (manual, 2026-10-22) |
+| 02 | Treino › Rotinas (header da área, abas de texto, tab bar) | escuro · EN | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page gym/workouts --theme dark --lang en` | ok (manual, 2026-10-22) |
+| 03 | Corrida › Atividades (aviso "Em breve no app") | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` | — | ok (manual, 2026-10-22) |
+| 04 | Treino minimizado (barra acima da tab bar) | claro · PT | `SOTREINA_SCREEN=sessionMinimized SOTREINA_THEME=light SOTREINA_LANG=pt` (precisa de treino aberto) | — | ok (manual, 2026-10-22) |
+| 05 | Perfil (aba, conteúdo provisório da Conta) | claro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=pt` | — | ok (manual, 2026-10-22) |
+| 06 | Treino › Rotinas | Dynamic Type máx. | `SOTREINA_SCREEN=gymRoutines` | — | ok (manual, 2026-10-22) |
+| 07 | Perfil (substitui a 05) | claro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page profile` | |
+| 08 | Perfil | escuro · PT | `SOTREINA_SCREEN=profile SOTREINA_THEME=dark SOTREINA_LANG=pt` | `--page profile --theme dark` | |
+| 09 | Perfil | claro · EN | `SOTREINA_SCREEN=profile SOTREINA_THEME=light SOTREINA_LANG=en` | `--page profile --lang en` | |
+| 10 | Perfil com uma área só (chave travada, só a meta dela) | claro · PT | usuário desliga duas áreas | `--page profile` (conta com uma área) | |
+| 11 | Perfil › Dados pessoais | claro · PT | usuário toca na linha do nome | `--page profile` + toque no nome | |
+| 12 | Perfil › Metas semanais (em mi) | claro · PT | usuário troca pra mi e toca na meta da Corrida | `--page profile` + toque na meta | |
+| 13 | Perfil › Meta diária (fora da meta, em vermelho) | escuro · PT | usuário toca na meta da Dieta | `--page profile --theme dark` + toque na meta | |
+| 14 | Perfil | Dynamic Type máx. | `SOTREINA_SCREEN=profile` | — | |
 
 ## Checklist da Fase 0 (go/no-go)
 

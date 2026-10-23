@@ -24,7 +24,7 @@
     "title": "Tudo pronto",
     "importedLabel_one": "atividade importada",
     "importedLabel_other": "atividades importadas",
-    "distanceKm": "{{km}} km",
+    "distanceKm": "{{km}} {{unit}}",
     "cta": "Abrir painel"
   },
   "areas": {

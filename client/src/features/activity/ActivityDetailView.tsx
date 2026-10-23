@@ -3,16 +3,18 @@ import { useTranslation } from 'react-i18next';
 import {
   WORKOUT_META,
   formatDurationShort,
-  formatKm,
+  formatDistance,
   formatMinSec,
   formatPace,
   lapLabels,
+  formatPaceValue,
 } from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import type { ActivityDetail } from '@/lib/types';
 import { apiFetch } from '@/lib/api';
 import { PoweredByStrava } from '@/components/StravaBrand';
 import { DelayedSkeleton, Skeleton } from '@/components/Skeleton';
+import { distanceLabel, kmToDisplay } from '@/lib/units';
 
 // lazy so Leaflet is only fetched when a GPS activity detail is opened
 const RouteMap = lazy(() => import('./RouteMap'));
@@ -133,7 +135,9 @@ export default function ActivityDetailView({
   const stats: [string, string, boolean?][] = [
     [
       t('stats.distance'),
-      activity.distanceKm != null ? `${formatKm(activity.distanceKm)} km` : '—',
+      activity.distanceKm != null
+        ? `${formatDistance(activity.distanceKm)} ${distanceLabel()}`
+        : '—',
     ],
     [t('stats.time'), formatDurationShort(activity.movingTimeSec)],
     [t('stats.pace'), formatPace(activity.paceRawSecKm)],
@@ -299,13 +303,13 @@ export default function ActivityDetailView({
                 )}
               </div>
               <div className="w-[58px] text-right text-[13px] text-muted-foreground md:w-[66px]">
-                {(lap.distanceM / 1000).toFixed(2)} km
+                {kmToDisplay(lap.distanceM / 1000).toFixed(2)} {distanceLabel()}
               </div>
               <div className="w-11 text-right text-[13px] text-muted-foreground md:w-14">
                 {formatMinSec(lap.movingDurationSec)}
               </div>
               <div className="w-14 text-right text-[13.5px] font-semibold text-foreground md:w-16">
-                {formatPace(lap.avgPaceSecKm).replace(' /km', '')}
+                {formatPaceValue(lap.avgPaceSecKm)}
               </div>
               <div className="hidden w-11 text-right text-[13px] text-muted-foreground md:block">
                 {lap.avgCadence != null && lap.avgCadence > 0

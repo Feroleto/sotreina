@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import os
+import SoTreinaDesign
 import SoTreinaKit
 
 /// Routines + the open workout — the app's counterpart of the web's
@@ -31,8 +32,22 @@ final class WorkoutStore {
 
     private(set) var templates: [TemplateSummary] = []
     private(set) var active: WorkoutDetail? {
-        didSet { refreshLiveActivity() }
+        didSet {
+            refreshLiveActivity()
+            // every mutation answers with the whole workout: keep the cache on
+            // it, so a relaunch never resurrects a finished or changed one
+            session.cachedAPI?.store(active, as: "workouts/active")
+            // a new or ended session always comes back full screen, except
+            // the first one of a validation launch aimed at another screen
+            if active?.id != oldValue?.id {
+                sessionMinimized = active != nil && launchMinimizedPending
+                if active != nil { launchMinimizedPending = false }
+            }
+        }
     }
+    /// The open session folded into the bar above the tab bar (web:
+    /// "minimizar" + ActiveWorkoutBar); it still runs, timer and all.
+    var sessionMinimized = false
     private(set) var loadState: LoadState = .idle
     /// set while `POST /workouts` runs, so only that row shows a spinner
     private(set) var startingTemplateId: String?
@@ -58,6 +73,8 @@ final class WorkoutStore {
     private let session: SessionStore
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "workout")
     private var lastPerformanceRequested: Set<String> = []
+    @ObservationIgnored private var restoredFromCache = false
+    @ObservationIgnored private var launchMinimizedPending = ValidationLaunch.current.startsSessionMinimized
     /// mutations run one at a time: each answer is the whole workout, so two
     /// answers landing out of order would let the older one erase a set
     private var queueTail: Task<Void, Never>?
@@ -82,8 +99,9 @@ final class WorkoutStore {
     /// here or on the web) takes over the screen; edits made on the web
     /// meanwhile simply win (last write wins, accepted in the spec).
     func load() async {
-        if templates.isEmpty { loadState = .loading }
-        let api = session.api
+        guard let api = session.cachedAPI else { return }
+        restoreFromCacheOnce(api)
+        if templates.isEmpty, loadState != .loaded { loadState = .loading }
         do {
             async let fetchedTemplates: [TemplateSummary]? = api.get("workout-templates")
             async let fetchedActive: WorkoutDetail? = api.get("workouts/active")
@@ -93,6 +111,21 @@ final class WorkoutStore {
         } catch {
             // keep whatever was on screen; only an empty first load shows the error
             if let message = handle(error), templates.isEmpty { loadState = .failed(message) }
+        }
+    }
+
+    /// First load only: show the last answers at once (spec §5.2); the fetch
+    /// that follows replaces them. Later loads never re-read the cache — it
+    /// would bring back a state the app has since moved past.
+    private func restoreFromCacheOnce(_ api: CachedAPI) {
+        guard !restoredFromCache else { return }
+        restoredFromCache = true
+        if let hit: ResponseCache.Hit<[TemplateSummary]> = api.cached("workout-templates") {
+            templates = hit.value ?? []
+            loadState = .loaded
+        }
+        if let hit: ResponseCache.Hit<WorkoutDetail> = api.cached("workouts/active") {
+            active = hit.value
         }
     }
 
@@ -254,7 +287,7 @@ final class WorkoutStore {
         activityClientIds[key] = clientId
         let state = WorkoutActivity.snapshot(
             workout: active, pending: pending, lastPerformance: lastPerformance,
-            rest: rest.timer.active, clientId: clientId
+            rest: rest.timer.active, clientId: clientId, lang: AppLanguageStore.shared.lang
         )
         liveActivity.sync(workout: active, state: state)
     }
@@ -274,6 +307,8 @@ final class WorkoutStore {
                   active?.exercises.contains(where: { $0.id == workoutExerciseId }) == true,
                   !pendingSets.contains(where: { $0.clientId == clientId })
             else { return }
+            // the "✓" opened the app: show the set landing in the session
+            sessionMinimized = false
             await addSet(workoutExerciseId: workoutExerciseId, weightKg: weightKg, reps: reps, clientId: clientId)
         }
     }
@@ -326,21 +361,21 @@ final class WorkoutStore {
             return nil
         }
         log.error("request failed: \(String(describing: error), privacy: .public)")
-        return Self.message(for: error)
+        return Self.message(for: error, lang: AppLanguageStore.shared.lang)
     }
 
-    static func message(for error: Error) -> String {
+    static func message(for error: Error, lang: Lang) -> String {
         switch error {
         case let urlError as URLError where urlError.code == .notConnectedToInternet
             || urlError.code == .networkConnectionLost
             || urlError.code == .timedOut:
-            return "Sem conexão com a internet."
+            return L10n.string("app.error.offline", lang: lang)
         case APIError.http(let status) where status >= 500:
-            return "O servidor não respondeu (\(status)). Tente de novo."
+            return L10n.string("app.error.server %lld", lang: lang, status)
         case APIError.http(404):
-            return "Não encontrado — talvez tenha sido apagado na web."
+            return L10n.string("app.error.notFound", lang: lang)
         default:
-            return "Algo deu errado. Tente de novo."
+            return L10n.string("app.error.generic", lang: lang)
         }
     }
 }

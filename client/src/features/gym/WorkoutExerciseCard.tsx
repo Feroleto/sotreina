@@ -9,6 +9,7 @@ import type {
   WorkoutExercise,
   WorkoutSet,
 } from '@/lib/types';
+import { displayToKg, formatWeight, weightLabel } from '@/lib/units';
 import { formatRepsRange } from './routineFormat';
 
 // exported so ActiveWorkoutBar can mirror the same "no target → 3 rows"
@@ -27,10 +28,20 @@ interface LoggedSetRowProps {
 // means it was done, there's no partial/pending state server-side).
 // Weight/reps stay editable (commit on blur via updateSet, same "commita
 // conforme faz" convention as RoutineExerciseRow.tsx); unchecking deletes it
-function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowProps) {
+function LoggedSetRow({
+  index,
+  set,
+  busy,
+  onUpdate,
+  onUncheck,
+}: LoggedSetRowProps) {
   const { t } = useTranslation('gym');
-  const [weightText, setWeightText] = useState(set.weightKg != null ? String(set.weightKg) : '');
-  const [repsText, setRepsText] = useState(set.reps != null ? String(set.reps) : '');
+  const [weightText, setWeightText] = useState(
+    set.weightKg != null ? formatWeight(set.weightKg) : '',
+  );
+  const [repsText, setRepsText] = useState(
+    set.reps != null ? String(set.reps) : '',
+  );
 
   // resync local text when the set changes for a reason outside this row's
   // own edits (e.g. another mutation refetching the whole workout) —
@@ -38,7 +49,7 @@ function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowPro
   const [prevSet, setPrevSet] = useState(set);
   if (set.weightKg !== prevSet.weightKg || set.reps !== prevSet.reps) {
     setPrevSet(set);
-    setWeightText(set.weightKg != null ? String(set.weightKg) : '');
+    setWeightText(set.weightKg != null ? formatWeight(set.weightKg) : '');
     setRepsText(set.reps != null ? String(set.reps) : '');
   }
 
@@ -46,7 +57,9 @@ function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowPro
     const trimmed = weightText.trim();
     const value = trimmed === '' ? undefined : Number(trimmed);
     if (value !== undefined && (!Number.isFinite(value) || value < 0)) return;
-    onUpdate({ weightKg: value });
+    onUpdate({
+      weightKg: value === undefined ? undefined : displayToKg(value),
+    });
   }
 
   function commitReps() {
@@ -58,9 +71,15 @@ function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowPro
 
   return (
     <div className="mt-2 flex items-center gap-1.5">
-      <div className="w-[20px] flex-none text-[13px] font-medium text-foreground">{index}</div>
+      <div className="w-[20px] flex-none text-[13px] font-medium text-foreground">
+        {index}
+      </div>
       <div className="w-[56px] flex-none truncate text-[11px] text-muted-foreground">
-        {t('train.previousValue', { weight: set.weightKg ?? '—', reps: set.reps ?? '—' })}
+        {t('train.previousValue', {
+          unit: weightLabel(),
+          weight: set.weightKg != null ? formatWeight(set.weightKg) : '—',
+          reps: set.reps ?? '—',
+        })}
       </div>
       <input
         type="number"
@@ -69,7 +88,7 @@ function LoggedSetRow({ index, set, busy, onUpdate, onUncheck }: LoggedSetRowPro
         onChange={(e) => setWeightText(e.target.value)}
         onBlur={commitWeight}
         disabled={busy}
-        aria-label={t('entry.weightLabel')}
+        aria-label={t('entry.weightLabel', { unit: weightLabel() })}
         className="h-9 min-w-0 flex-1 rounded-[8px] border border-border bg-page-bg px-1.5 text-[16px] font-medium text-foreground outline-none focus:border-acc md:text-[13px]"
       />
       <input
@@ -115,25 +134,45 @@ interface EmptySetRowProps {
 // trailing row (isLast) shows a remove button — symmetric with "+ Adicionar
 // série" always appending at the end, and avoids ambiguity about which of
 // several empty rows should disappear
-function EmptySetRow({ index, enabled, isLast, suggestion, busy, onLog, onRemove }: EmptySetRowProps) {
+function EmptySetRow({
+  index,
+  enabled,
+  isLast,
+  suggestion,
+  busy,
+  onLog,
+  onRemove,
+}: EmptySetRowProps) {
   const { t } = useTranslation('gym');
   const [weightText, setWeightText] = useState('');
   const [repsText, setRepsText] = useState('');
 
   function handleCheck() {
     if (!enabled || busy) return;
-    const weightKg = weightText.trim() ? Number(weightText) : (suggestion?.weightKg ?? undefined);
-    const reps = repsText.trim() ? Number(repsText) : (suggestion?.reps ?? undefined);
+    // typed in the display unit; the suggestion is already in kg
+    const weightKg = weightText.trim()
+      ? displayToKg(Number(weightText))
+      : (suggestion?.weightKg ?? undefined);
+    const reps = repsText.trim()
+      ? Number(repsText)
+      : (suggestion?.reps ?? undefined);
     onLog({ weightKg, reps });
   }
 
   const previousText = suggestion
-    ? t('train.previousValue', { weight: suggestion.weightKg ?? '—', reps: suggestion.reps ?? '—' })
+    ? t('train.previousValue', {
+        unit: weightLabel(),
+        weight:
+          suggestion.weightKg != null ? formatWeight(suggestion.weightKg) : '—',
+        reps: suggestion.reps ?? '—',
+      })
     : '—';
 
   return (
     <div className="mt-2 flex items-center gap-1.5">
-      <div className="w-[20px] flex-none text-[13px] font-medium text-foreground">{index}</div>
+      <div className="w-[20px] flex-none text-[13px] font-medium text-foreground">
+        {index}
+      </div>
       <div className="w-[56px] flex-none truncate text-[11px] text-muted-foreground">
         {previousText}
       </div>
@@ -142,9 +181,11 @@ function EmptySetRow({ index, enabled, isLast, suggestion, busy, onLog, onRemove
         inputMode="decimal"
         value={weightText}
         onChange={(e) => setWeightText(e.target.value)}
-        placeholder={suggestion?.weightKg != null ? String(suggestion.weightKg) : ''}
+        placeholder={
+          suggestion?.weightKg != null ? formatWeight(suggestion.weightKg) : ''
+        }
         disabled={!enabled || busy}
-        aria-label={t('entry.weightLabel')}
+        aria-label={t('entry.weightLabel', { unit: weightLabel() })}
         className="h-9 min-w-0 flex-1 rounded-[8px] border border-border bg-page-bg px-1.5 text-[16px] font-medium text-foreground outline-none focus:border-acc disabled:opacity-40 md:text-[13px]"
       />
       <input
@@ -224,14 +265,18 @@ export default function WorkoutExerciseCard({
   onDragHandlePointerDown,
 }: WorkoutExerciseCardProps) {
   const { t } = useTranslation('gym');
-  const [lastPerformance, setLastPerformance] = useState<LastPerformance | null>(null);
+  const [lastPerformance, setLastPerformance] =
+    useState<LastPerformance | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     apiFetch(`/exercises/${workoutExercise.exerciseId}/last-performance`)
       .then((res) => (res.ok ? res.text() : ''))
       .then((text) => {
-        if (!cancelled) setLastPerformance(text ? (JSON.parse(text) as LastPerformance) : null);
+        if (!cancelled)
+          setLastPerformance(
+            text ? (JSON.parse(text) as LastPerformance) : null,
+          );
       })
       .catch(() => {});
     return () => {
@@ -241,7 +286,10 @@ export default function WorkoutExerciseCard({
 
   function suggestionForRow(idx: number): LastPerformanceSet | null {
     if (!lastPerformance || lastPerformance.sets.length === 0) return null;
-    return lastPerformance.sets[idx] ?? lastPerformance.sets[lastPerformance.sets.length - 1];
+    return (
+      lastPerformance.sets[idx] ??
+      lastPerformance.sets[lastPerformance.sets.length - 1]
+    );
   }
 
   const loggedCount = workoutExercise.sets.length;
@@ -253,7 +301,9 @@ export default function WorkoutExerciseCard({
   // checking the extra row, so a new empty row kept reappearing forever
   // after the first tap). Grows to loggedCount if that ever gets ahead of it
   // (e.g. more sets already existed than the target when this card mounted)
-  const [totalRows, setTotalRows] = useState(() => Math.max(targetCount, loggedCount));
+  const [totalRows, setTotalRows] = useState(() =>
+    Math.max(targetCount, loggedCount),
+  );
   if (loggedCount > totalRows) {
     setTotalRows(loggedCount);
   }
@@ -282,10 +332,14 @@ export default function WorkoutExerciseCard({
           <h2 className="truncate text-[14.5px] font-semibold text-foreground">
             {workoutExercise.exerciseName}
           </h2>
-          {(workoutExercise.target?.repsMin != null || workoutExercise.target?.repsMax != null) && (
+          {(workoutExercise.target?.repsMin != null ||
+            workoutExercise.target?.repsMax != null) && (
             <p className="mt-0.5 text-[11.5px] text-muted-foreground">
               {t('train.targetReps', {
-                reps: formatRepsRange(workoutExercise.target?.repsMin, workoutExercise.target?.repsMax),
+                reps: formatRepsRange(
+                  workoutExercise.target?.repsMin,
+                  workoutExercise.target?.repsMax,
+                ),
               })}
             </p>
           )}
@@ -304,7 +358,9 @@ export default function WorkoutExerciseCard({
       <div className="mt-3 flex items-center gap-1.5 text-[10px] font-medium tracking-[.04em] text-muted-foreground uppercase">
         <div className="w-[20px] flex-none">{t('train.columnSet')}</div>
         <div className="w-[56px] flex-none">{t('train.columnPrevious')}</div>
-        <div className="min-w-0 flex-1">{t('train.columnWeight')}</div>
+        <div className="min-w-0 flex-1">
+          {t('train.columnWeight', { unit: weightLabel() })}
+        </div>
         <div className="min-w-0 flex-1">{t('train.columnReps')}</div>
         <div className="w-[18px] flex-none" />
         <div className="w-[26px] flex-none" />

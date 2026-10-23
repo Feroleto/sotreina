@@ -22,6 +22,9 @@ model User {
   // areas the user chose to use; empty = not chosen yet (new account, the
   // client shows the area picker). Existing users were backfilled with all three
   enabledAreas        Area[]               @default([]) @map("enabled_areas")
+  // display/entry preference only: distances stay in km and weights in kg
+  distanceUnit        DistanceUnit         @default(KM) @map("distance_unit")
+  weightUnit          WeightUnit           @default(KG) @map("weight_unit")
   tokenVersion        Int                  @default(0) @map("token_version")
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -208,6 +211,16 @@ enum Area {
   RUN
   GYM
   DIET
+}
+
+enum DistanceUnit {
+  KM
+  MI
+}
+
+enum WeightUnit {
+  KG
+  LB
 }
 
 enum WorkoutType {

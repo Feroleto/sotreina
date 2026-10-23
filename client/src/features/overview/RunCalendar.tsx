@@ -2,9 +2,14 @@ import type { CSSProperties } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Activity } from '@/lib/types';
-import { formatKm, formatMonthDay, formatPace } from '@/lib/activityFormat';
+import {
+  formatDistance,
+  formatMonthDay,
+  formatPace,
+} from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { useEntrance } from '@/lib/useEntrance';
+import { distanceLabel } from '@/lib/units';
 
 interface RunCalendarProps {
   activities: Activity[];
@@ -121,18 +126,23 @@ export default function RunCalendar({ activities }: RunCalendarProps) {
   const footer = hoverList
     ? hoverList.length > 1
       ? t('calendar.dayMultiRuns', {
+          unit: distanceLabel(),
           count: hoverList.length,
-          km: formatKm(hoverList.reduce((s, a) => s + (a.distanceKm ?? 0), 0)),
+          km: formatDistance(
+            hoverList.reduce((s, a) => s + (a.distanceKm ?? 0), 0),
+          ),
         })
       : t('calendar.daySingleRun', {
+          unit: distanceLabel(),
           date: formatMonthDay(new Date(hoverList[0].startDate)),
           name: hoverList[0].name,
-          km: formatKm(hoverList[0].distanceKm ?? 0),
+          km: formatDistance(hoverList[0].distanceKm ?? 0),
           pace: formatPace(hoverList[0].paceRawSecKm),
         })
     : t('calendar.monthSummary', {
+        unit: distanceLabel(),
         count: monthTotals.count,
-        km: formatKm(monthTotals.km),
+        km: formatDistance(monthTotals.km),
         month: visibleMonth.toLocaleDateString(currentIntlLocale(), {
           month: 'long',
         }),

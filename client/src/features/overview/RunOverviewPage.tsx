@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useActivities } from '@/lib/useActivities';
 import {
   formatDuration,
-  formatKm,
+  formatDistance,
   formatMonthShortYear,
   formatNumber,
   formatPace,
@@ -13,6 +13,7 @@ import PersonalRecordsCard from './PersonalRecordsCard';
 import ShoesSection from './ShoesSection';
 import { LoadingSwap, Skeleton } from '@/components/Skeleton';
 import { PoweredByStrava } from '@/components/StravaBrand';
+import { distanceLabel } from '@/lib/units';
 
 // mobile 2×2 hairline grid (Redesign Corrida 17b "Monolito": no cards,
 // numbers in Geist Mono) — right column and second row draw the dividers
@@ -168,10 +169,13 @@ export default function RunOverviewPage() {
           <MobileTotalCard
             index={0}
             label={t('tiles.distance')}
-            value={`${formatKm(totals?.totalKm ?? 0)} km`}
+            value={`${formatDistance(totals?.totalKm ?? 0)} ${distanceLabel()}`}
             sub={
               totals
-                ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
+                ? t('tiles.kmPerWeek', {
+                    unit: distanceLabel(),
+                    km: formatDistance(totals.kmPerWeek),
+                  })
                 : undefined
             }
           />
@@ -203,10 +207,13 @@ export default function RunOverviewPage() {
           <TotalTile
             label={t('tiles.distance')}
             bordered
-            value={`${formatKm(totals?.totalKm ?? 0)} km`}
+            value={`${formatDistance(totals?.totalKm ?? 0)} ${distanceLabel()}`}
             sub={
               totals
-                ? t('tiles.kmPerWeek', { km: formatKm(totals.kmPerWeek) })
+                ? t('tiles.kmPerWeek', {
+                    unit: distanceLabel(),
+                    km: formatDistance(totals.kmPerWeek),
+                  })
                 : undefined
             }
           />

@@ -4,7 +4,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/current-user.decorator';
 import { parseFirstName } from '../auth/dto';
-import { parseEnabledAreas } from './dto';
+import { parseDistanceUnit, parseEnabledAreas, parseWeightUnit } from './dto';
 
 const MIN_MAX_HR = 100;
 const MAX_MAX_HR = 230;
@@ -82,6 +82,8 @@ export class UsersController {
       ),
       enabledAreas: parseEnabledAreas(body?.enabledAreas),
       firstName: body?.firstName === undefined ? undefined : parseFirstName(body.firstName),
+      distanceUnit: parseDistanceUnit(body?.distanceUnit),
+      weightUnit: parseWeightUnit(body?.weightUnit),
     };
 
     if (Object.values(input).every((v) => v === undefined)) {

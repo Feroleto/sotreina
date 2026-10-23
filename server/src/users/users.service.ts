@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, type Area } from '@prisma/client';
+import { PrismaClient, type Area, type DistanceUnit, type WeightUnit } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 export interface MeSnapshot {
@@ -13,6 +13,8 @@ export interface MeSnapshot {
   weeklyWorkoutsGoal: number;
   firstName: string | null;
   enabledAreas: Area[];
+  distanceUnit: DistanceUnit;
+  weightUnit: WeightUnit;
 }
 
 const ME_SELECT = {
@@ -25,6 +27,8 @@ const ME_SELECT = {
   weeklyWorkoutsGoal: true,
   firstName: true,
   enabledAreas: true,
+  distanceUnit: true,
+  weightUnit: true,
 };
 
 export interface UpdateMeInput {
@@ -37,6 +41,8 @@ export interface UpdateMeInput {
   weeklyWorkoutsGoal?: number;
   enabledAreas?: Area[];
   firstName?: string;
+  distanceUnit?: DistanceUnit;
+  weightUnit?: WeightUnit;
 }
 
 @Injectable()

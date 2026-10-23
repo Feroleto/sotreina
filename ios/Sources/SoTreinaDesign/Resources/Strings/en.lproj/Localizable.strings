@@ -1,0 +1,190 @@
+/* Interface strings. Keys and vocabulary from the web
+   (client/src/i18n/locales/en); see L10n.swift. */
+
+/* common */
+"common.cancel" = "Cancel";
+
+/* login (auth:login.*) */
+"auth.login.emailLabel" = "Email";
+"auth.login.passwordLabel" = "Password";
+"auth.login.submitLogin" = "Sign in";
+"auth.login.invalidCredentials" = "Incorrect email or password.";
+"auth.login.failed %@" = "Couldn't sign in: %@";
+"auth.login.server" = "Server";
+"auth.login.apiURL" = "API URL";
+"auth.login.invalidURL" = "Invalid API URL.";
+
+/* gym (gym:*) */
+"gym.freeWorkout" = "Free workout";
+"gym.summary.title" = "Workout complete";
+"gym.summary.volume" = "Volume";
+"gym.summary.sets" = "Sets";
+"gym.summary.exercises" = "Exercises";
+"gym.summary.prFrom %@" = "was %@";
+"gym.summary.done" = "Done";
+
+"gym.rest.label" = "Rest";
+"gym.rest.afterEachSet" = "Rest after each set";
+"gym.rest.skip" = "Skip";
+"gym.rest.skipLabel" = "Skip rest";
+"gym.rest.minus15" = "Subtract 15 seconds";
+"gym.rest.plus15" = "Add 15 seconds";
+"gym.rest.notificationTitle" = "Rest is over";
+"gym.rest.notificationBody" = "Time for the next set.";
+
+"gym.picker.title" = "Add exercise";
+"gym.picker.searchPlaceholder" = "Search exercises…";
+"gym.picker.loadFailed" = "Couldn't load";
+"gym.picker.checkConnection" = "Check your connection and try again.";
+
+/* Live Activity */
+"gym.live.inSet" = "In set";
+"gym.live.next %@" = "Next: %@";
+"gym.live.setNotSent" = "Set not sent";
+"gym.live.addExercise" = "Add an exercise in the app";
+
+/* 7-day free signature */
+"app.expiry.notificationTitle" = "SoTreina expires tomorrow";
+"app.expiry.notificationBody" = "Run ios/scripts/deploy.sh to reinstall. Your data stays.";
+
+/* register and forgot password (auth:login.*) */
+"auth.login.tabLogin" = "Sign in";
+"auth.login.tabRegister" = "Create account";
+"auth.login.namePlaceholder" = "Name";
+"auth.login.confirmPasswordPlaceholder" = "Confirm password";
+"auth.login.submitRegister" = "Create account";
+"auth.login.passwordTooShort" = "Password must be at least 8 characters.";
+"auth.login.passwordMismatch" = "Passwords don't match.";
+"auth.login.emailInUse" = "This email is already registered.";
+"auth.login.genericError" = "Something went wrong. Please try again.";
+"auth.login.forgotPassword" = "Forgot password";
+"auth.login.forgotTitle" = "Forgot password";
+"auth.login.forgotSubtitle" = "Enter your email and we'll send you a link to reset your password.";
+"auth.login.forgotSubmit" = "Send link";
+"auth.login.forgotSuccess" = "If that email exists, you'll receive a password reset link shortly.";
+"auth.login.stravaOnly" = "Sign in with Strava on the web? The app only takes email and password: add a password in SoTreina's Profile on the web.";
+"auth.login.openWeb" = "Open sotreina.com";
+
+/* area picker (onboarding:areas.*) */
+"onboarding.areas.title" = "What do you want to track?";
+"onboarding.areas.subtitle" = "Pick one or more areas. You can change this later in Profile without losing history.";
+"onboarding.areas.runDesc" = "Distance, pace and weekly goals";
+"onboarding.areas.gymDesc" = "Routines, sets and volume";
+"onboarding.areas.dietDesc" = "Calories, macros and meals";
+"onboarding.areas.countNone" = "Pick at least one area";
+"onboarding.areas.continue" = "Continue";
+"onboarding.areas.error" = "Couldn't save. Please try again.";
+
+/* navigation and session (Strings das telas da Navegação) */
+"common.ok" = "OK";
+"common.retry" = "Try again";
+"common.save" = "Save";
+"common.delete" = "Delete";
+
+"app.error.title" = "Something went wrong";
+"app.error.offline" = "No internet connection.";
+"app.error.server %lld" = "The server didn't respond (%lld). Try again.";
+"app.error.notFound" = "Not found — it may have been deleted on the web.";
+"app.error.generic" = "Something went wrong. Try again.";
+
+"app.comingSoon.title" = "Coming soon to the app";
+"app.comingSoon.body" = "For now, this part lives in SoTreina on the web.";
+"app.comingSoon.openWeb" = "Open on the web";
+
+"gym.activeBar.inProgress" = "Workout in progress";
+"gym.activeBar.resume" = "Return to your active workout";
+
+"gym.routines.loadFailed" = "Couldn't load";
+"gym.routines.emptyTitle" = "No routines";
+"gym.routines.emptyBody" = "Create your routines in SoTreina on the web and they'll show up here.";
+"gym.routines.next" = "Next";
+"gym.routines.start" = "Start";
+
+"gym.session.duration" = "Duration";
+"gym.session.pendingFooter" = "Resend or discard the sets marked ⚠ before finishing.";
+"gym.session.minimize" = "Minimize workout";
+"gym.session.finishShort" = "Finish";
+"gym.session.finishConfirm" = "Finish the workout?";
+"gym.session.finish" = "Finish workout";
+"gym.session.keepTraining" = "Keep training";
+"gym.session.cancelConfirm" = "Cancel the workout?";
+"gym.session.cancelAndDelete" = "Cancel workout and delete the sets";
+"gym.session.cancelMessage" = "Everything logged in this workout will be deleted, here and on the web.";
+"gym.session.removeExercise" = "Remove exercise";
+"gym.session.exerciseOptions %@" = "Options for %@";
+"gym.session.removeConfirm %@" = "Remove %@?";
+"gym.session.removeAndDelete" = "Remove and delete the sets";
+"gym.session.target %@" = "Goal: %@";
+"gym.session.rest %@" = "rest %@";
+"gym.session.resend" = "Resend";
+"gym.session.discard" = "Discard";
+"gym.session.log" = "Log";
+"gym.session.lastTime %@" = "Last time: %@";
+"gym.session.setTitle %lld" = "Set %lld";
+"gym.entry.weightLabel %@" = "Weight (%@)";
+"gym.entry.repsLabel" = "Reps";
+"gym.entry.deleteSet" = "Delete set";
+
+
+/* perfil (nav:profile.*, nav:logOut) */
+"nav.profile.title" = "Profile";
+"nav.profile.noEmail" = "Strava account, no email";
+"nav.profile.areas" = "Areas";
+"nav.profile.areasHint" = "Turned-off areas disappear from Today and the navigation. Your history stays saved.";
+"nav.profile.saveError" = "Couldn't save. Please try again.";
+"nav.profile.goals" = "Goals";
+"nav.profile.goalRunDetail" = "distance per week";
+"nav.profile.goalGymDetail" = "workouts per week";
+"nav.profile.goalDietDetail" = "calories per day";
+"nav.profile.app" = "App";
+"nav.profile.theme" = "Theme";
+"nav.profile.language" = "Language";
+"nav.profile.unitsDistance" = "Distance";
+"nav.profile.unitsWeight" = "Weight";
+"nav.profile.unitsError" = "Couldn't save the unit. Try again.";
+"nav.profile.account" = "Account";
+"nav.profile.stravaConnected" = "Connected";
+"nav.profile.stravaNotConnected" = "Not connected";
+"nav.profile.privacy" = "Privacy Policy";
+"nav.profile.support" = "Support";
+"nav.profile.name" = "Name";
+"nav.profile.email" = "Email";
+"nav.profile.emailReadOnly" = "Your email is used to sign in and can’t be changed here.";
+"nav.profile.personalData" = "Personal data";
+"nav.profile.save" = "Save";
+"nav.profile.saving" = "Saving…";
+"nav.profile.manageOnWeb" = "Manage on the web";
+"nav.profile.goalsLoadFailed" = "Couldn't load your goals. Pull to try again.";
+"nav.runnerFallback" = "Runner";
+"nav.logOut" = "Log out";
+
+/* tema (common:theme.*) */
+"common.theme.auto" = "Auto";
+"common.theme.light" = "Light";
+"common.theme.dark" = "Dark";
+
+/* metas semanais (today:goals.*) */
+"today.goals.title" = "Weekly goals";
+"today.goals.subtitle" = "The week starts on Monday.";
+"today.goals.runKm" = "Run";
+"today.goals.runKmUnit %@" = "%@ per week";
+"today.goals.workouts" = "Workout";
+"today.goals.workoutsUnit" = "workouts per week";
+"today.goals.decrease" = "Decrease";
+"today.goals.increase" = "Increase";
+"today.goals.save" = "Save goals";
+"today.goals.saving" = "Saving…";
+
+/* meta diária (diet:goal.*, diet:macro.*) */
+"diet.goal.title" = "Daily goal";
+"diet.goal.calories" = "Calories";
+"diet.goal.pctOfCalories %lld" = "%lld%% of calories";
+"diet.goal.calculated %lld" = "%lld kcal calculated";
+"diet.goal.matches" = "Matches the calorie goal";
+"diet.goal.aboveTarget %lld" = "%lld%% above the calorie goal";
+"diet.goal.belowTarget %lld" = "%lld%% below the calorie goal";
+"diet.goal.save" = "Save goal";
+"diet.goal.saving" = "Saving…";
+"diet.macro.protein" = "Protein";
+"diet.macro.carbs" = "Carbs";
+"diet.macro.fat" = "Fat";

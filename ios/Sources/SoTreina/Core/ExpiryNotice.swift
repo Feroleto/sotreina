@@ -1,5 +1,6 @@
 import Foundation
 import os
+import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 import UserNotifications
@@ -32,8 +33,10 @@ enum ExpiryNotice {
         guard let expiration, let reminder = AppExpiry.reminderDate(expiration: expiration) else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "SoTreina expira amanhã"
-        content.body = "Rode ios/scripts/deploy.sh pra reinstalar. Os dados ficam."
+        // in the language at scheduling time; every launch reschedules it
+        let lang = AppLanguageStore.current
+        content.title = L10n.string("app.expiry.notificationTitle", lang: lang)
+        content.body = L10n.string("app.expiry.notificationBody", lang: lang)
         content.sound = .default
         let parts = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminder)
         let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
@@ -45,17 +48,19 @@ enum ExpiryNotice {
 
 /// The fixed banner at the top of every screen, from 2 days before expiry.
 struct ExpiryBanner: View {
+    @Environment(AppLanguageStore.self) private var language
+
     var body: some View {
         if let expiration = ExpiryNotice.expiration {
             TimelineView(.everyMinute) { context in
-                if let text = AppExpiry.banner(expiration: expiration, now: context.date) {
+                if let text = AppExpiry.banner(expiration: expiration, now: context.date, lang: language.lang) {
                     Label(text, systemImage: "exclamationmark.triangle.fill")
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(.black)
+                        .font(Font.geist(13, relativeTo: .footnote).weight(.medium))
+                        .foregroundStyle(Color.accFg)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
                         .padding(.horizontal)
-                        .background(.yellow)
+                        .background(Color.acc)
                 }
             }
         }

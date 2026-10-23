@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, type Area } from '@prisma/client';
+import { PrismaClient, type Area, type DistanceUnit, type WeightUnit } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { randomBytes, createHash } from 'node:crypto';
 import { hashPassword, verifyPassword } from './password';
@@ -23,6 +23,9 @@ export interface MeResponse {
   hasPassword: boolean;
   /** empty = not chosen yet (new account) → the client shows the area picker */
   enabledAreas: Area[];
+  /** display/entry preference; the API itself always speaks km and kg */
+  distanceUnit: DistanceUnit;
+  weightUnit: WeightUnit;
 }
 
 @Injectable()
@@ -56,6 +59,8 @@ export class AuthService {
         profileImgUrl: true,
         maxHr: true,
         enabledAreas: true,
+        distanceUnit: true,
+        weightUnit: true,
         tokenVersion: true,
         passwordHash: true,
         stravaAccount: { select: { id: true } },

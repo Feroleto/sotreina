@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { formatKm } from '@/lib/activityFormat';
+import { formatDistance } from '@/lib/activityFormat';
+import { distanceLabel } from '@/lib/units';
 
 interface RangeChipProps {
   label: string;
@@ -32,8 +33,8 @@ export default function RangeChip({
           {label}
         </span>
         <span className="text-xs text-muted-foreground">
-          {t('rangeChip.runsCount', { count })} · {formatKm(km)} km ·{' '}
-          {t('rangeChip.daysCount', { count: days })}
+          {t('rangeChip.runsCount', { count })} · {formatDistance(km)}{' '}
+          {distanceLabel()} · {t('rangeChip.daysCount', { count: days })}
         </span>
         <button
           onClick={onClear}

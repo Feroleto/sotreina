@@ -1,31 +1,17 @@
-import SwiftUI
+import SoTreinaDesign
 import SoTreinaKit
+import SwiftUI
 
-/// Read-only list of the user's routines with "Iniciar" (spec §6.4, tela 2).
-/// Creating and editing routines stays on the web.
+/// Treino › Rotinas: the user's routines with "Iniciar" (spec §6.4, tela 2).
+/// Creating and editing routines stays on the web for now. Lives under the
+/// area header of `AreaScreen`, which owns the navigation stack.
 struct RoutinesView: View {
     let store: WorkoutStore
-    let me: Me
-    @State private var showingSettings = false
 
     var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("Rotinas")
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "person.crop.circle")
-                        }
-                        .accessibilityLabel("Conta")
-                    }
-                }
-                .sheet(isPresented: $showingSettings) {
-                    SettingsView(me: me)
-                }
-        }
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.pageBg)
     }
 
     @ViewBuilder private var content: some View {
@@ -39,20 +25,20 @@ struct RoutinesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .failed(let message):
             ContentUnavailableView {
-                Label("Não carregou", systemImage: "wifi.exclamationmark")
+                Label { Text("gym.routines.loadFailed", bundle: .l10n) } icon: { Image(systemName: "wifi.exclamationmark") }
             } description: {
                 Text(message)
             } actions: {
-                Button("Tentar de novo") { Task { await store.load() } }
-                    .buttonStyle(.borderedProminent)
+                Button { Task { await store.load() } } label: { Text("common.retry", bundle: .l10n) }
+                    .buttonStyle(.pill)
             }
         default:
             if store.templates.isEmpty {
-                ContentUnavailableView(
-                    "Nenhuma rotina",
-                    systemImage: "list.bullet.rectangle",
-                    description: Text("Crie suas rotinas no SoTreina pela web e elas aparecem aqui.")
-                )
+                ContentUnavailableView {
+                    Label { Text("gym.routines.emptyTitle", bundle: .l10n) } icon: { Image(systemName: "list.bullet.rectangle") }
+                } description: {
+                    Text("gym.routines.emptyBody", bundle: .l10n)
+                }
                 .refreshable { await store.load() }
             } else {
                 list
@@ -71,7 +57,7 @@ struct RoutinesView: View {
                 Task { await store.start(templateId: template.id) }
             }
         }
-        .listStyle(.insetGrouped)
+        .monolitoList()
         .refreshable { await store.load() }
     }
 }
@@ -82,31 +68,28 @@ private struct RoutineRow: View {
     let isStarting: Bool
     let isDisabled: Bool
     let onStart: () -> Void
+    @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
+        let lang = language.lang
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(template.name)
-                        .font(.headline)
-                    if isNext {
-                        Text("Próxima")
-                            .font(.caption2.weight(.semibold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(.tint.opacity(0.15), in: Capsule())
-                            .foregroundStyle(.tint)
-                    }
+                        .font(DSFont.rowTitle)
+                        .tracking(-0.17)
+                        .lineLimit(1)
+                    if isNext { Badge(L10n.string("gym.routines.next", lang: lang)) }
                 }
                 if !template.muscleGroups.isEmpty {
-                    Text(template.muscleGroups.map(MuscleGroup.label).joined(separator: " · "))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(template.muscleGroups.map { MuscleGroup.label($0, lang: lang) }.joined(separator: " · "))
+                        .font(DSFont.meta)
+                        .foregroundStyle(Color.mutedFg)
                         .lineLimit(1)
                 }
-                Text("\(exerciseCount) · \(RoutineFormat.lastPerformed(template.lastPerformedAt))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text(verbatim: "\(L10n.string("gym.routines.exerciseCount %lld", lang: lang, template.exerciseCount)) · \(RoutineFormat.lastPerformed(template.lastPerformedAt, lang: lang))")
+                    .font(DSFont.caption)
+                    .foregroundStyle(Color.mutedFg)
             }
 
             Spacer(minLength: 8)
@@ -114,19 +97,18 @@ private struct RoutineRow: View {
             Button(action: onStart) {
                 if isStarting {
                     ProgressView()
-                        .frame(minWidth: 56)
+                        .tint(Color.accFg)
+                        .frame(minWidth: 52)
                 } else {
-                    Text("Iniciar")
-                        .frame(minWidth: 56)
+                    Text("gym.routines.start", bundle: .l10n)
+                        .frame(minWidth: 52)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.pill)
             .disabled(isDisabled)
         }
-        .padding(.vertical, 4)
-    }
-
-    private var exerciseCount: String {
-        template.exerciseCount == 1 ? "1 exercício" : "\(template.exerciseCount) exercícios"
+        .padding(.vertical, 10)
+        .listRowInsets(EdgeInsets(top: 0, leading: pageGutter, bottom: 0, trailing: pageGutter))
+        .listRowBackground(Color.pageBg)
     }
 }

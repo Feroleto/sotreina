@@ -2,12 +2,13 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   formatDayMonth,
-  formatKm,
+  formatDistance,
   formatMonthLong,
   formatMonthShort,
 } from '@/lib/activityFormat';
 import SegmentedControl from '@/components/SegmentedControl';
 import { smoothPath } from '@/lib/chartPath';
+import { distanceLabel, kmToDisplay } from '@/lib/units';
 
 export interface BinAgg {
   start: Date;
@@ -88,10 +89,13 @@ export default function WeeklyChart({
   const hoverReading =
     hov !== null
       ? monthly
-        ? `${formatMonthLong(bins[hov].start)} · ${formatKm(bins[hov].km)} km · ${t('list.runsCount', { count: bins[hov].count })}`
-        : `${formatWeekRange(bins[hov].start)} · ${formatKm(bins[hov].km)} km`
+        ? `${formatMonthLong(bins[hov].start)} · ${formatDistance(bins[hov].km)} ${distanceLabel()} · ${t('list.runsCount', { count: bins[hov].count })}`
+        : `${formatWeekRange(bins[hov].start)} · ${formatDistance(bins[hov].km)} ${distanceLabel()}`
       : null;
-  const totalReading = t('chart.kmInPeriod', { km: formatKm(totalKm) });
+  const totalReading = t('chart.kmInPeriod', {
+    unit: distanceLabel(),
+    km: formatDistance(totalKm),
+  });
 
   return (
     <div className="mb-9 rounded-[var(--rad)] border border-border bg-card px-7 pt-6 pb-4 transition-[background] duration-[250ms]">
@@ -131,13 +135,17 @@ export default function WeeklyChart({
             stroke="var(--grid-ax)"
           />
           <text x="4" y="21" fontSize="10.5" fill="var(--muted-foreground)">
-            {Math.round(maxKm)} km
+            {Math.round(kmToDisplay(maxKm))} {distanceLabel()}
           </text>
           <text x="4" y="106" fontSize="10.5" fill="var(--muted-foreground)">
-            {Math.round(maxKm / 2)} km
+            {Math.round(kmToDisplay(maxKm / 2))} {distanceLabel()}
           </text>
           {areaPath && (
-            <path className="chart-fade" d={areaPath} fill="url(#weekly-grad)" />
+            <path
+              className="chart-fade"
+              d={areaPath}
+              fill="url(#weekly-grad)"
+            />
           )}
           {linePath && (
             <path

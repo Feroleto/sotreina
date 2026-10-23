@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, Pencil } from 'lucide-react';
 import type { PageId } from '@/features/nav/navConfig';
 import { useActivities } from '@/lib/useActivities';
-import { formatKm, formatNumber, formatPace } from '@/lib/activityFormat';
+import { formatDistance, formatNumber, formatPace } from '@/lib/activityFormat';
 import type { Area } from '@/lib/types';
 import { useAuth } from '@/features/auth/AuthContext';
 import { currentIntlLocale } from '@/lib/dateLocale';
@@ -31,6 +31,7 @@ import {
   isDietDone,
   type FeedItem,
 } from './todayStatus';
+import { distanceLabel, goalToDisplay } from '@/lib/units';
 
 // fallbacks while /users/me loads — the schema defaults
 const DEFAULT_KCAL_GOAL = 2000;
@@ -267,7 +268,7 @@ export default function TodayPage({
         return {
           name: f.name,
           detail: `${t('status.run')} · ${whenLabel(f.at)} · ${t('feed.minutes', { count: Math.round(f.durationSec / 60) })}`,
-          value: `${formatKm(f.distanceKm)} km`,
+          value: `${formatDistance(f.distanceKm)} ${distanceLabel()}`,
           page: AREA_PAGE.run,
         };
       case 'gym':
@@ -343,23 +344,29 @@ export default function TodayPage({
           ? {
               done: true,
               title: t('single.runDone', { name: latest.name }),
-              sub: `${t('feed.minutes', { count: Math.round(latest.movingTimeSec / 60) })} · ${formatPace(latest.paceRawSecKm)} /km`,
-              value: `${formatKm(totals.runKmToday)} km`,
+              sub: `${t('feed.minutes', { count: Math.round(latest.movingTimeSec / 60) })} · ${formatPace(latest.paceRawSecKm)}`,
+              value: `${formatDistance(totals.runKmToday)} ${distanceLabel()}`,
             }
           : { done: false, title: t('single.runPending'), sub: '' },
         period: {
           label: weekLabel,
-          value: formatKm(totals.runKmWeek),
-          unit: 'km',
+          value: formatDistance(totals.runKmWeek),
+          unit: distanceLabel(),
           pct: pctOf(totals.runKmWeek, runKmGoal),
           over: false,
-          goal: t('single.goalKm', { km: runKmGoal }),
+          goal: t('single.goalKm', {
+            unit: distanceLabel(),
+            km: goalToDisplay(runKmGoal),
+          }),
           remaining:
             left > 0
-              ? t('single.leftKm', { km: formatKm(left) })
+              ? t('single.leftKm', {
+                  unit: distanceLabel(),
+                  km: formatDistance(left),
+                })
               : t('single.goalReached'),
         },
-        daysLegend: t('single.legendRun'),
+        daysLegend: t('single.legendRun', { unit: distanceLabel() }),
         onEditGoal: goals ? () => setEditingGoals(true) : undefined,
       };
     }
@@ -471,7 +478,8 @@ export default function TodayPage({
                       sub={
                         runDone
                           ? t('status.runDone', {
-                              km: formatKm(totals.runKmToday),
+                              unit: distanceLabel(),
+                              km: formatDistance(totals.runKmToday),
                             })
                           : t('status.pending')
                       }
@@ -575,8 +583,11 @@ export default function TodayPage({
                   {has('RUN') && (
                     <AreaRow
                       name={t('status.run')}
-                      detail={t('areas.runGoal', { km: runKmGoal })}
-                      value={`${formatKm(totals.runKmWeek)} km`}
+                      detail={t('areas.runGoal', {
+                        unit: distanceLabel(),
+                        km: goalToDisplay(runKmGoal),
+                      })}
+                      value={`${formatDistance(totals.runKmWeek)} ${distanceLabel()}`}
                       pct={pctOf(totals.runKmWeek, runKmGoal)}
                       onClick={() => onNavigate(AREA_PAGE.run)}
                     />

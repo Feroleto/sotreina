@@ -5,26 +5,59 @@ import Foundation
 /// decode tests run against JSON captured from the real API.
 public struct Me: Codable, Equatable, Sendable {
     public var id: String
+    /// nil for a Strava-only account (Strava never shares it)
+    public var email: String?
     public var firstName: String?
     public var profileImgUrl: String?
     public var maxHr: Int?
     public var hasStravaAccount: Bool
     public var hasPassword: Bool
+    /// Display units (`UnitConversion`); `.km`/`.kg` when the payload has none.
+    public var distanceUnit: DistanceUnit
+    public var weightUnit: WeightUnit
+    /// Areas the user follows; empty = not chosen yet (the area picker shows).
+    public var enabledAreas: [Area]
 
     public init(
         id: String,
+        email: String? = nil,
         firstName: String? = nil,
         profileImgUrl: String? = nil,
         maxHr: Int? = nil,
         hasStravaAccount: Bool = false,
-        hasPassword: Bool = true
+        hasPassword: Bool = true,
+        distanceUnit: DistanceUnit = .km,
+        weightUnit: WeightUnit = .kg,
+        enabledAreas: [Area] = []
     ) {
         self.id = id
+        self.email = email
         self.firstName = firstName
         self.profileImgUrl = profileImgUrl
         self.maxHr = maxHr
         self.hasStravaAccount = hasStravaAccount
         self.hasPassword = hasPassword
+        self.distanceUnit = distanceUnit
+        self.weightUnit = weightUnit
+        self.enabledAreas = enabledAreas
+    }
+
+    // the unit fields arrived later: a response from an older backend, or
+    // one cached before them, must still decode
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        email = try c.decodeIfPresent(String.self, forKey: .email)
+        firstName = try c.decodeIfPresent(String.self, forKey: .firstName)
+        profileImgUrl = try c.decodeIfPresent(String.self, forKey: .profileImgUrl)
+        maxHr = try c.decodeIfPresent(Int.self, forKey: .maxHr)
+        hasStravaAccount = try c.decode(Bool.self, forKey: .hasStravaAccount)
+        hasPassword = try c.decode(Bool.self, forKey: .hasPassword)
+        distanceUnit = try c.decodeIfPresent(DistanceUnit.self, forKey: .distanceUnit) ?? .km
+        weightUnit = try c.decodeIfPresent(WeightUnit.self, forKey: .weightUnit) ?? .kg
+        // an area value this build doesn't know is skipped, not a failed decode
+        let rawAreas = try c.decodeIfPresent([String].self, forKey: .enabledAreas) ?? []
+        enabledAreas = rawAreas.compactMap(Area.init(rawValue:))
     }
 }
 

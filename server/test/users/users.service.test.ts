@@ -130,5 +130,20 @@ describe('UsersService', () => {
         }),
       );
     });
+
+    it('updates the unit preferences and selects them back in the snapshot', async () => {
+      const updated = { ...FULL_SNAPSHOT, distanceUnit: 'MI', weightUnit: 'LB' };
+      mockPrisma.user.update.mockResolvedValueOnce(updated);
+
+      const result = await service.updateMe(USER_ID, { distanceUnit: 'MI', weightUnit: 'LB' });
+
+      expect(result).toEqual(updated);
+      expect(mockPrisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { distanceUnit: 'MI', weightUnit: 'LB' },
+          select: expect.objectContaining({ distanceUnit: true, weightUnit: true }),
+        }),
+      );
+    });
   });
 });

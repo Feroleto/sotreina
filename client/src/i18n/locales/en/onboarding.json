@@ -24,7 +24,7 @@
     "title": "All set",
     "importedLabel_one": "activity imported",
     "importedLabel_other": "activities imported",
-    "distanceKm": "{{km}} km",
+    "distanceKm": "{{km}} {{unit}}",
     "cta": "Open dashboard"
   },
   "areas": {

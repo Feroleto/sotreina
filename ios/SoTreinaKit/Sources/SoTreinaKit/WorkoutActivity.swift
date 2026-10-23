@@ -21,10 +21,18 @@ public struct WorkoutActivitySnapshot: Codable, Hashable, Sendable {
 
     public var isResting: Bool { restEndsAt != nil }
 
+    /// the app's language: the extension runs in another process and can't
+    /// read the app's setting, so it travels with the state. Optional so a
+    /// state saved by an older build still decodes (nil reads as PT)
+    public var lang: Lang?
+
     /// "Série 2 de 3", or "Série 4" without a target / past it
     public var setLabel: String {
-        if let targetSets, setNumber <= targetSets { return "Série \(setNumber) de \(targetSets)" }
-        return "Série \(setNumber)"
+        let pt = (lang ?? .pt) == .pt
+        let word = pt ? "Série" : "Set"
+        let of = pt ? "de" : "of"
+        if let targetSets, setNumber <= targetSets { return "\(word) \(setNumber) \(of) \(targetSets)" }
+        return "\(word) \(setNumber)"
     }
 }
 
@@ -87,6 +95,7 @@ public enum WorkoutActivity {
         lastPerformance: [String: LastPerformance],
         rest: RestTimer.Active?,
         clientId: UUID,
+        lang: Lang = .pt,
         now: Date = .now
     ) -> WorkoutActivitySnapshot {
         let restRunning = rest.flatMap { $0.endsAt > now ? $0 : nil }
@@ -94,7 +103,7 @@ public enum WorkoutActivity {
             return WorkoutActivitySnapshot(
                 exerciseName: nil, workoutExerciseId: nil, setNumber: 1, targetSets: nil,
                 restEndsAt: restRunning?.endsAt, restDuration: restRunning?.duration, proposal: nil,
-                hasFailedSet: pending.contains { $0.failed }, logSetURL: nil
+                hasFailedSet: pending.contains { $0.failed }, logSetURL: nil, lang: lang
             )
         }
 
@@ -121,7 +130,8 @@ public enum WorkoutActivity {
             restDuration: restRunning?.duration,
             proposal: proposal,
             hasFailedSet: pending.contains { $0.failed },
-            logSetURL: logSetURL
+            logSetURL: logSetURL,
+            lang: lang
         )
     }
 }

@@ -1,0 +1,190 @@
+/* Strings da interface. Chaves e vocabulário da web
+   (client/src/i18n/locales/pt); ver L10n.swift. */
+
+/* comum */
+"common.cancel" = "Cancelar";
+
+/* login (auth:login.*) */
+"auth.login.emailLabel" = "E-mail";
+"auth.login.passwordLabel" = "Senha";
+"auth.login.submitLogin" = "Entrar";
+"auth.login.invalidCredentials" = "E-mail ou senha incorretos.";
+"auth.login.failed %@" = "Não foi possível entrar: %@";
+"auth.login.server" = "Servidor";
+"auth.login.apiURL" = "URL da API";
+"auth.login.invalidURL" = "URL da API inválida.";
+
+/* treino (gym:*) */
+"gym.freeWorkout" = "Treino livre";
+"gym.summary.title" = "Treino concluído";
+"gym.summary.volume" = "Volume";
+"gym.summary.sets" = "Séries";
+"gym.summary.exercises" = "Exercícios";
+"gym.summary.prFrom %@" = "antes: %@";
+"gym.summary.done" = "Concluir";
+
+"gym.rest.label" = "Descanso";
+"gym.rest.afterEachSet" = "Descanso após cada série";
+"gym.rest.skip" = "Pular";
+"gym.rest.skipLabel" = "Pular descanso";
+"gym.rest.minus15" = "Tirar 15 segundos";
+"gym.rest.plus15" = "Adicionar 15 segundos";
+"gym.rest.notificationTitle" = "Descanso acabou";
+"gym.rest.notificationBody" = "Hora da próxima série.";
+
+"gym.picker.title" = "Adicionar exercício";
+"gym.picker.searchPlaceholder" = "Buscar exercícios…";
+"gym.picker.loadFailed" = "Não carregou";
+"gym.picker.checkConnection" = "Verifique a conexão e tente de novo.";
+
+/* Live Activity */
+"gym.live.inSet" = "Em série";
+"gym.live.next %@" = "Próxima: %@";
+"gym.live.setNotSent" = "Série não enviada";
+"gym.live.addExercise" = "Adicione um exercício no app";
+
+/* assinatura grátis de 7 dias */
+"app.expiry.notificationTitle" = "SoTreina expira amanhã";
+"app.expiry.notificationBody" = "Rode ios/scripts/deploy.sh pra reinstalar. Os dados ficam.";
+
+/* cadastro e esqueci a senha (auth:login.*) */
+"auth.login.tabLogin" = "Entrar";
+"auth.login.tabRegister" = "Criar conta";
+"auth.login.namePlaceholder" = "Nome";
+"auth.login.confirmPasswordPlaceholder" = "Confirmar senha";
+"auth.login.submitRegister" = "Criar conta";
+"auth.login.passwordTooShort" = "A senha precisa ter pelo menos 8 caracteres.";
+"auth.login.passwordMismatch" = "As senhas não coincidem.";
+"auth.login.emailInUse" = "Este e-mail já está cadastrado.";
+"auth.login.genericError" = "Algo deu errado. Tente novamente.";
+"auth.login.forgotPassword" = "Esqueci a senha";
+"auth.login.forgotTitle" = "Esqueci a senha";
+"auth.login.forgotSubtitle" = "Informe seu email e enviaremos um link para redefinir sua senha.";
+"auth.login.forgotSubmit" = "Enviar link";
+"auth.login.forgotSuccess" = "Se esse email existir, você receberá um link para redefinir sua senha em instantes.";
+"auth.login.stravaOnly" = "Entra pelo Strava na web? O app só aceita e-mail e senha: adicione uma senha no Perfil do SoTreina pela web.";
+"auth.login.openWeb" = "Abrir sotreina.com";
+
+/* escolha de áreas (onboarding:areas.*) */
+"onboarding.areas.title" = "O que você quer acompanhar?";
+"onboarding.areas.subtitle" = "Escolha uma ou mais áreas. Dá para mudar depois no Perfil, sem perder histórico.";
+"onboarding.areas.runDesc" = "Distância, pace e metas semanais";
+"onboarding.areas.gymDesc" = "Rotinas, séries e volume";
+"onboarding.areas.dietDesc" = "Calorias, macros e refeições";
+"onboarding.areas.countNone" = "Escolha pelo menos uma área";
+"onboarding.areas.continue" = "Continuar";
+"onboarding.areas.error" = "Não foi possível salvar. Tente novamente.";
+
+/* navegação e sessão (Strings das telas da Navegação) */
+"common.ok" = "OK";
+"common.retry" = "Tentar de novo";
+"common.save" = "Salvar";
+"common.delete" = "Apagar";
+
+"app.error.title" = "Não deu certo";
+"app.error.offline" = "Sem conexão com a internet.";
+"app.error.server %lld" = "O servidor não respondeu (%lld). Tente de novo.";
+"app.error.notFound" = "Não encontrado — talvez tenha sido apagado na web.";
+"app.error.generic" = "Algo deu errado. Tente de novo.";
+
+"app.comingSoon.title" = "Em breve no app";
+"app.comingSoon.body" = "Por enquanto, esta parte está no SoTreina pela web.";
+"app.comingSoon.openWeb" = "Abrir na web";
+
+"gym.activeBar.inProgress" = "Treino em andamento";
+"gym.activeBar.resume" = "Voltar ao treino em andamento";
+
+"gym.routines.loadFailed" = "Não carregou";
+"gym.routines.emptyTitle" = "Nenhuma rotina";
+"gym.routines.emptyBody" = "Crie suas rotinas no SoTreina pela web e elas aparecem aqui.";
+"gym.routines.next" = "Próxima";
+"gym.routines.start" = "Iniciar";
+
+"gym.session.duration" = "Duração";
+"gym.session.pendingFooter" = "Envie ou descarte as séries com ⚠ antes de finalizar.";
+"gym.session.minimize" = "Minimizar treino";
+"gym.session.finishShort" = "Finalizar";
+"gym.session.finishConfirm" = "Finalizar o treino?";
+"gym.session.finish" = "Finalizar treino";
+"gym.session.keepTraining" = "Continuar treinando";
+"gym.session.cancelConfirm" = "Cancelar o treino?";
+"gym.session.cancelAndDelete" = "Cancelar treino e apagar as séries";
+"gym.session.cancelMessage" = "Tudo o que foi registrado neste treino será apagado, aqui e na web.";
+"gym.session.removeExercise" = "Remover exercício";
+"gym.session.exerciseOptions %@" = "Opções de %@";
+"gym.session.removeConfirm %@" = "Remover %@?";
+"gym.session.removeAndDelete" = "Remover e apagar as séries";
+"gym.session.target %@" = "Meta: %@";
+"gym.session.rest %@" = "descanso %@";
+"gym.session.resend" = "Reenviar";
+"gym.session.discard" = "Descartar";
+"gym.session.log" = "Registrar";
+"gym.session.lastTime %@" = "Última vez: %@";
+"gym.session.setTitle %lld" = "Série %lld";
+"gym.entry.weightLabel %@" = "Peso (%@)";
+"gym.entry.repsLabel" = "Repetições";
+"gym.entry.deleteSet" = "Apagar série";
+
+
+/* perfil (nav:profile.*, nav:logOut) */
+"nav.profile.title" = "Perfil";
+"nav.profile.noEmail" = "Conta Strava, sem email";
+"nav.profile.areas" = "Áreas";
+"nav.profile.areasHint" = "Áreas desligadas somem do Hoje e da navegação. O histórico continua salvo.";
+"nav.profile.saveError" = "Não foi possível salvar. Tente novamente.";
+"nav.profile.goals" = "Metas";
+"nav.profile.goalRunDetail" = "distância por semana";
+"nav.profile.goalGymDetail" = "treinos por semana";
+"nav.profile.goalDietDetail" = "calorias por dia";
+"nav.profile.app" = "App";
+"nav.profile.theme" = "Tema";
+"nav.profile.language" = "Idioma";
+"nav.profile.unitsDistance" = "Distância";
+"nav.profile.unitsWeight" = "Peso";
+"nav.profile.unitsError" = "Não foi possível salvar a unidade. Tente de novo.";
+"nav.profile.account" = "Conta";
+"nav.profile.stravaConnected" = "Conectado";
+"nav.profile.stravaNotConnected" = "Não conectado";
+"nav.profile.privacy" = "Política de Privacidade";
+"nav.profile.support" = "Suporte";
+"nav.profile.name" = "Nome";
+"nav.profile.email" = "Email";
+"nav.profile.emailReadOnly" = "O email é usado para entrar e não pode ser alterado aqui.";
+"nav.profile.personalData" = "Dados pessoais";
+"nav.profile.save" = "Salvar";
+"nav.profile.saving" = "Salvando…";
+"nav.profile.manageOnWeb" = "Gerenciar na web";
+"nav.profile.goalsLoadFailed" = "Não foi possível carregar as metas. Puxe para tentar de novo.";
+"nav.runnerFallback" = "Corredor";
+"nav.logOut" = "Sair";
+
+/* tema (common:theme.*) */
+"common.theme.auto" = "Auto";
+"common.theme.light" = "Claro";
+"common.theme.dark" = "Escuro";
+
+/* metas semanais (today:goals.*) */
+"today.goals.title" = "Metas semanais";
+"today.goals.subtitle" = "A semana começa na segunda-feira.";
+"today.goals.runKm" = "Corrida";
+"today.goals.runKmUnit %@" = "%@ por semana";
+"today.goals.workouts" = "Treino";
+"today.goals.workoutsUnit" = "treinos por semana";
+"today.goals.decrease" = "Diminuir";
+"today.goals.increase" = "Aumentar";
+"today.goals.save" = "Salvar metas";
+"today.goals.saving" = "Salvando…";
+
+/* meta diária (diet:goal.*, diet:macro.*) */
+"diet.goal.title" = "Meta diária";
+"diet.goal.calories" = "Calorias";
+"diet.goal.pctOfCalories %lld" = "%lld%% das calorias";
+"diet.goal.calculated %lld" = "%lld kcal calculadas";
+"diet.goal.matches" = "Combina com a meta de calorias";
+"diet.goal.aboveTarget %lld" = "%lld%% acima da meta de calorias";
+"diet.goal.belowTarget %lld" = "%lld%% abaixo da meta de calorias";
+"diet.goal.save" = "Salvar meta";
+"diet.goal.saving" = "Salvando…";
+"diet.macro.protein" = "Proteína";
+"diet.macro.carbs" = "Carboidrato";
+"diet.macro.fat" = "Gordura";

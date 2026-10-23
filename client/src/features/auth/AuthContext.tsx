@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { apiFetch } from '@/lib/api';
 import { authMe, clearBootHints } from '@/lib/boot';
 import type { Area } from '@/lib/types';
+import { setUnitPrefs, type DistanceUnit, type WeightUnit } from '@/lib/units';
 
 export interface AuthUser {
   id: string;
@@ -15,6 +16,9 @@ export interface AuthUser {
   hasPassword: boolean;
   /** empty = not chosen yet (new account) → App shows AreaPickerPage */
   enabledAreas: Area[];
+  /** display/entry units; the API always speaks km and kg (lib/units.ts) */
+  distanceUnit: DistanceUnit;
+  weightUnit: WeightUnit;
 }
 
 interface AuthContextValue {
@@ -45,6 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  // synchronously, before the children render: formatters read the
+  // preference from lib/units' module state, like currentIntlLocale()
+  setUnitPrefs(user);
 
   async function logout(): Promise<void> {
     await apiFetch('/auth/logout', { method: 'POST' });

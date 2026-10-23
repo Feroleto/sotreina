@@ -1,7 +1,7 @@
 {
   "rail": {
     "title": "Runs",
-    "kmSubtitle": "km covered in this period",
+    "kmSubtitle": "{{unit}} covered in this period",
     "activities": "Activities",
     "averagePace": "Average Pace",
     "totalTime": "Total Time",
@@ -73,10 +73,10 @@
   "chart": {
     "weeklyDistance": "Weekly distance",
     "monthlyDistance": "Monthly distance",
-    "kmInPeriod": "{{km}} km in this period",
-    "barHint_one": "{{km}} km in {{count}} week · tap a bar",
-    "barHint_other": "{{km}} km in {{count}} weeks · tap a bar",
-    "barReading": "{{range}} · {{km}} km",
+    "kmInPeriod": "{{km}} {{unit}} in this period",
+    "barHint_one": "{{km}} {{unit}} in {{count}} week · tap a bar",
+    "barHint_other": "{{km}} {{unit}} in {{count}} weeks · tap a bar",
+    "barReading": "{{range}} · {{km}} {{unit}}",
     "periods": {
       "4": "4 w",
       "8": "8 w",
@@ -109,7 +109,7 @@
   },
   "hero": {
     "thisWeek": "This week · {{range}}",
-    "lastWeek": "last week {{km}} km",
+    "lastWeek": "last week {{km}} {{unit}}",
     "noLastWeek": "no runs last week",
     "recent": "Recent"
   }

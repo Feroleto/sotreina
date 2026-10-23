@@ -6,7 +6,7 @@
     "diet": "Diet",
     "done": "done",
     "pending": "pending",
-    "runDone": "{{km}} km done",
+    "runDone": "{{km}} {{unit}} done",
     "gymDone": "{{name}} done",
     "gymDoneCount": "{{count}} workout done",
     "gymDoneCount_other": "{{count}} workouts done",
@@ -22,7 +22,7 @@
   "areas": {
     "title": "By area",
     "editGoals": "Edit weekly goals",
-    "runGoal": "week · goal {{km}} km",
+    "runGoal": "week · goal {{km}} {{unit}}",
     "gymGoal": "week · goal {{count}} workout",
     "gymGoal_other": "week · goal {{count}} workouts",
     "dietGoal": "today · goal {{kcal}} kcal"
@@ -44,7 +44,7 @@
     "title": "Weekly goals",
     "subtitle": "The week starts on Monday.",
     "runKm": "Run",
-    "runKmUnit": "km per week",
+    "runKmUnit": "{{unit}} per week",
     "workouts": "Workout",
     "workoutsUnit": "workouts per week",
     "decrease": "Decrease",
@@ -63,8 +63,8 @@
     "runPending": "No run today",
     "dietDone": "Diet on track",
     "dietPending": "Diet in progress",
-    "goalKm": "Goal {{km}} km",
-    "leftKm": "{{km}} km to go",
+    "goalKm": "Goal {{km}} {{unit}}",
+    "leftKm": "{{km}} {{unit}} to go",
     "goalWorkouts_one": "Goal {{count}} workout",
     "goalWorkouts_other": "Goal {{count}} workouts",
     "leftWorkouts_one": "{{count}} to go",
@@ -75,7 +75,7 @@
     "leftKcal": "{{kcal}} kcal to go",
     "overKcal": "{{kcal}} kcal over",
     "goalReached": "goal reached",
-    "legendRun": "km per day",
+    "legendRun": "{{unit}} per day",
     "legendGym": "workouts per day",
     "legendDiet": "kcal per day"
   }

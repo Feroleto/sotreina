@@ -1,9 +1,11 @@
 import { apiFetch } from '@/lib/api';
 import type { Area, NutritionGoal, WeeklyGoals } from '@/lib/types';
+import type { UnitPrefs } from '@/lib/units';
 
 /** full snapshot returned by GET/PATCH /users/me */
 export type MeSnapshot = NutritionGoal &
-  WeeklyGoals & {
+  WeeklyGoals &
+  UnitPrefs & {
     maxHr: number | null;
     firstName: string | null;
     enabledAreas: Area[];

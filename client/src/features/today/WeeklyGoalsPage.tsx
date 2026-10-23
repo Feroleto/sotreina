@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, Minus, Plus } from 'lucide-react';
 import type { Area, WeeklyGoals } from '@/lib/types';
+import { distanceLabel, goalFromDisplay, goalToDisplay } from '@/lib/units';
 
 // ranges mirror UsersController (MIN/MAX_WEEKLY_*_GOAL)
 const RUN_KM_MIN = 1;
@@ -76,7 +77,9 @@ export default function WeeklyGoalsPage({
   onSave,
 }: WeeklyGoalsPageProps) {
   const { t } = useTranslation('today');
-  const [runKm, setRunKm] = useState(goals.weeklyRunKmGoal);
+  // the stepper works in whole display units (km or mi); the DB keeps whole km
+  const initialRun = goalToDisplay(goals.weeklyRunKmGoal);
+  const [run, setRun] = useState(initialRun);
   const [workouts, setWorkouts] = useState(goals.weeklyWorkoutsGoal);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +88,13 @@ export default function WeeklyGoalsPage({
     setSaving(true);
     setError(null);
     try {
-      await onSave({ weeklyRunKmGoal: runKm, weeklyWorkoutsGoal: workouts });
+      await onSave({
+        // untouched → resend the stored km as-is, so a round trip through
+        // miles never nudges a goal nobody edited
+        weeklyRunKmGoal:
+          run === initialRun ? goals.weeklyRunKmGoal : goalFromDisplay(run),
+        weeklyWorkoutsGoal: workouts,
+      });
     } catch {
       setError(t('goals.error'));
       setSaving(false);
@@ -115,11 +124,11 @@ export default function WeeklyGoalsPage({
         {areas.includes('RUN') && (
           <GoalRow
             label={t('goals.runKm')}
-            unit={t('goals.runKmUnit')}
-            value={runKm}
+            unit={t('goals.runKmUnit', { unit: distanceLabel() })}
+            value={run}
             min={RUN_KM_MIN}
-            max={RUN_KM_MAX}
-            onChange={setRunKm}
+            max={goalToDisplay(RUN_KM_MAX)}
+            onChange={setRun}
           />
         )}
         {areas.includes('GYM') && (

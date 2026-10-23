@@ -21,8 +21,9 @@
   },
   "profile": {
     "title": "Perfil",
-    "units": "Unidades",
-    "unitsKm": "Quilômetros (km)",
+    "unitsDistance": "Distância",
+    "unitsWeight": "Peso",
+    "unitsError": "Não foi possível salvar a unidade. Tente de novo.",
     "theme": "Tema",
     "language": "Idioma",
     "stravaConnected": "Conectado",

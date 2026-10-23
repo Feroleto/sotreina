@@ -6,7 +6,7 @@
     "diet": "Dieta",
     "done": "feito",
     "pending": "pendente",
-    "runDone": "{{km}} km feitos",
+    "runDone": "{{km}} {{unit}} feitos",
     "gymDone": "{{name}} feito",
     "gymDoneCount": "{{count}} treino feito",
     "gymDoneCount_other": "{{count}} treinos feitos",
@@ -22,7 +22,7 @@
   "areas": {
     "title": "Por área",
     "editGoals": "Editar metas semanais",
-    "runGoal": "semana · meta {{km}} km",
+    "runGoal": "semana · meta {{km}} {{unit}}",
     "gymGoal": "semana · meta {{count}} treino",
     "gymGoal_other": "semana · meta {{count}} treinos",
     "dietGoal": "hoje · meta {{kcal}} kcal"
@@ -44,7 +44,7 @@
     "title": "Metas semanais",
     "subtitle": "A semana começa na segunda-feira.",
     "runKm": "Corrida",
-    "runKmUnit": "km por semana",
+    "runKmUnit": "{{unit}} por semana",
     "workouts": "Treino",
     "workoutsUnit": "treinos por semana",
     "decrease": "Diminuir",
@@ -63,8 +63,8 @@
     "runPending": "Nenhuma corrida hoje",
     "dietDone": "Dieta em dia",
     "dietPending": "Dieta em andamento",
-    "goalKm": "Meta {{km}} km",
-    "leftKm": "faltam {{km}} km",
+    "goalKm": "Meta {{km}} {{unit}}",
+    "leftKm": "faltam {{km}} {{unit}}",
     "goalWorkouts_one": "Meta {{count}} treino",
     "goalWorkouts_other": "Meta {{count}} treinos",
     "leftWorkouts_one": "falta {{count}}",
@@ -75,7 +75,7 @@
     "leftKcal": "faltam {{kcal}} kcal",
     "overKcal": "{{kcal}} kcal acima",
     "goalReached": "meta batida",
-    "legendRun": "km por dia",
+    "legendRun": "{{unit}} por dia",
     "legendGym": "treinos por dia",
     "legendDiet": "kcal por dia"
   }

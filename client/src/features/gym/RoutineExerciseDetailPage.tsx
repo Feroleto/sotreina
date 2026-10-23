@@ -2,8 +2,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import type { ExerciseDetail, LastPerformance, TemplateExerciseDetail } from '@/lib/types';
+import type {
+  ExerciseDetail,
+  LastPerformance,
+  TemplateExerciseDetail,
+} from '@/lib/types';
 import { formatRepsRange } from './routineFormat';
+import { formatWeight, weightLabel } from '@/lib/units';
 
 interface RoutineExerciseDetailPageProps {
   exercise: TemplateExerciseDetail;
@@ -26,7 +31,8 @@ export default function RoutineExerciseDetailPage({
 }: RoutineExerciseDetailPageProps) {
   const { t } = useTranslation('gym');
   const [detail, setDetail] = useState<ExerciseDetail | null>(null);
-  const [lastPerformance, setLastPerformance] = useState<LastPerformance | null>(null);
+  const [lastPerformance, setLastPerformance] =
+    useState<LastPerformance | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
@@ -42,7 +48,10 @@ export default function RoutineExerciseDetailPage({
     apiFetch(`/exercises/${exercise.exerciseId}/last-performance`)
       .then((res) => res.text())
       .then((text) => {
-        if (!cancelled) setLastPerformance(text ? (JSON.parse(text) as LastPerformance) : null);
+        if (!cancelled)
+          setLastPerformance(
+            text ? (JSON.parse(text) as LastPerformance) : null,
+          );
       })
       .catch(() => {});
     return () => {
@@ -50,12 +59,14 @@ export default function RoutineExerciseDetailPage({
     };
   }, [exercise.exerciseId]);
 
-  const muscle = detail?.primaryMuscles[0] ?? exercise.primaryMuscles[0] ?? fallbackMuscle;
+  const muscle =
+    detail?.primaryMuscles[0] ?? exercise.primaryMuscles[0] ?? fallbackMuscle;
   const equipmentLabel = detail?.equipment
     ? t(`equipment.${detail.equipment}`, detail.equipment)
     : t('exerciseDetail.equipmentFallback');
   const instructionsText =
-    detail?.instructions.filter(Boolean).join(' ') || t('exerciseDetail.instrFallback');
+    detail?.instructions.filter(Boolean).join(' ') ||
+    t('exerciseDetail.instrFallback');
 
   const prevWeight = lastPerformance?.sets.reduce<number | null>((max, s) => {
     if (s.weightKg == null) return max;
@@ -90,7 +101,9 @@ export default function RoutineExerciseDetailPage({
           <div className="h-[200px] w-full rounded-[16px] bg-chip" />
         )}
 
-        <h2 className="mt-4 text-[20px] font-bold text-foreground">{exercise.exerciseName}</h2>
+        <h2 className="mt-4 text-[20px] font-bold text-foreground">
+          {exercise.exerciseName}
+        </h2>
 
         <div className="mt-2 flex flex-wrap gap-[6px]">
           {muscle && (
@@ -106,17 +119,25 @@ export default function RoutineExerciseDetailPage({
         <div className="mt-4 grid grid-cols-3 gap-2">
           <StatCard
             label={t('exerciseDetail.setsLabel')}
-            value={exercise.targetSets != null ? String(exercise.targetSets) : '—'}
+            value={
+              exercise.targetSets != null ? String(exercise.targetSets) : '—'
+            }
           />
           <StatCard
             label={t('exerciseDetail.repsLabel')}
-            value={formatRepsRange(exercise.targetRepsMin, exercise.targetRepsMax)}
+            value={formatRepsRange(
+              exercise.targetRepsMin,
+              exercise.targetRepsMax,
+            )}
           />
           <StatCard
             label={t('exerciseDetail.prevWeightLabel')}
             value={
               prevWeight != null
-                ? t('exerciseDetail.prevWeightValue', { weight: prevWeight })
+                ? t('exerciseDetail.prevWeightValue', {
+                    unit: weightLabel(),
+                    weight: formatWeight(prevWeight),
+                  })
                 : '—'
             }
           />
@@ -125,7 +146,9 @@ export default function RoutineExerciseDetailPage({
         <div className="mt-5 border-b border-border pb-2 text-[11.5px] font-medium tracking-[.05em] text-muted-foreground uppercase">
           {t('exerciseDetail.howTo')}
         </div>
-        <p className="mt-3 text-[13.5px] leading-[1.6] text-foreground">{instructionsText}</p>
+        <p className="mt-3 text-[13.5px] leading-[1.6] text-foreground">
+          {instructionsText}
+        </p>
       </div>
     </div>
   );

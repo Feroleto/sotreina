@@ -1,9 +1,12 @@
+import SoTreinaDesign
 import SwiftUI
 import UserNotifications
 
 @main
 struct SoTreinaApp: App {
     @State private var session = SessionStore()
+    // held as state so a language change re-renders the whole app
+    @State private var language = AppLanguageStore.shared
 
     init() {
         // the delegate is weak: a static instance keeps it alive
@@ -14,12 +17,10 @@ struct SoTreinaApp: App {
         WindowGroup {
             RootView()
                 .environment(session)
-                .tint(.soTreinaAccent)
+                .environment(language)
+                // number/date formatting and localized strings follow the app's language
+                .environment(\.locale, language.locale)
+                .monolitoTheme()
         }
     }
-}
-
-extension Color {
-    /// Same accent as the web (`--acc` in client/src/index.css)
-    static let soTreinaAccent = Color(red: 0x39 / 255, green: 0x87 / 255, blue: 0xE5 / 255)
 }

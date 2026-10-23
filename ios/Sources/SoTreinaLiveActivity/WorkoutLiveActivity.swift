@@ -1,4 +1,5 @@
 import ActivityKit
+import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 import WidgetKit
@@ -10,7 +11,8 @@ struct SoTreinaWidgets: WidgetBundle {
     }
 }
 
-private let accent = Color(red: 0x39 / 255, green: 0x87 / 255, blue: 0xE5 / 255)
+/// the Monolito mustard (same in both themes); text on it is always `accFg`
+private let accent = Color.acc
 
 /// The open workout on the lock screen and in the Dynamic Island (spec §6.7):
 /// exercise, "Série N de M", the rest countdown and the proposed set. The
@@ -29,20 +31,20 @@ struct WorkoutLiveActivity: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Label(state.setLabel, systemImage: "dumbbell.fill")
-                        .font(.caption.weight(.semibold))
+                        .font(Font.geist(12, relativeTo: .caption).weight(.semibold))
                         .foregroundStyle(accent)
                         .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if resting, let endsAt = state.restEndsAt {
                         Countdown(endsAt: endsAt)
-                            .font(.title2.weight(.semibold))
+                            .font(Font.geistMono(22, relativeTo: .title2).weight(.medium))
                             .padding(.trailing, 4)
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
                     Text(state.exerciseName ?? context.attributes.workoutName)
-                        .font(.headline)
+                        .font(Font.geist(16, relativeTo: .headline).weight(.semibold))
                         .lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -55,10 +57,11 @@ struct WorkoutLiveActivity: Widget {
             } compactTrailing: {
                 if resting, let endsAt = state.restEndsAt {
                     Countdown(endsAt: endsAt)
+                        .font(Font.geistMono(14, relativeTo: .body).weight(.medium))
                         .frame(maxWidth: 46)
                 } else {
-                    Text("S\(state.setNumber)")
-                        .monospacedDigit()
+                    Text(verbatim: "S\(state.setNumber)")
+                        .font(Font.geistMono(14, relativeTo: .body).weight(.medium))
                 }
             } minimal: {
                 Image(systemName: resting ? "timer" : "dumbbell.fill")
@@ -66,6 +69,14 @@ struct WorkoutLiveActivity: Widget {
             }
         }
     }
+}
+
+/// The extension can't see the app's language setting, so the state carries
+/// it; `nil` is a state saved by a build from before `lang` existed (PT).
+/// Resolved to plain text here: SwiftUI's `\.locale` isn't the app's in
+/// this process.
+private func tr(_ key: String, _ state: WorkoutActivitySnapshot, _ args: CVarArg...) -> String {
+    L10n.string(key, lang: state.lang ?? .pt, arguments: args)
 }
 
 /// The rest is over once `restEndsAt` passes; the app marks the content
@@ -88,33 +99,33 @@ private struct LockScreenView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 if state.hasFailedSet {
-                    Label("Série não enviada", systemImage: "exclamationmark.triangle.fill")
+                    Label(tr("gym.live.setNotSent", state), systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                 } else if state.exerciseName != nil {
                     Text(state.setLabel)
                         .bold()
                 }
             }
-            .font(.caption)
+            .font(Font.geist(12, relativeTo: .caption))
 
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(state.exerciseName ?? "Adicione um exercício no app")
-                        .font(.headline)
+                    Text(state.exerciseName ?? tr("gym.live.addExercise", state))
+                        .font(Font.geist(17, relativeTo: .headline).weight(.semibold))
                         .lineLimit(1)
                     if let proposal = state.proposal {
-                        Text("Próxima: \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps))")
-                            .font(.caption)
+                        Text(tr("gym.live.next %@", state, WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: state.lang ?? .pt)))
+                            .font(Font.geist(12, relativeTo: .caption))
                             .foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
                 if resting, let endsAt = state.restEndsAt {
                     Countdown(endsAt: endsAt)
-                        .font(.system(size: 34, weight: .semibold, design: .rounded))
+                        .font(Font.geistMono(34, relativeTo: .largeTitle).weight(.medium))
                 } else {
-                    Text("Em série")
-                        .font(.title3.weight(.semibold))
+                    Text(tr("gym.live.inSet", state))
+                        .font(Font.geist(20, relativeTo: .title3).weight(.semibold))
                 }
             }
 
@@ -144,12 +155,12 @@ private struct ActionRow: View {
         HStack(spacing: 8) {
             if resting {
                 LinkButton(title: "+15s", url: ActivityLink.addRest(seconds: 15).url, prominent: false)
-                LinkButton(title: "Pular", url: ActivityLink.skipRest.url, prominent: false)
+                LinkButton(title: tr("gym.rest.skip", state), url: ActivityLink.skipRest.url, prominent: false)
             }
             Spacer(minLength: 0)
             if let url = state.logSetURL, let proposal = state.proposal {
                 LinkButton(
-                    title: "✓ \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps))",
+                    title: "✓ \(WorkoutFormat.set(weightKg: proposal.weightKg, reps: proposal.reps, lang: state.lang ?? .pt))",
                     url: url,
                     prominent: true
                 )
@@ -166,13 +177,14 @@ private struct LinkButton: View {
     var body: some View {
         Link(destination: url) {
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(Font.geist(14, relativeTo: .subheadline).weight(.semibold))
                 .monospacedDigit()
                 .lineLimit(1)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(prominent ? accent : Color.white.opacity(0.18), in: Capsule())
-                .foregroundStyle(.white)
+                // never white on the mustard
+                .foregroundStyle(prominent ? Color.accFg : .white)
         }
     }
 }

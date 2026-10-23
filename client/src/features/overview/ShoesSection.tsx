@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Gear } from '@/lib/types';
-import { formatKm, formatMonthShortYear } from '@/lib/activityFormat';
+import { formatDistance, formatMonthShortYear } from '@/lib/activityFormat';
 import { apiFetch } from '@/lib/api';
 import { useEntrance } from '@/lib/useEntrance';
+import { distanceLabel, goalToDisplay } from '@/lib/units';
 
 // TODO: Strava's Gear API exposes no per-shoe mileage goal at all — this is a
 // fixed placeholder until there's a real, user-settable goal field.
@@ -121,11 +122,12 @@ function ShoeCard({ gear, index }: { gear: Gear; index: number }) {
 
       <div className="flex items-baseline gap-1.5">
         <span className="text-[22px] font-bold text-foreground">
-          {formatKm(gear.computedDistanceM / 1000)} km
+          {formatDistance(gear.computedDistanceM / 1000)} {distanceLabel()}
         </span>
         <span className="text-[11.5px] text-muted-foreground">
           {t('shoes.ofLifespan', {
-            km: Math.round(SHOE_LIFESPAN_M / 1000),
+            unit: distanceLabel(),
+            km: goalToDisplay(SHOE_LIFESPAN_M / 1000),
           })}
         </span>
       </div>

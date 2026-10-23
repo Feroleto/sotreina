@@ -41,8 +41,18 @@ struct APIClient {
         try await send("GET", path, query: query, body: Optional<String>.none)
     }
 
+    /// The raw 2xx body (empty for "no content") — what CachedAPI stores.
+    func getData(_ path: String, query: [URLQueryItem] = []) async throws -> Data {
+        try await sendData("GET", path, query: query, body: Optional<String>.none)
+    }
+
     func post<Body: Encodable, Response: Decodable>(_ path: String, body: Body) async throws -> Response? {
         try await send("POST", path, body: body)
+    }
+
+    /// A POST whose answer doesn't matter (`{ok:true}`).
+    func postIgnoringBody<Body: Encodable>(_ path: String, body: Body) async throws {
+        _ = try await sendData("POST", path, body: body)
     }
 
     func postEmpty(_ path: String) async throws {
@@ -69,14 +79,31 @@ struct APIClient {
         query: [URLQueryItem] = [],
         body: Body?
     ) async throws -> Response? {
+        let data = try await sendData(method, path, query: query, body: body)
+        if data.isEmpty || Response.self == EmptyResponse.self { return nil }
+        return try APICoding.makeDecoder().decode(Response.self, from: data)
+    }
+
+    /// The 2xx body as received; 401 and other statuses throw.
+    private func sendData<Body: Encodable>(
+        _ method: String,
+        _ path: String,
+        query: [URLQueryItem] = [],
+        body: Body?
+    ) async throws -> Data {
         // query items go in separately: appending(path:) would encode a "?"
         var url = baseURL.appending(path: path)
         if !query.isEmpty { url.append(queryItems: query) }
         var request = URLRequest(url: url)
         request.httpMethod = method
+        // Bearer only: `POST /auth/register` answers with the web's session
+        // cookie, which must not ride along on later requests
+        request.httpShouldHandleCookies = false
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        // the backend localizes exercise names by this header; the app is PT-only
-        request.setValue("pt", forHTTPHeaderField: "Accept-Language")
+        // the backend localizes exercise names by this header
+        request.setValue(AppLanguageStore.current.acceptLanguage, forHTTPHeaderField: "Accept-Language")
+        // the diet's "today" is cut at local midnight (backend falls back to UTC without it)
+        request.setValue(TimeZone.current.identifier, forHTTPHeaderField: "X-Time-Zone")
         if let token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
@@ -92,8 +119,7 @@ struct APIClient {
 
         switch http.statusCode {
         case 200..<300:
-            if data.isEmpty || Response.self == EmptyResponse.self { return nil }
-            return try APICoding.makeDecoder().decode(Response.self, from: data)
+            return data
         case 401:
             throw APIError.unauthorized
         default:

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { Activity, PersonalBestRecord } from '@/lib/types';
 import {
   formatDurationShort,
-  formatKm,
+  formatDistance,
   formatHms,
   formatMonthDayYear,
   formatPace,
@@ -19,6 +19,7 @@ import {
   topRecordIdentities,
   writePrSnapshot,
 } from './prSnapshot';
+import { distanceLabel } from '@/lib/units';
 
 const RecordCelebration = lazy(() => import('./RecordCelebration'));
 
@@ -441,7 +442,7 @@ export default function PersonalRecordsCard({
           </div>
           <div className="flex-none text-right">
             <div className="text-[15px] font-bold text-foreground">
-              {formatKm(longest.distanceKm ?? 0)} km
+              {formatDistance(longest.distanceKm ?? 0)} {distanceLabel()}
             </div>
             <div className="mt-[1px] text-[11px] text-muted-foreground">
               {formatDurationShort(longest.movingTimeSec)}

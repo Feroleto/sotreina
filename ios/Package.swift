@@ -23,11 +23,23 @@ let package = Package(
     targets: [
         .target(
             name: "SoTreina",
-            dependencies: ["SoTreinaKit"]
+            dependencies: ["SoTreinaKit", "SoTreinaDesign"]
+        ),
+        // Monolito design system (colors, Geist fonts, components), shared by
+        // the app and the Live Activity. Not a product: a plain dependency.
+        .target(
+            name: "SoTreinaDesign",
+            dependencies: ["SoTreinaKit"],
+            resources: [
+                // Geist/Geist Mono, registered at runtime (Fonts.swift)
+                .copy("Resources/Fonts"),
+                // {pt,en}.lproj/Localizable.strings(dict), read through L10n.swift
+                .process("Resources/Strings"),
+            ]
         ),
         .target(
             name: "SoTreinaLiveActivity",
-            dependencies: ["SoTreinaKit"],
+            dependencies: ["SoTreinaKit", "SoTreinaDesign"],
             // The extension's entry point is Foundation's _NSExtensionMain, so
             // nothing references our @main and dead stripping drops the whole
             // widget (no __text section; zsign then fails with "Can't find free

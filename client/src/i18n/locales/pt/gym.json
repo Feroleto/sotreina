@@ -38,20 +38,20 @@
     "setsProgress": "{{done}}/{{total}} séries"
   },
   "entry": {
-    "setLine": "Série {{index}} · {{weight}} kg × {{reps}}",
+    "setLine": "Série {{index}} · {{weight}} {{unit}} × {{reps}}",
     "deleteSet": "Excluir série",
-    "lastTime": "Última vez: {{weight}} kg × {{reps}}",
+    "lastTime": "Última vez: {{weight}} {{unit}} × {{reps}}",
     "goal": "Meta: {{sets}} × {{reps}}",
-    "weightLabel": "Peso (kg)",
+    "weightLabel": "Peso ({{unit}})",
     "repsLabel": "Reps",
     "logSet": "Registrar série"
   },
   "train": {
     "columnSet": "Série",
     "columnPrevious": "Anterior",
-    "columnWeight": "Kg",
+    "columnWeight": "{{unit}}",
     "columnReps": "Reps",
-    "previousValue": "{{weight}}kg × {{reps}}",
+    "previousValue": "{{weight}} {{unit}} × {{reps}}",
     "markDone": "Marcar série como concluída",
     "markUndone": "Desmarcar série",
     "addSet": "+ Adicionar série",
@@ -113,7 +113,7 @@
     "setsLabel": "Séries",
     "repsLabel": "Reps",
     "prevWeightLabel": "Peso anterior",
-    "prevWeightValue": "{{weight}} kg",
+    "prevWeightValue": "{{weight}} {{unit}}",
     "howTo": "Como executar",
     "equipmentFallback": "Musculação",
     "instrFallback": "Execute o movimento com controle, priorizando amplitude completa e boa técnica."
@@ -214,8 +214,8 @@
     "weeksCount_other": "{{count}} semanas",
     "inTraining": "em treino",
     "perWeek": "treinos por semana",
-    "barHint": "{{volume}} t em {{count}} semanas · toque numa barra",
-    "barReading": "{{range}} · {{volume}} t",
+    "barHint": "{{volume}} {{unit}} em {{count}} semanas · toque numa barra",
+    "barReading": "{{range}} · {{volume}} {{unit}}",
     "sessionMeta": "{{date}} · {{duration}} min · {{count}} exercício",
     "sessionMeta_other": "{{date}} · {{duration}} min · {{count}} exercícios",
     "weekOf": "Semana de {{date}}",
@@ -227,20 +227,20 @@
       "statExercises": "Exercícios",
       "statSets": "Séries totais",
       "exercisesHeader": "Exercícios feitos",
-      "exerciseSummary": "{{sets}} séries · {{weight}} kg · {{reps}} reps"
+      "exerciseSummary": "{{sets}} séries · {{weight}} {{unit}} · {{reps}} reps"
     },
     "exerciseSets": {
       "statSets": "Séries",
       "statVolume": "Volume",
       "stat1rm": "1RM est.",
-      "kgValue": "{{weight}} kg",
+      "kgValue": "{{weight}} {{unit}}",
       "columnSet": "Série",
       "columnWeight": "Peso",
       "columnReps": "Reps",
       "columnVolume": "Volume",
       "otherInfo": "Outras informações",
       "bestSet": "Melhor série",
-      "bestSetValue": "#{{n}} · {{weight}} kg × {{reps}} reps",
+      "bestSetValue": "#{{n}} · {{weight}} {{unit}} × {{reps}} reps",
       "plannedReps": "Faixa de reps planejada",
       "repsUnit": "reps"
     }
@@ -250,11 +250,11 @@
       "previousMonth": "Mês anterior",
       "nextMonth": "Próximo mês",
       "weekdaysMin": ["S", "T", "Q", "Q", "S", "S", "D"],
-      "dayMultiWorkouts_one": "{{count}} treino · {{volume}} t",
-      "dayMultiWorkouts_other": "{{count}} treinos · {{volume}} t",
-      "daySingleWorkout": "{{date}} · {{name}} · {{volume}} t",
-      "monthSummary_one": "{{count}} treino · {{volume}} t em {{month}}",
-      "monthSummary_other": "{{count}} treinos · {{volume}} t em {{month}}"
+      "dayMultiWorkouts_one": "{{count}} treino · {{volume}} {{unit}}",
+      "dayMultiWorkouts_other": "{{count}} treinos · {{volume}} {{unit}}",
+      "daySingleWorkout": "{{date}} · {{name}} · {{volume}} {{unit}}",
+      "monthSummary_one": "{{count}} treino · {{volume}} {{unit}} em {{month}}",
+      "monthSummary_other": "{{count}} treinos · {{volume}} {{unit}} em {{month}}"
     },
     "records": {
       "title": "Recordes pessoais",
@@ -269,7 +269,7 @@
       "favorite": "Favorita",
       "workoutsLabel_one": "treino",
       "workoutsLabel_other": "treinos",
-      "meta": "{{volume}} t · {{when}}"
+      "meta": "{{volume}} {{unit}} · {{when}}"
     }
   },
   "overviewPage": {

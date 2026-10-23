@@ -20,21 +20,25 @@ public enum AppExpiry {
     public static let warningWindow: TimeInterval = 2 * 86_400
 
     /// Banner text from 2 days before expiry, nil before that.
-    public static func banner(expiration: Date, now: Date = .now, calendar: Calendar = .current) -> String? {
+    public static func banner(
+        expiration: Date, now: Date = .now, calendar: Calendar = .current, lang: Lang = .pt
+    ) -> String? {
+        let pt = lang == .pt
         let remaining = expiration.timeIntervalSince(now)
         guard remaining <= warningWindow else { return nil }
         let when: String
         if remaining <= 0 {
-            return "O app expirou. Rode ios/scripts/deploy.sh."
+            return pt ? "O app expirou. Rode ios/scripts/deploy.sh." : "The app has expired. Run ios/scripts/deploy.sh."
         } else if calendar.isDate(expiration, inSameDayAs: now) {
-            when = "hoje às \(time(expiration, calendar))"
+            when = pt ? "hoje às \(time(expiration, calendar))" : "today at \(time(expiration, calendar))"
         } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
                   calendar.isDate(expiration, inSameDayAs: tomorrow) {
-            when = "amanhã às \(time(expiration, calendar))"
+            when = pt ? "amanhã às \(time(expiration, calendar))" : "tomorrow at \(time(expiration, calendar))"
         } else {
-            when = weekdays[calendar.component(.weekday, from: expiration) - 1]
+            let index = calendar.component(.weekday, from: expiration) - 1
+            when = pt ? weekdaysPT[index] : "on \(weekdaysEN[index])"
         }
-        return "O app expira \(when). Rode ios/scripts/deploy.sh."
+        return pt ? "O app expira \(when). Rode ios/scripts/deploy.sh." : "The app expires \(when). Run ios/scripts/deploy.sh."
     }
 
     /// The eve of the expiry at 20:00 (spec §6.5); nil if that's already past.
@@ -46,7 +50,8 @@ public enum AppExpiry {
         return reminder
     }
 
-    private static let weekdays = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
+    private static let weekdaysPT = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
+    private static let weekdaysEN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
     private static func time(_ date: Date, _ calendar: Calendar) -> String {
         let parts = calendar.dateComponents([.hour, .minute], from: date)

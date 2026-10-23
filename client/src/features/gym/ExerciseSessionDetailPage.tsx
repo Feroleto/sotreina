@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import type { ExerciseDetail, WorkoutExercise, WorkoutSet } from '@/lib/types';
 import { formatRepsRange } from './routineFormat';
+import { formatWeight, weightLabel } from '@/lib/units';
 
 function setVolume(set: WorkoutSet): number {
   return (set.weightKg ?? 0) * (set.reps ?? 0);
@@ -103,7 +104,9 @@ export default function ExerciseSessionDetailPage({
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pt-[18px] pb-[44px]">
-        <h2 className="text-[20px] font-bold text-foreground">{exercise.exerciseName}</h2>
+        <h2 className="text-[20px] font-bold text-foreground">
+          {exercise.exerciseName}
+        </h2>
         {muscle && (
           <span className="mt-2 inline-block rounded-full bg-chip p-[4px_9px] text-[10.5px] font-semibold text-muted-foreground">
             {t(`muscles.${muscle}`, muscle)}
@@ -111,36 +114,64 @@ export default function ExerciseSessionDetailPage({
         )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <StatCard label={t('history.exerciseSets.statSets')} value={String(sets.length)} />
+          <StatCard
+            label={t('history.exerciseSets.statSets')}
+            value={String(sets.length)}
+          />
           <StatCard
             label={t('history.exerciseSets.statVolume')}
-            value={t('history.exerciseSets.kgValue', { weight: totalVolume })}
+            value={t('history.exerciseSets.kgValue', {
+              unit: weightLabel(),
+              weight: formatWeight(totalVolume),
+            })}
           />
           <StatCard
             label={t('history.exerciseSets.stat1rm')}
             value={
               estimated1RM != null
-                ? t('history.exerciseSets.kgValue', { weight: estimated1RM })
+                ? t('history.exerciseSets.kgValue', {
+                    unit: weightLabel(),
+                    weight: formatWeight(estimated1RM),
+                  })
                 : '—'
             }
           />
         </div>
 
         <div className="mt-5 flex items-center gap-1.5 text-[10px] font-medium tracking-[.04em] text-muted-foreground uppercase">
-          <div className="w-[36px] flex-none">{t('history.exerciseSets.columnSet')}</div>
-          <div className="min-w-0 flex-1">{t('history.exerciseSets.columnWeight')}</div>
-          <div className="min-w-0 flex-1">{t('history.exerciseSets.columnReps')}</div>
+          <div className="w-[36px] flex-none">
+            {t('history.exerciseSets.columnSet')}
+          </div>
+          <div className="min-w-0 flex-1">
+            {t('history.exerciseSets.columnWeight')}
+          </div>
+          <div className="min-w-0 flex-1">
+            {t('history.exerciseSets.columnReps')}
+          </div>
           <div className="min-w-0 flex-1 text-right">
             {t('history.exerciseSets.columnVolume')}
           </div>
         </div>
         {sets.map((s) => (
-          <div key={s.id} className="mt-2 flex items-center gap-1.5 text-[13px]">
-            <div className="w-[36px] flex-none font-medium text-foreground">{s.setNumber}</div>
-            <div className="min-w-0 flex-1 text-foreground">{s.weightKg ?? '—'} kg</div>
-            <div className="min-w-0 flex-1 text-foreground">{s.reps ?? '—'}</div>
+          <div
+            key={s.id}
+            className="mt-2 flex items-center gap-1.5 text-[13px]"
+          >
+            <div className="w-[36px] flex-none font-medium text-foreground">
+              {s.setNumber}
+            </div>
+            <div className="min-w-0 flex-1 text-foreground">
+              {s.weightKg != null ? formatWeight(s.weightKg) : '—'}{' '}
+              {weightLabel()}
+            </div>
+            <div className="min-w-0 flex-1 text-foreground">
+              {s.reps ?? '—'}
+            </div>
             <div className="min-w-0 flex-1 text-right text-muted-foreground">
-              {t('history.exerciseSets.kgValue', { weight: setVolume(s) })}
+              {t('history.exerciseSets.kgValue', {
+                unit: weightLabel(),
+                weight: formatWeight(setVolume(s)),
+              })}
             </div>
           </div>
         ))}
@@ -149,19 +180,25 @@ export default function ExerciseSessionDetailPage({
           {t('history.exerciseSets.otherInfo')}
         </div>
         <div className="flex items-center justify-between border-b border-border py-[10px] text-[13px]">
-          <span className="text-muted-foreground">{t('history.exerciseSets.bestSet')}</span>
+          <span className="text-muted-foreground">
+            {t('history.exerciseSets.bestSet')}
+          </span>
           <span className="font-medium text-foreground">
             {best
               ? t('history.exerciseSets.bestSetValue', {
+                  unit: weightLabel(),
                   n: best.setNumber,
-                  weight: best.weightKg ?? '—',
+                  weight:
+                    best.weightKg != null ? formatWeight(best.weightKg) : '—',
                   reps: best.reps ?? '—',
                 })
               : '—'}
           </span>
         </div>
         <div className="flex items-center justify-between border-b border-border py-[10px] text-[13px]">
-          <span className="text-muted-foreground">{t('history.exerciseSets.plannedReps')}</span>
+          <span className="text-muted-foreground">
+            {t('history.exerciseSets.plannedReps')}
+          </span>
           <span className="font-medium text-foreground">
             {exercise.target
               ? `${formatRepsRange(exercise.target.repsMin, exercise.target.repsMax)} ${t('history.exerciseSets.repsUnit')}`

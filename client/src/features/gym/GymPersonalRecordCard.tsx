@@ -5,6 +5,7 @@ import { apiFetch } from '@/lib/api';
 import type { ExerciseListItem, ExercisePersonalRecord } from '@/lib/types';
 import { formatMonthDay } from '@/lib/activityFormat';
 import ExercisePicker from './ExercisePicker';
+import { formatWeight, weightLabel } from '@/lib/units';
 
 // Personal Records card for GymOverviewPage.tsx — search-driven rather than
 // a fixed list of named lifts: there's no "heaviest set ever" endpoint per
@@ -27,7 +28,8 @@ export default function GymPersonalRecordCard() {
     apiFetch(`/exercises/${exercise.id}/personal-record`)
       .then((res) => (res.ok ? res.text() : ''))
       .then((text) => {
-        if (!cancelled) setRecord(text ? (JSON.parse(text) as ExercisePersonalRecord) : null);
+        if (!cancelled)
+          setRecord(text ? (JSON.parse(text) as ExercisePersonalRecord) : null);
       })
       .catch(() => {
         if (!cancelled) setRecord(null);
@@ -69,7 +71,9 @@ export default function GymPersonalRecordCard() {
       {exercise && (
         <div className="mt-2">
           {loading && (
-            <p className="py-2 text-[12.5px] text-muted-foreground">{t('loading')}</p>
+            <p className="py-2 text-[12.5px] text-muted-foreground">
+              {t('loading')}
+            </p>
           )}
 
           {!loading && record && (
@@ -80,7 +84,10 @@ export default function GymPersonalRecordCard() {
             >
               <div
                 className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] text-acc"
-                style={{ background: 'color-mix(in oklab, var(--acc) 10%, transparent)' }}
+                style={{
+                  background:
+                    'color-mix(in oklab, var(--acc) 10%, transparent)',
+                }}
               >
                 <Dumbbell className="h-4 w-4" strokeWidth={1.8} />
               </div>
@@ -96,9 +103,13 @@ export default function GymPersonalRecordCard() {
                 </div>
               </div>
               <div className="flex-none text-right">
-                <div className="text-[15px] font-bold text-foreground">{record.weightKg} kg</div>
+                <div className="text-[15px] font-bold text-foreground">
+                  {formatWeight(record.weightKg)} {weightLabel()}
+                </div>
                 <div className="mt-0.5 text-[11px] text-muted-foreground">
-                  {record.reps != null ? t('overview.records.repsValue', { reps: record.reps }) : '—'}
+                  {record.reps != null
+                    ? t('overview.records.repsValue', { reps: record.reps })
+                    : '—'}
                 </div>
               </div>
             </button>

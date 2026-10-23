@@ -4,10 +4,21 @@ import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { formatDurationShort } from '@/lib/activityFormat';
-import type { WorkoutDetail, WorkoutExercise, WorkoutHistoryItem, WorkoutSet } from '@/lib/types';
+import type {
+  WorkoutDetail,
+  WorkoutExercise,
+  WorkoutHistoryItem,
+  WorkoutSet,
+} from '@/lib/types';
 import ExerciseSessionDetailPage from './ExerciseSessionDetailPage';
 import DrillStack from '@/components/DrillStack';
 import { SkeletonRows } from '@/components/Skeleton';
+import {
+  formatVolume,
+  formatWeight,
+  volumeLabel,
+  weightLabel,
+} from '@/lib/units';
 
 function formatDateLong(iso: string): string {
   const s = new Date(iso).toLocaleDateString(currentIntlLocale(), {
@@ -18,16 +29,19 @@ function formatDateLong(iso: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function formatTons(kg: number): string {
-  return (kg / 1000).toFixed(1);
-}
-
 // per-exercise summary shown in the read-only list — averaged across its
 // sets since a session's sets don't always share one weight/reps value
 // (unlike the routine editor's target, which is a single planned range)
-function summarizeSets(sets: WorkoutSet[]): { weightKg: number | null; reps: number | null } {
-  const weights = sets.map((s) => s.weightKg).filter((w): w is number => w != null);
-  const repsList = sets.map((s) => s.reps).filter((r): r is number => r != null);
+function summarizeSets(sets: WorkoutSet[]): {
+  weightKg: number | null;
+  reps: number | null;
+} {
+  const weights = sets
+    .map((s) => s.weightKg)
+    .filter((w): w is number => w != null);
+  const repsList = sets
+    .map((s) => s.reps)
+    .filter((r): r is number => r != null);
   const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
   return {
     weightKg: weights.length ? Math.round(avg(weights) * 10) / 10 : null,
@@ -57,12 +71,16 @@ interface WorkoutDetailPageProps {
 // from there, same "don't refetch what's already loaded" pattern as
 // RoutineDetailPage.tsx); only the per-exercise sets need their own fetch,
 // via the same GET /workouts/:id used by the live session
-export default function WorkoutDetailPage({ item, onBack }: WorkoutDetailPageProps) {
+export default function WorkoutDetailPage({
+  item,
+  onBack,
+}: WorkoutDetailPageProps) {
   const { t } = useTranslation('gym');
   const [detail, setDetail] = useState<WorkoutDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewingExercise, setViewingExercise] = useState<WorkoutExercise | null>(null);
+  const [viewingExercise, setViewingExercise] =
+    useState<WorkoutExercise | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,10 +103,14 @@ export default function WorkoutDetailPage({ item, onBack }: WorkoutDetailPagePro
     };
   }, [item.id]);
 
-  const totalSets = detail?.exercises.reduce((sum, ex) => sum + ex.sets.length, 0) ?? 0;
+  const totalSets =
+    detail?.exercises.reduce((sum, ex) => sum + ex.sets.length, 0) ?? 0;
 
   return (
-    <DrillStack depth={viewingExercise ? 1 : 0} viewKey={viewingExercise ? `exercise:${viewingExercise.id}` : 'workout'}>
+    <DrillStack
+      depth={viewingExercise ? 1 : 0}
+      viewKey={viewingExercise ? `exercise:${viewingExercise.id}` : 'workout'}
+    >
       {viewingExercise ? (
         <ExerciseSessionDetailPage
           exercise={viewingExercise}
@@ -120,9 +142,18 @@ export default function WorkoutDetailPage({ item, onBack }: WorkoutDetailPagePro
                 label={t('history.detail.statDuration')}
                 value={formatDurationShort(item.durationSec)}
               />
-              <StatCard label={t('history.detail.statVolume')} value={`${formatTons(item.volumeKg)} t`} />
-              <StatCard label={t('history.detail.statExercises')} value={String(item.exerciseCount)} />
-              <StatCard label={t('history.detail.statSets')} value={String(totalSets)} />
+              <StatCard
+                label={t('history.detail.statVolume')}
+                value={`${formatVolume(item.volumeKg)} ${volumeLabel()}`}
+              />
+              <StatCard
+                label={t('history.detail.statExercises')}
+                value={String(item.exerciseCount)}
+              />
+              <StatCard
+                label={t('history.detail.statSets')}
+                value={String(totalSets)}
+              />
             </div>
 
             <div className="mt-5 border-b border-border pb-2 text-[11.5px] font-medium tracking-[.05em] text-muted-foreground uppercase">
@@ -152,8 +183,10 @@ export default function WorkoutDetailPage({ item, onBack }: WorkoutDetailPagePro
                       </div>
                       <div className="mt-0.5 text-[11.5px] text-muted-foreground">
                         {t('history.detail.exerciseSummary', {
+                          unit: weightLabel(),
                           sets: ex.sets.length,
-                          weight: weightKg ?? '—',
+                          weight:
+                            weightKg != null ? formatWeight(weightKg) : '—',
                           reps: reps ?? '—',
                         })}
                       </div>

@@ -1,6 +1,7 @@
 import ActivityKit
 import Foundation
 import os
+import SoTreinaDesign
 import SoTreinaKit
 
 /// Keeps one Live Activity per open workout (spec §6.7) in step with the
@@ -52,7 +53,7 @@ final class LiveActivityController {
             let activity = try Activity.request(
                 attributes: WorkoutActivityAttributes(
                     workoutId: workout.id,
-                    workoutName: workout.templateName ?? "Treino livre"
+                    workoutName: workout.templateName ?? L10n.string("gym.freeWorkout", lang: AppLanguageStore.current)
                 ),
                 content: Self.content(state),
                 pushType: nil

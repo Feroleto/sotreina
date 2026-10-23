@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {
   WORKOUT_META,
   formatDuration,
-  formatKm,
+  formatDistance,
   formatNumber,
   formatPace,
 } from '@/lib/activityFormat';
@@ -11,6 +11,7 @@ import { API_BASE_URL } from '@/lib/apiUrl';
 import { ConnectWithStrava } from '@/components/StravaBrand';
 import SyncPanel from './SyncPanel';
 import { TYPE_OPTIONS, type TypeFilter } from './bins';
+import { distanceLabel } from '@/lib/units';
 
 function ConnectStravaBanner() {
   const { t } = useTranslation('dashboard');
@@ -68,17 +69,20 @@ export default function Rail({
 
       <div className="mt-8">
         <div className="text-[52px] leading-none font-bold tracking-[-.03em] text-foreground">
-          {formatKm(totals.km)}
+          {formatDistance(totals.km)}
         </div>
         <div className="mt-1.5 text-[13.5px] text-muted-foreground">
-          {t('rail.kmSubtitle')}
+          {t('rail.kmSubtitle', { unit: distanceLabel() })}
         </div>
       </div>
 
       <div className="mt-7 border-t border-border">
         <RailStat label={t('rail.activities')} value={String(totals.count)} />
         <RailStat label={t('rail.averagePace')} value={formatPace(avgPace)} />
-        <RailStat label={t('rail.totalTime')} value={formatDuration(totals.sec)} />
+        <RailStat
+          label={t('rail.totalTime')}
+          value={formatDuration(totals.sec)}
+        />
         <RailStat
           label={t('rail.elevationGain')}
           value={`${formatNumber(Math.round(totals.elev))} m`}

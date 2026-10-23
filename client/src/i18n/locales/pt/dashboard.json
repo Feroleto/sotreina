@@ -1,7 +1,7 @@
 {
   "rail": {
     "title": "Corridas",
-    "kmSubtitle": "km percorridos neste período",
+    "kmSubtitle": "{{unit}} percorridos neste período",
     "activities": "Atividades",
     "averagePace": "Pace Médio",
     "totalTime": "Tempo Total",
@@ -73,10 +73,10 @@
   "chart": {
     "weeklyDistance": "Distância semanal",
     "monthlyDistance": "Distância mensal",
-    "kmInPeriod": "{{km}} km neste período",
-    "barHint_one": "{{km}} km em {{count}} semana · toque numa barra",
-    "barHint_other": "{{km}} km em {{count}} semanas · toque numa barra",
-    "barReading": "{{range}} · {{km}} km",
+    "kmInPeriod": "{{km}} {{unit}} neste período",
+    "barHint_one": "{{km}} {{unit}} em {{count}} semana · toque numa barra",
+    "barHint_other": "{{km}} {{unit}} em {{count}} semanas · toque numa barra",
+    "barReading": "{{range}} · {{km}} {{unit}}",
     "periods": {
       "4": "4 s",
       "8": "8 s",
@@ -109,7 +109,7 @@
   },
   "hero": {
     "thisWeek": "Esta semana · {{range}}",
-    "lastWeek": "semana passada {{km}} km",
+    "lastWeek": "semana passada {{km}} {{unit}}",
     "noLastWeek": "nenhuma corrida na semana passada",
     "recent": "Recentes"
   }

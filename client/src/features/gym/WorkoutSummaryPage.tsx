@@ -8,6 +8,12 @@ import { formatDurationShort } from '@/lib/activityFormat';
 import { currentIntlLocale } from '@/lib/dateLocale';
 import { DUR, EASE_OUT, SPRING_CELEBRATE } from '@/lib/motion';
 import type { FinishedWorkout, WorkoutPersonalRecord } from '@/lib/types';
+import {
+  formatVolume,
+  kgToDisplay,
+  volumeLabel,
+  weightLabel,
+} from '@/lib/units';
 
 // one celebration per workout: leaving and coming back while the summary is
 // still up (it lives in useActiveWorkout until dismissed) shows it settled
@@ -25,7 +31,9 @@ function claimCelebration(id: string): boolean {
 }
 
 function formatKg(kg: number): string {
-  return kg.toLocaleString(currentIntlLocale(), { maximumFractionDigits: 1 });
+  return kgToDisplay(kg).toLocaleString(currentIntlLocale(), {
+    maximumFractionDigits: 1,
+  });
 }
 
 function Kpi({
@@ -43,7 +51,11 @@ function Kpi({
     <m.div
       initial={celebrate ? { opacity: 0, transform: 'translateY(8px)' } : false}
       animate={{ opacity: 1, transform: 'translateY(0px)' }}
-      transition={{ duration: DUR.page, ease: EASE_OUT, delay: 0.15 + index * 0.08 }}
+      transition={{
+        duration: DUR.page,
+        ease: EASE_OUT,
+        delay: 0.15 + index * 0.08,
+      }}
       className="rounded-[14px] border border-border bg-card px-3.5 py-3"
     >
       <div className="text-[10.5px] font-semibold tracking-[.07em] text-muted-foreground uppercase">
@@ -71,7 +83,9 @@ function RecordCard({
   // after the KPIs have mostly counted up
   const delay = 0.6 + index * 0.12;
   const set = (kg: number, reps: number | null) =>
-    reps != null ? `${formatKg(kg)} kg × ${reps}` : `${formatKg(kg)} kg`;
+    reps != null
+      ? `${formatKg(kg)} ${weightLabel()} × ${reps}`
+      : `${formatKg(kg)} ${weightLabel()}`;
 
   return (
     <m.div
@@ -92,7 +106,12 @@ function RecordCard({
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 1.1, times: [0, 0.25, 1], ease: 'easeOut', delay: delay + 0.15 }}
+          transition={{
+            duration: 1.1,
+            times: [0, 0.25, 1],
+            ease: 'easeOut',
+            delay: delay + 0.15,
+          }}
         />
       )}
       <m.span
@@ -108,7 +127,9 @@ function RecordCard({
           {record.exerciseName}
         </div>
         <div className="mt-0.5 text-[12px] text-muted-foreground">
-          {t('summary.prFrom', { previous: set(record.previousWeightKg, record.previousReps) })}
+          {t('summary.prFrom', {
+            previous: set(record.previousWeightKg, record.previousReps),
+          })}
         </div>
       </div>
       <div className="flex-none text-[14px] font-semibold text-foreground tabular-nums">
@@ -118,7 +139,13 @@ function RecordCard({
   );
 }
 
-function Summary({ workout, onDone }: { workout: FinishedWorkout; onDone: () => void }) {
+function Summary({
+  workout,
+  onDone,
+}: {
+  workout: FinishedWorkout;
+  onDone: () => void;
+}) {
   const { t } = useTranslation('gym');
   const reduce = useReducedMotion() ?? false;
   // read once at mount; StrictMode's double-invoked initializer keeps the
@@ -137,7 +164,9 @@ function Summary({ workout, onDone }: { workout: FinishedWorkout; onDone: () => 
       className="px-5 pt-[18px] pb-[44px] md:mx-auto md:max-w-[560px] md:pt-10"
     >
       <m.div
-        initial={celebrate ? { opacity: 0, transform: 'translateY(8px)' } : false}
+        initial={
+          celebrate ? { opacity: 0, transform: 'translateY(8px)' } : false
+        }
         animate={{ opacity: 1, transform: 'translateY(0px)' }}
         transition={{ duration: DUR.page, ease: EASE_OUT }}
         className="flex flex-col items-center text-center"
@@ -165,9 +194,9 @@ function Summary({ workout, onDone }: { workout: FinishedWorkout; onDone: () => 
         <Kpi label={t('summary.volume')} index={1} celebrate={celebrate}>
           <CountUp
             value={summary.volumeKg}
-            // tons, same unit/format as the Histórico tab — "1.880 kg" wraps
-            // in the 3-column grid on a phone
-            format={(v) => `${(v / 1000).toFixed(1)} t`}
+            // thousands (t / k lb), same format as the Histórico tab —
+            // "1.880 kg" wraps in the 3-column grid on a phone
+            format={(v) => `${formatVolume(v)} ${volumeLabel()}`}
             delay={0.23}
             celebrate={celebrate}
           />
