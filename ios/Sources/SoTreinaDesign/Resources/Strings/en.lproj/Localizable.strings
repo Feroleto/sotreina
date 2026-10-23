@@ -196,3 +196,27 @@
 "gym.session.syncTemplateBack" = "Back";
 "gym.session.syncTemplateKeep" = "Keep routine";
 "gym.session.syncTemplateUpdate" = "Update routine";
+
+/* Corrida › Atividades (web: dashboard.json) */
+"dashboard.hero.thisWeek %@" = "This week · %@";
+"dashboard.hero.lastWeek %@ %@" = "last week %1$@ %2$@";
+"dashboard.hero.noLastWeek" = "no runs last week";
+"dashboard.hero.recent" = "Recent";
+"dashboard.kpis.activities" = "Activities";
+"dashboard.kpis.avgPace" = "Avg pace";
+"dashboard.kpis.time" = "Time";
+"dashboard.chart.weeklyVolume" = "Weekly volume";
+"dashboard.chart.barReading %@ %@ %@" = "%1$@ · %2$@ %3$@";
+"dashboard.list.empty" = "No activities with this filter";
+"dashboard.rangeChip.clearAriaLabel" = "Clean custom period";
+"dashboard.dateRange.thisMonth" = "This Month";
+"dashboard.dateRange.lastMonth" = "Last Month";
+"dashboard.dateRange.last3Months" = "Last 3 Months";
+"dashboard.dateRange.thisYear" = "This Year";
+"dashboard.dateRange.lastYear" = "Last Year";
+"dashboard.dateRange.custom" = "Custom";
+"dashboard.dateRange.clean" = "Clean";
+"dashboard.dateRange.close" = "Close";
+"dashboard.dateRange.start" = "Start";
+"dashboard.dateRange.end" = "End";
+"dashboard.dateRange.apply" = "Apply";

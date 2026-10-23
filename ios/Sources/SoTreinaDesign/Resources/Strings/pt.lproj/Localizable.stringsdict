@@ -50,5 +50,69 @@
 			<string>%lld exercícios</string>
 		</dict>
 	</dict>
+	<key>dashboard.chart.barHint %@ %@ %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ %2$@ em %3$#@weeks@ · toque numa barra</string>
+		<key>weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%3$lld semana</string>
+			<key>other</key>
+			<string>%3$lld semanas</string>
+		</dict>
+	</dict>
+	<key>dashboard.list.runsCount %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@runs@</string>
+		<key>runs</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld corrida</string>
+			<key>other</key>
+			<string>%lld corridas</string>
+		</dict>
+	</dict>
+	<key>dashboard.list.olderWeeks %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@weeks@</string>
+		<key>weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>+ %lld semana anterior</string>
+			<key>other</key>
+			<string>+ %lld semanas anteriores</string>
+		</dict>
+	</dict>
+	<key>dashboard.rangeChip.daysCount %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld dia</string>
+			<key>other</key>
+			<string>%lld dias</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

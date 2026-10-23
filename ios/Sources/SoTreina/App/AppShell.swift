@@ -11,6 +11,7 @@ struct AppShell: View {
     let me: Me
     @Binding var pendingLink: ActivityLink?
     @State private var store: WorkoutStore
+    @State private var runStore: RunStore
     @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
     private let session: SessionStore
     @Environment(AppLanguageStore.self) private var language
@@ -22,6 +23,7 @@ struct AppShell: View {
         self.me = me
         _pendingLink = pendingLink
         _store = State(initialValue: WorkoutStore(session: session))
+        _runStore = State(initialValue: RunStore(session: session))
     }
 
     private var tabs: [AppTab] { AppTab.tabs(for: me.enabledAreas) }
@@ -74,7 +76,10 @@ struct AppShell: View {
             Task { await store.handle(link) }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await store.load() } }
+            if phase == .active {
+                Task { await store.load() }
+                Task { await runStore.load() }
+            }
         }
         // exercise names come localized from the API (`Accept-Language`):
         // a language switch mid-workout refetches them, or they'd stay in the
@@ -115,7 +120,15 @@ struct AppShell: View {
                     ComingSoonView()
                 }
             }
-        case .today, .run, .diet:
+        case .run:
+            AreaScreen(tab: tab) { page in
+                if page == .runActivities {
+                    RunActivitiesView(store: runStore)
+                } else {
+                    ComingSoonView()
+                }
+            }
+        case .today, .diet:
             AreaScreen(tab: tab) { _ in ComingSoonView() }
         }
     }

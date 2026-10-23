@@ -235,6 +235,20 @@ Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-liv
 | 10 | Sessão de treino livre, ainda sem exercício | claro · EN | manual: "Iniciar" na linha "Treino livre" | — | ok (2026-10-23; capturada no escuro, o app seguia o sistema) |
 | 11 | Finalizar uma rotina que mudou: "Atualizar rotina / Manter rotina / Voltar" | claro · PT | manual: tirar ou acrescentar um exercício de uma rotina e tocar em Finalizar | `--page gym/workouts` (sessão divergente + "Finalizar treino") | desvio aceito: folha de ações nativa no lugar do cartão da web, como os diálogos da linha 04 (2026-10-23; capturada no escuro) |
 
+### Fase C
+
+Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–06. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Corrida › Atividades (semana, barras de 12 semanas, lista, "Powered by Strava") | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/activities` | |
+| 02 | Corrida › Atividades | escuro · EN | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/activities --theme dark --lang en` | |
+| 03 | Barra tocada (leitura da semana em cima) | claro · PT | manual: tocar numa barra | — | |
+| 04 | Sheet de período (atalhos + início/fim, até 3 meses) | claro · PT | manual: tocar em "Personalizado" | — (a web usa um calendário de dois toques, sem equivalente nativo) | |
+| 05 | Período aplicado (chip, barras e lista do período) | claro · PT | manual: escolher "Mês Passado" | — | |
+| 06 | Corrida › Atividades em mi | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em mi) | — | |
+| 07 | Corrida › Atividades | Dynamic Type máx. | `SOTREINA_SCREEN=runActivities` | — | |
+
 ## Checklist da Fase 0 (go/no-go)
 
 - [x] `deploy.sh` instala e abre o app no iPhone
