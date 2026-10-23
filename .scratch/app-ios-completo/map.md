@@ -53,6 +53,7 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Fatiamento da Fase D (Dieta)](issues/26-fatiamento-fase-d.md): seis tarefas em fila depois da Visão geral do Treino (junto do Uso real da Fase T): o dia + edição → adicionar Registros → manual + scanner → Refeições salvas → histórico → Uso real; `clientId` nos Registros (único backend da fase)
 - [Fatiamento da Fase C (Corrida)](issues/33-fatiamento-fase-c.md): cinco tarefas em fila depois do histórico da Dieta (junto do Uso real da Fase D): Atividades → detalhe com MapKit → editor de voltas (fica em metros/segundos, sem mi) → Visão geral (com a comemoração de recorde) → Uso real; sem backend
 - [Corrida: Atividades](issues/34-corrida-atividades.md): feito e validado, no worktree `fase-c` — semana × semana passada, barras de 12 semanas, lista por semana e período em sheet nativo (`RunBins`/`RunFormat` no Kit), selo Strava em PNG @3x a partir do SVG oficial; a aba Corrida abre em Atividades
+- [Corrida: detalhe da atividade](issues/35-corrida-detalhe.md): feito e validado, no worktree `fase-c`. MapKit funciona com xtool (mapa estático). `Polyline`/`lapLabels`/`dateFull` estão no Kit. A tabela de voltas para de crescer em `.xLarge`. A linha da esteira ficou pro Uso real
 
 ## Not yet specified
 
