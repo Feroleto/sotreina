@@ -54,6 +54,7 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Fatiamento da Fase C (Corrida)](issues/33-fatiamento-fase-c.md): cinco tarefas em fila depois do histórico da Dieta (junto do Uso real da Fase D): Atividades → detalhe com MapKit → editor de voltas (fica em metros/segundos, sem mi) → Visão geral (com a comemoração de recorde) → Uso real; sem backend
 - [Corrida: Atividades](issues/34-corrida-atividades.md): feito e validado, no worktree `fase-c` — semana × semana passada, barras de 12 semanas, lista por semana e período em sheet nativo (`RunBins`/`RunFormat` no Kit), selo Strava em PNG @3x a partir do SVG oficial; a aba Corrida abre em Atividades
 - [Corrida: detalhe da atividade](issues/35-corrida-detalhe.md): feito e validado, no worktree `fase-c`. MapKit funciona com xtool (mapa estático). `Polyline`/`lapLabels`/`dateFull` estão no Kit. A tabela de voltas para de crescer em `.xLarge`. A linha da esteira ficou pro Uso real
+- [Corrida: Visão geral](issues/37-corrida-visao-geral.md): feito e validado, no worktree `fase-c`: totais, calendário, recordes com sheet "Ver todos" e recorde novo (snapshot no `UserDefaults`), tênis. A aba Corrida segue abrindo em Atividades, como na web. A comemoração ficou pro Uso real
 
 ## Not yet specified
 
@@ -65,4 +66,5 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 ## Out of scope
 
 - **Fase W (Widgets da Tela de Início)**: sem canal app↔widget com xtool + Apple ID grátis; o usuário preferiu tirar a remendar o xtool ([Teste: App Group com xtool e Apple ID grátis](issues/01-teste-app-group.md)).
+- [Corrida: editor de voltas](issues/36-corrida-editor-voltas.md): o usuário tirou da Fase C (2026-10-23), porque acrescenta pouco no iPhone. Corrigir voltas continua sendo na web.
 - Login/conexão/desconexão Strava, adicionar senha, sync manual, Análise da corrida, HealthKit, escrita offline, comida em onças, widgets de tela bloqueada e "Próximo treino", push remoto (spec §4).

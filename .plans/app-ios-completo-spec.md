@@ -96,7 +96,7 @@ Portar `features/gym/` inteiro, além da sessão que já existe:
 - **Visão geral**: totais all-time, calendário, recordes pessoais (12 distâncias, top 3 expansível, selo PR), tênis com progresso de 800 km.
 - **Atividades**: resumo da semana (mobile da web: semana em Geist Mono comparada com a passada, 3 KPIs, barras de 12 semanas), lista agrupada por semana, filtro de período.
 - **Detalhe**: stats, **mapa em MapKit** (polyline decodificada do `summaryPolyline`; placeholder pra esteira), tabela de voltas, "View on Strava".
-- **Editor de voltas**: mesmo modelo da web com controles nativos — lista com `.onMove`, tamanho por distância ou tempo, `+ Volta`/`+ Repetições`, barra de cobertura ao vivo, Salvar só com cobertura completa, confirmação ao fechar com alterações. `lapBoundaryMath` portado pro Kit com os mesmos testes (inclusive a âncora de distância e a tolerância de 60 s).
+- **Editor de voltas** (**fora da Fase C desde 2026-10-23**, decisão do usuário: corrigir voltas continua na web; ver `.scratch/app-ios-completo/issues/36-corrida-editor-voltas.md`): mesmo modelo da web com controles nativos — lista com `.onMove`, tamanho por distância ou tempo, `+ Volta`/`+ Repetições`, barra de cobertura ao vivo, Salvar só com cobertura completa, confirmação ao fechar com alterações. `lapBoundaryMath` portado pro Kit com os mesmos testes (inclusive a âncora de distância e a tolerância de 60 s).
 - Distância e pace em km ou mi (§6.1).
 - Análise continua fora (está desabilitada na web).
 
