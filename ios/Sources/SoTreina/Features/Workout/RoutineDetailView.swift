@@ -4,14 +4,15 @@ import SwiftUI
 
 /// Treino › Rotinas › a routine, read only (web RoutineDetailPage): muscle
 /// chips, count and last time, the exercises with their targets (each opens
-/// its detail) and "Iniciar treino". Excluir lives in the navigation bar,
-/// behind a confirmation. Editar joins it once the app has the editor.
+/// its detail) and "Iniciar treino". Editar and Excluir (behind a
+/// confirmation) live in the navigation bar.
 struct RoutineDetailView: View {
     let template: TemplateSummary
     let store: WorkoutStore
     @State private var state: DetailState = .loading
     @State private var confirmingDelete = false
     @State private var deleting = false
+    @State private var editing: TemplateDetail?
     @Environment(\.dismiss) private var dismiss
     @Environment(AppLanguageStore.self) private var language
 
@@ -77,6 +78,15 @@ struct RoutineDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    if case .loaded(let detail) = state { editing = detail }
+                } label: {
+                    Image(systemName: "pencil")
+                }
+                .disabled(!isLoaded || deleting)
+                .accessibilityLabel(Text("gym.editor.edit", bundle: .l10n))
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button { confirmingDelete = true } label: {
                     Image(systemName: "trash")
                 }
@@ -94,6 +104,10 @@ struct RoutineDetailView: View {
                 }
             } label: { Text("gym.routineDetail.delete", bundle: .l10n) }
             Button(role: .cancel) {} label: { Text("common.cancel", bundle: .l10n) }
+        }
+        .fullScreenCover(item: $editing) { detail in
+            RoutineEditView(template: detail, store: store) { saved in state = .loaded(saved) }
+                .monolitoTheme()
         }
         .task { await loadDetail() }
         .refreshable { await loadDetail() }
@@ -123,6 +137,10 @@ struct RoutineDetailView: View {
                 .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
             }
         }
+    }
+
+    private var isLoaded: Bool {
+        if case .loaded = state { true } else { false }
     }
 
     private func lastPerformed(_ lang: Lang) -> String {
@@ -158,19 +176,27 @@ private struct RoutineExerciseRow: View {
                     .font(DSFont.row.weight(.semibold))
                     .foregroundStyle(Color.fg)
                     .lineLimit(1)
-                Text(verbatim: spec(lang))
-                    .font(DSFont.caption)
-                    .foregroundStyle(Color.mutedFg)
+                Text(verbatim: RoutineTargetsText.spec(
+                    sets: exercise.targetSets, repsMin: exercise.targetRepsMin,
+                    repsMax: exercise.targetRepsMax, rest: exercise.restSeconds, lang: lang
+                ))
+                .font(DSFont.caption)
+                .foregroundStyle(Color.mutedFg)
             }
         }
         .padding(.vertical, 6)
     }
+}
 
-    private func spec(_ lang: Lang) -> String {
-        let sets = exercise.targetSets.map(String.init) ?? "—"
-        let reps = RoutineFormat.repsRange(min: exercise.targetRepsMin, max: exercise.targetRepsMax)
-        let base = L10n.string("gym.routineDetail.spec %@ %@", lang: lang, sets, reps)
-        guard let rest = exercise.restSeconds else { return base }
+/// "3 séries · 12 reps · descanso 1:30" (the web's `editor.mobileSpec` +
+/// `restSuffix`): the routine detail and the editor's rows.
+enum RoutineTargetsText {
+    static func spec(sets: Int?, repsMin: Int?, repsMax: Int?, rest: Int?, lang: Lang) -> String {
+        let base = L10n.string(
+            "gym.routineDetail.spec %@ %@", lang: lang,
+            sets.map(String.init) ?? "—", RoutineFormat.repsRange(min: repsMin, max: repsMax)
+        )
+        guard let rest else { return base }
         return "\(base) · \(L10n.string("gym.routineDetail.rest %@", lang: lang, RoutineFormat.rest(seconds: rest)))"
     }
 }

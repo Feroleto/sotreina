@@ -96,7 +96,7 @@
 
 "gym.routines.loadFailed" = "Não carregou";
 "gym.routines.emptyTitle" = "Nenhuma rotina";
-"gym.routines.emptyBody" = "Crie suas rotinas no SoTreina pela web e elas aparecem aqui.";
+"gym.routines.emptyBody" = "Crie uma rotina ou comece um treino livre.";
 "gym.routines.next" = "Próxima";
 "gym.routines.start" = "Iniciar";
 
@@ -209,6 +209,30 @@
 "gym.exerciseDetail.reps" = "Reps";
 "gym.exerciseDetail.prevWeight" = "Peso anterior";
 "gym.exerciseDetail.howTo" = "Como executar";
+"gym.editor.newTitle" = "Nova rotina";
+"gym.editor.editTitle" = "Editar rotina";
+"gym.editor.edit" = "Editar";
+"gym.editor.nameLabel" = "Nome da rotina";
+"gym.editor.namePlaceholder" = "ex: Treino A — Peito/Tríceps";
+"gym.editor.addExercise" = "Adicionar exercício";
+"gym.editor.removeExercise" = "Remover exercício";
+"gym.editor.save" = "Salvar";
+"gym.editor.discardConfirm" = "Descartar alterações?";
+"gym.editor.discard" = "Descartar";
+"gym.editor.keepEditing" = "Continuar editando";
+"gym.editor.done" = "Concluído";
+"gym.editor.empty" = "Adicione um exercício para começar.";
+"gym.editor.exercise.title" = "Editar exercício";
+"gym.editor.exercise.sets" = "Séries";
+"gym.editor.exercise.reps" = "Repetições";
+"gym.editor.exercise.repsHint" = "Faixa — decidida no treino";
+"gym.editor.exercise.rest" = "Descanso";
+"gym.editor.exercise.restHint" = "Depois de cada série deste exercício";
+"gym.editor.exercise.restDefault" = "Padrão";
+"gym.editor.exercise.repsMin" = "Repetições mínimas";
+"gym.editor.exercise.repsMax" = "Repetições máximas";
+"gym.picker.empty" = "Nenhum exercício encontrado.";
+
 
 /* Corrida › Atividades (web: dashboard.json) */
 "dashboard.hero.thisWeek %@" = "Esta semana · %@";

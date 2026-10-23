@@ -96,7 +96,7 @@
 
 "gym.routines.loadFailed" = "Couldn't load";
 "gym.routines.emptyTitle" = "No routines";
-"gym.routines.emptyBody" = "Create your routines in SoTreina on the web and they'll show up here.";
+"gym.routines.emptyBody" = "Create a routine or start a free workout.";
 "gym.routines.next" = "Next";
 "gym.routines.start" = "Start";
 
@@ -209,6 +209,30 @@
 "gym.exerciseDetail.reps" = "Reps";
 "gym.exerciseDetail.prevWeight" = "Previous weight";
 "gym.exerciseDetail.howTo" = "How to perform";
+"gym.editor.newTitle" = "New routine";
+"gym.editor.editTitle" = "Edit routine";
+"gym.editor.edit" = "Edit";
+"gym.editor.nameLabel" = "Routine name";
+"gym.editor.namePlaceholder" = "e.g. Push Day";
+"gym.editor.addExercise" = "Add exercise";
+"gym.editor.removeExercise" = "Remove exercise";
+"gym.editor.save" = "Save";
+"gym.editor.discardConfirm" = "Discard changes?";
+"gym.editor.discard" = "Discard";
+"gym.editor.keepEditing" = "Keep editing";
+"gym.editor.done" = "Done";
+"gym.editor.empty" = "Add an exercise to get started.";
+"gym.editor.exercise.title" = "Edit exercise";
+"gym.editor.exercise.sets" = "Sets";
+"gym.editor.exercise.reps" = "Reps";
+"gym.editor.exercise.repsHint" = "Range — decided during the workout";
+"gym.editor.exercise.rest" = "Rest";
+"gym.editor.exercise.restHint" = "After each set of this exercise";
+"gym.editor.exercise.restDefault" = "Default";
+"gym.editor.exercise.repsMin" = "Minimum reps";
+"gym.editor.exercise.repsMax" = "Maximum reps";
+"gym.picker.empty" = "No exercises found.";
+
 
 /* Corrida › Atividades (web: dashboard.json) */
 "dashboard.hero.thisWeek %@" = "This week · %@";

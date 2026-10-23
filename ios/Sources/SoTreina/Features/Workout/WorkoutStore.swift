@@ -208,6 +208,44 @@ final class WorkoutStore {
         }
     }
 
+    // MARK: - Routine editor
+
+    /// Salvar: `POST /workout-templates` (new) or `PATCH /workout-templates/:id`
+    /// with the whole exercise list. Reloads the list so it shows the result.
+    func saveTemplate(_ draft: RoutineDraft, id: String?) async -> Result<TemplateDetail, DetailError> {
+        do {
+            let saved: TemplateDetail? = if let id {
+                try await session.api.patch("workout-templates/\(id)", body: draft.request)
+            } else {
+                try await session.api.post("workout-templates", body: draft.request)
+            }
+            guard let saved else {
+                return .failure(DetailError(message: Self.message(for: APIError.http(status: 404), lang: AppLanguageStore.shared.lang)))
+            }
+            log.notice("template saved (\(id == nil ? "new" : "edit", privacy: .public))")
+            await load()
+            return .success(saved)
+        } catch {
+            return .failure(DetailError(message: handle(error)))
+        }
+    }
+
+    /// The editor's picker: `GET /exercises`, matching the PT and English
+    /// names, narrowed by a muscle chip (`?muscles=`, an OR).
+    func searchExercises(_ query: String, filter: MuscleFilter) async throws -> [ExerciseListItem] {
+        var items = [URLQueryItem(name: "limit", value: "50")]
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        if !trimmed.isEmpty { items.append(URLQueryItem(name: "search", value: trimmed)) }
+        if !filter.muscles.isEmpty { items.append(URLQueryItem(name: "muscles", value: filter.muscles.joined(separator: ","))) }
+        do {
+            let page: ExercisePage? = try await session.api.get("exercises", query: items)
+            return page?.items ?? []
+        } catch {
+            if case APIError.unauthorized = error { session.expire() }
+            throw error
+        }
+    }
+
     struct DetailError: Error {
         /// nil = the session expired (the app is going back to login)
         let message: String?

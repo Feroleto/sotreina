@@ -5,13 +5,14 @@ import SwiftUI
 /// Treino › Rotinas: the user's routines with "Iniciar" (spec §6.4, tela 2),
 /// and a last row for a free workout (no routine) — app only, a registered
 /// exception to web parity.
-/// Tapping a routine (outside "Iniciar") pushes its detail. Creating and
-/// editing routines stays on the web for now. Lives under the area header of
-/// `AreaScreen`, which owns the navigation stack.
+/// Tapping a routine (outside "Iniciar") pushes its detail; "+ Nova" opens
+/// the editor. Lives under the area header of `AreaScreen`, which owns the
+/// navigation stack.
 struct RoutinesView: View {
     let store: WorkoutStore
     /// the routine whose detail is pushed
     @State private var viewingId: String?
+    @State private var creating = false
 
     var body: some View {
         content
@@ -21,6 +22,10 @@ struct RoutinesView: View {
                 if let template = store.templates.first(where: { $0.id == id }) {
                     RoutineDetailView(template: template, store: store)
                 }
+            }
+            .fullScreenCover(isPresented: $creating) {
+                RoutineEditView(template: nil, store: store)
+                    .monolitoTheme()
             }
     }
 
@@ -49,10 +54,14 @@ struct RoutinesView: View {
                 } description: {
                     Text("gym.routines.emptyBody", bundle: .l10n)
                 } actions: {
+                    Button { creating = true } label: {
+                        Text("gym.editor.newTitle", bundle: .l10n)
+                    }
+                    .buttonStyle(.pill)
                     Button { Task { await store.start(templateId: nil) } } label: {
                         Text("gym.routines.startFree", bundle: .l10n)
                     }
-                    .buttonStyle(.pill)
+                    .buttonStyle(.chip)
                     .disabled(store.startingTemplateId != nil)
                 }
                 .refreshable { await store.load() }
@@ -64,6 +73,25 @@ struct RoutinesView: View {
 
     private var list: some View {
         List {
+            // "2 rotinas salvas · + Nova" (RoutinesListPage)
+            HStack {
+                Text("gym.routines.savedCount \(store.templates.count)", bundle: .l10n)
+                    .font(DSFont.meta)
+                    .foregroundStyle(Color.mutedFg)
+                Spacer()
+                Button { creating = true } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "plus").font(.system(size: 12, weight: .semibold))
+                        Text("gym.editor.newTitle", bundle: .l10n)
+                    }
+                }
+                .buttonStyle(.chip)
+            }
+            .padding(.vertical, 10)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 0, leading: pageGutter, bottom: 0, trailing: pageGutter))
+            .listRowBackground(Color.pageBg)
+
             ForEach(store.templates) { template in
                 RoutineRow(
                     template: template,

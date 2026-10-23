@@ -105,15 +105,7 @@ struct RunActivitiesView: View {
                 HStack(alignment: .center) {
                     SectionTitle(L10n.string("dashboard.chart.weeklyVolume", lang: lang))
                     Spacer()
-                    Button { pickingRange = true } label: {
-                        Label {
-                            Text(range.map { RunFormat.rangeLabel($0, lang: lang, calendar: calendar) }
-                                ?? L10n.string("dashboard.dateRange.custom", lang: lang))
-                        } icon: {
-                            Image(systemName: "calendar")
-                        }
-                    }
-                    .buttonStyle(.chip)
+                    RangeTrigger(range: range, calendar: calendar) { pickingRange = true }
                 }
                 .padding(.top, 24)
 
@@ -296,6 +288,36 @@ private struct ActivityRow: View {
         }
         .padding(.vertical, 13)
         .padding(.horizontal, 2)
+    }
+}
+
+/// The period button by "Volume semanal" (the web's DateRangePicker
+/// trigger): outlined "Personalizado", or the range on the accent tint.
+private struct RangeTrigger: View {
+    let range: DateRange?
+    let calendar: Calendar
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: "calendar").font(.system(size: 11))
+                if let range {
+                    Text(verbatim: "\(RunFormat.dayMonth(range.start, calendar: calendar)) – \(RunFormat.dayMonth(range.end, calendar: calendar))")
+                } else {
+                    Text("dashboard.dateRange.custom", bundle: .l10n)
+                }
+            }
+            .font(Font.geist(11.5, relativeTo: .caption).weight(.medium))
+            .foregroundStyle(range == nil ? Color.mutedFg : Color.accTx)
+            .padding(.horizontal, 11)
+            .frame(minHeight: 36)
+            .background(range == nil ? Color.clear : Color.accBg, in: RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                if range == nil { RoundedRectangle(cornerRadius: 8).strokeBorder(Color.gridAx) }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 

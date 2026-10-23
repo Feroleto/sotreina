@@ -26,3 +26,9 @@ Portar a vista mobile de Atividades (`Dashboard.tsx`, `MobileWeeklySummary.tsx`,
 - **Strings**: as chaves `dashboard.*` da web, com plurais no `.stringsdict`. Só do app: `dateRange.start/end/apply`.
 - `xtool dev build` passa no worktree. As linhas 01–07 da Fase C estão no `ios/README.md` do worktree. Os pares web 01 e 02 foram capturados em `ios/validation/C/` do worktree.
 - **Parado por decisão do usuário**: a instalação no iPhone espera as [Rotinas: detalhe da rotina e detalhe do exercício](21-rotinas-leitura.md) fecharem e serem commitadas em `main`. Depois: commit do `fase-c`, merge de `main` em `fase-c`, `deploy.sh` do worktree e captura das linhas.
+
+### Retomada (2026-10-23)
+
+- As Rotinas fecharam (`da196a2` em `main`). Fiz o merge de `main` em `fase-c` e resolvi o conflito nos `.strings` mantendo os dois blocos, sem chave duplicada. O commit do merge fica com o usuário. 142 testes do Kit e o build passam.
+- Instalei e capturei as linhas 01 e 02 (conta em mi): a estrutura bate com a web. O botão "Personalizado" virou o contorno da web (`RangeTrigger`: 36 pt, cantos 8, `--grid-ax`, 11,5 muted, com fundo de acento quando há período). Esse ajuste **ainda não foi instalado**.
+- **Parado de novo**: a sessão do [Editor de rotina: criar e editar](22-editor-rotina.md) instalou pelo `main` ao mesmo tempo e cancelou a minha instalação. O usuário decidiu que o Editor usa o iPhone primeiro. Quando ele fechar e for commitado, faço o merge de `main` em `fase-c` de novo, instalo e sigo da linha 03. A regra entrou nas Notes do mapa.

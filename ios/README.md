@@ -221,7 +221,9 @@ Peso em lb (`.scratch/app-ios-completo/issues/19-peso-lb-sessao.md`): as linhas 
 
 Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-livre-atualizar-rotina.md`): linhas 09–11.
 
-Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
+Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17.
+
+Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linhas 18–26. As capturas da web saem de um `--steps` que abre os editores e nunca toca em Salvar. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -242,6 +244,15 @@ Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): lin
 | 15 | Exercício › detalhe (foto, chips, metas, peso anterior em lb, como executar) | claro · PT | como a 12 + tocar no primeiro exercício | `--page gym/workouts` + "Upper" + primeiro exercício | ok (2026-10-23; peso anterior em lb no app, kg no banco local da web) |
 | 16 | Exercício › detalhe | escuro · EN | como a 13 + tocar no primeiro exercício | `--page gym/workouts --theme dark --lang en` + "Upper" + primeiro exercício | ok (2026-10-23) |
 | 17 | Rotina › detalhe | Dynamic Type máx. | `SOTREINA_SCREEN=gymRoutines` + tocar em "upper" | — | ok (2026-10-23; nome longo corta com "…", como na web) |
+| 18 | Rotinas com "N rotinas salvas · + Nova" no topo | claro · PT | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/workouts` | ok (2026-10-23) |
+| 19 | Nova rotina, vazia | claro · PT | como a 18 + "+ Nova" | `--page gym/workouts` + "Nova rotina" | ok (2026-10-23) |
+| 20 | Editar rotina (nome, exercícios com metas, + Adicionar exercício) | claro · PT | como a 18 + "upper" + lápis | `--page gym/workouts` + "Upper" + lápis | desvio aceito: linhas finas em vez de cartões (padrão das listas do app, arraste nativo), "≡" no lugar dos seis pontos, Cancelar/Salvar na barra (2026-10-23) |
+| 21 | Editar exercício (séries, faixa de reps, descanso) | claro · PT | como a 20 + tocar no primeiro exercício | como a 20 + primeiro exercício | ok (2026-10-23) |
+| 22 | Adicionar exercício: chip "Legs", selecionados | escuro · EN | `SOTREINA_SCREEN=gymRoutines SOTREINA_THEME=dark SOTREINA_LANG=en` + "upper" + lápis + "Add exercise" + "Legs" | `--page gym/workouts --theme dark --lang en` + "Upper" + lápis + "Add exercise" + "Legs" | desvio aceito: folha sobre o editor em vez de tela cheia; chip selecionado com contorno (`Chip`) (2026-10-23) |
+| 23 | Editar rotina | escuro · EN | como a 22, antes de "Add exercise" | `--page gym/workouts --theme dark --lang en` + "Upper" + lápis | ok (2026-10-23) |
+| 24 | Cancelar com alteração: "Descartar alterações?" | claro · PT | como a 20 + mudar o nome + Cancelar | — (a web confirma numa faixa inline) | desvio aceito: folha de ações nativa no lugar da faixa inline (2026-10-23) |
+| 25 | Editar rotina | Dynamic Type máx. | como a 20 | — | ok (2026-10-23) |
+| 26 | Funcional: criar uma rotina, reordenar arrastando, mudar metas e salvar; editar e salvar uma existente | — | manual | — | ok (usuário, 2026-10-23: criou, arrastou, mudou metas, salvou; editou removendo um exercício; ordem e metas conferidas no detalhe) |
 
 ### Fase C
 
@@ -249,13 +260,13 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
-| 01 | Corrida › Atividades (semana, barras de 12 semanas, lista, "Powered by Strava") | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/activities` | |
-| 02 | Corrida › Atividades | escuro · EN | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/activities --theme dark --lang en` | |
-| 03 | Barra tocada (leitura da semana em cima) | claro · PT | manual: tocar numa barra | — | |
-| 04 | Sheet de período (atalhos + início/fim, até 3 meses) | claro · PT | manual: tocar em "Personalizado" | — (a web usa um calendário de dois toques, sem equivalente nativo) | |
-| 05 | Período aplicado (chip, barras e lista do período) | claro · PT | manual: escolher "Mês Passado" | — | |
-| 06 | Corrida › Atividades em mi | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em mi) | — | |
-| 07 | Corrida › Atividades | Dynamic Type máx. | `SOTREINA_SCREEN=runActivities` | — | |
+| 01 | Corrida › Atividades (semana, barras de 12 semanas, lista, "Powered by Strava") | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/activities` |  ok (2026-10-23; números com vírgula em PT, a web escreve "12.4"; a tab bar nativa no lugar da pílula é o desvio já aceito na Navegação) |
+| 02 | Corrida › Atividades | escuro · EN | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/activities --theme dark --lang en` |  ok (2026-10-23) |
+| 03 | Barra tocada (leitura da semana em cima) | claro · PT | manual: tocar numa barra | — |  ok (2026-10-23) |
+| 04 | Sheet de período (atalhos + início/fim, até 3 meses) | claro · PT | manual: tocar em "Personalizado" | — (a web usa um calendário de dois toques, sem equivalente nativo) |  desvio aceito: sheet nativo com atalhos + Início/Fim no lugar do calendário de dois toques da web |
+| 05 | Período aplicado (chip, barras e lista do período) | claro · PT | manual: escolher "Mês Passado" | — |  ok (2026-10-23; "Últimos 3 Meses": 14 semanas, chip "9 corridas · 54,6 mi · 93 dias") |
+| 06 | Corrida › Atividades em mi | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em mi) | — |  ok (2026-10-23; coberta pelas linhas 01–05, todas com a conta em mi) |
+| 07 | Corrida › Atividades | Dynamic Type máx. | `SOTREINA_SCREEN=runActivities` | — |  ok (2026-10-23; saiu no escuro, que era o tema do sistema) |
 
 ## Checklist da Fase 0 (go/no-go)
 
