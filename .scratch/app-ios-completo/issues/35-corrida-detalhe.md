@@ -1,7 +1,7 @@
 # Corrida: detalhe da atividade
 
 Type: task
-Status: open
+Status: claimed
 Blocked by: 34
 
 ## Question

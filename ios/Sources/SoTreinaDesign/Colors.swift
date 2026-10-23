@@ -27,6 +27,11 @@ extension Color {
     })
     public static let pos = monolito(.pos)
     public static let neg = monolito(.neg)
+    /// history dot of a free workout
+    public static let dotEasy = monolito(.dotEasy)
+    /// history dots of the routines, in first-seen order (`HistoryBins.routineDots`):
+    /// mustard, then `--chart-2`, `--chart-4`, `--chart-1`
+    public static let routineDots: [Color] = [.acc, monolito(.chart2), monolito(.chart4), monolito(.chart1)]
 
     private static func monolito(_ token: Monolito.Token) -> Color {
         Color(uiColor: monolitoUIColor(token))

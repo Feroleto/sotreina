@@ -8,6 +8,8 @@ public enum Monolito {
         case pageBg, foreground, card, mutedForeground, border, chip, bar, gridAx
         case acc, accFg, accTx
         case pos, neg
+        /// history dots: a free workout, and the routines in first-seen order
+        case dotEasy, chart1, chart2, chart4
 
         /// The CSS custom property it mirrors; nil for tokens the web derives
         /// with `color-mix` (precomputed here, pinned by a test).
@@ -26,6 +28,9 @@ public enum Monolito {
             case .accTx: nil
             case .pos: "pos"
             case .neg: "neg"
+            case .dotEasy: "dot-easy"
+            // oklch() on the web, converted to sRGB here and pinned by a test
+            case .chart1, .chart2, .chart4: nil
             }
         }
     }
@@ -53,6 +58,13 @@ public enum Monolito {
         case .accTx: Pair(light: 0x674C1A, dark: 0xD9A441)
         case .pos: Pair(light: 0x2F7D55, dark: 0x5FBF8A)
         case .neg: Pair(light: 0xB8431F, dark: 0xE5765A)
+        case .dotEasy: Pair(light: 0xA8A59E, dark: 0x5C5B58)
+        // --chart-1/2/4: light oklch(0.646 0.222 41.116) / (0.6 0.118 184.704) /
+        // (0.828 0.189 84.429); dark (0.488 0.243 264.376) / (0.696 0.17 162.48) /
+        // (0.627 0.265 303.9)
+        case .chart1: Pair(light: 0xF54900, dark: 0x1447E6)
+        case .chart2: Pair(light: 0x009689, dark: 0x00BC7D)
+        case .chart4: Pair(light: 0xFFB900, dark: 0xAD46FF)
         }
     }
 

@@ -1,7 +1,7 @@
 # Corrida: Atividades
 
 Type: task
-Status: claimed
+Status: resolved
 Blocked by: 33
 
 ## Question
@@ -32,3 +32,16 @@ Portar a vista mobile de Atividades (`Dashboard.tsx`, `MobileWeeklySummary.tsx`,
 - As Rotinas fecharam (`da196a2` em `main`). Fiz o merge de `main` em `fase-c` e resolvi o conflito nos `.strings` mantendo os dois blocos, sem chave duplicada. O commit do merge fica com o usuário. 142 testes do Kit e o build passam.
 - Instalei e capturei as linhas 01 e 02 (conta em mi): a estrutura bate com a web. O botão "Personalizado" virou o contorno da web (`RangeTrigger`: 36 pt, cantos 8, `--grid-ax`, 11,5 muted, com fundo de acento quando há período). Esse ajuste **ainda não foi instalado**.
 - **Parado de novo**: a sessão do [Editor de rotina: criar e editar](22-editor-rotina.md) instalou pelo `main` ao mesmo tempo e cancelou a minha instalação. O usuário decidiu que o Editor usa o iPhone primeiro. Quando ele fechar e for commitado, faço o merge de `main` em `fase-c` de novo, instalo e sigo da linha 03. A regra entrou nas Notes do mapa.
+
+## Answer
+
+**Feito e validado no iPhone (2026-10-23)**, no worktree `../strava_dashboard-corrida`, branch `fase-c` (commits `fac49fc`, `fe23bfe`, `c23fd24`). O usuário aprovou a galeria da Fase C, linhas 01–07.
+
+- **Kit** (154 testes com o Treino mesclado): `Activities.swift` (`ActivityListItem`, `ActivitiesPage`, `DateRange`, `WeekBin`, `RunBins`, port de `bins.ts` e das partes mobile de `Dashboard`/`DateRangePicker`) e `RunFormat.swift` (port de `activityFormat.ts`: distância, pace, datas, meses, rótulo do período).
+- **App**: `RunStore` (`GET /activities?limit=1000` pelo Cache JSON) e `RunActivitiesView`, com semana atual × semana passada, barras tocáveis, lista por semana com "+ N semanas anteriores", chip do período, `RangeTrigger` com o contorno da web e "Powered by Strava". A aba Corrida abre em Atividades (`portedPages`). Tocar numa corrida ainda não navega: isso fica pro [Corrida: detalhe da atividade](35-corrida-detalhe.md).
+- **Selo Strava**: SVGs oficiais renderizados @3x no Chromium, sem alteração (`SoTreinaDesign/Resources/Strava/`, `PoweredByStrava`).
+- **Desvios aceitos**:
+  - período em sheet nativo (atalhos que cabem em 3 meses + Início/Fim, com teto de 3 meses) no lugar do calendário de dois toques;
+  - vírgula decimal em PT (a web escreve "12.4" por causa do `toFixed`);
+  - a tab bar nativa, já aceita na Navegação.
+- **Merges com o Treino**: dois, ambos de `main` em `fase-c`. Os `.strings` conflitam no fim do arquivo (fica com os dois blocos). O `.stringsdict` conflita **intercalado**, porque os plurais têm a mesma estrutura, então a resolução é montar o arquivo pela união das chaves dos dois lados com `plistlib`, conferindo depois que o diff contra `main` só acrescenta linhas.
