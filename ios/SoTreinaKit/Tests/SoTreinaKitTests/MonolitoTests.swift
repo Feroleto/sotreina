@@ -48,6 +48,14 @@ import Testing
         #expect(Monolito.color(.accTx).dark == Monolito.color(.acc).dark)
     }
 
+    @Test func chartTokensAreTheWebsOklchInSRGB() {
+        // converted with the OKLab matrices; a change to --chart-* on the web
+        // has to be converted again and updated here
+        #expect(Monolito.color(.chart1) == .init(light: 0xF54900, dark: 0x1447E6))
+        #expect(Monolito.color(.chart2) == .init(light: 0x009689, dark: 0x00BC7D))
+        #expect(Monolito.color(.chart4) == .init(light: 0xFFB900, dark: 0xAD46FF))
+    }
+
     @Test func textOnMustardIsAlwaysDark() {
         let fg = Monolito.color(.accFg)
         #expect(fg.light == 0x141414 && fg.dark == 0x141414)

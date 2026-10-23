@@ -1,0 +1,212 @@
+[
+    {
+        "id": "cmvl01u3j0000npx0ybvng271",
+        "startedAt": "2026-10-23T13:22:17.887Z",
+        "finishedAt": "2026-10-23T13:23:33.881Z",
+        "durationSec": 76,
+        "exerciseCount": 3,
+        "volumeKg": 102.05,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrxxr8o800012gx0iscow1tj",
+        "startedAt": "2026-07-23T20:00:15.273Z",
+        "finishedAt": "2026-07-23T20:01:11.814Z",
+        "durationSec": 57,
+        "exerciseCount": 3,
+        "volumeKg": 1820,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrv729q2000rufx01zr67pez",
+        "startedAt": "2026-07-21T21:57:27.866Z",
+        "finishedAt": "2026-07-21T21:59:19.427Z",
+        "durationSec": 112,
+        "exerciseCount": 3,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrv6udkq0009ufx0nbda5dcp",
+        "startedAt": "2026-07-21T21:51:19.610Z",
+        "finishedAt": "2026-07-21T21:56:23.638Z",
+        "durationSec": 304,
+        "exerciseCount": 3,
+        "volumeKg": 900,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrv6taza0001ufx0isii4v3s",
+        "startedAt": "2026-07-21T21:50:29.590Z",
+        "finishedAt": "2026-07-21T21:51:06.229Z",
+        "durationSec": 37,
+        "exerciseCount": 3,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrv0x6bo000axwx0fva80sv3",
+        "startedAt": "2026-07-21T19:05:32.484Z",
+        "finishedAt": "2026-07-21T19:05:38.042Z",
+        "durationSec": 6,
+        "exerciseCount": 3,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrv0wu6j0005xwx098v494df",
+        "startedAt": "2026-07-21T19:05:16.747Z",
+        "finishedAt": "2026-07-21T19:05:27.499Z",
+        "durationSec": 11,
+        "exerciseCount": 3,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmruzztp30008v0x0t95azzee",
+        "startedAt": "2026-07-21T18:39:36.471Z",
+        "finishedAt": "2026-07-21T18:39:49.854Z",
+        "durationSec": 13,
+        "exerciseCount": 4,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmruwqf5n000h35x01iw0dyf5",
+        "startedAt": "2026-07-21T17:08:18.875Z",
+        "finishedAt": "2026-07-21T17:15:30.975Z",
+        "durationSec": 432,
+        "exerciseCount": 4,
+        "volumeKg": 700,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrurwuhb000c35x05w8dw73c",
+        "startedAt": "2026-07-21T14:53:20.591Z",
+        "finishedAt": "2026-07-21T15:35:53.341Z",
+        "durationSec": 2553,
+        "exerciseCount": 4,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmruqpbge000735x0rhk8uh3f",
+        "startedAt": "2026-07-21T14:19:29.726Z",
+        "finishedAt": "2026-07-21T14:19:58.247Z",
+        "durationSec": 29,
+        "exerciseCount": 4,
+        "volumeKg": 0,
+        "templateId": "cmruoi2lw000035x0ycgigj05",
+        "templateName": "Upper"
+    },
+    {
+        "id": "cmrttwwdc0001qpx067d11ldv",
+        "startedAt": "2026-07-20T23:01:36.096Z",
+        "finishedAt": "2026-07-20T23:01:53.452Z",
+        "durationSec": 17,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtryaoz000q52x01vc50k2j",
+        "startedAt": "2026-07-20T22:06:42.083Z",
+        "finishedAt": "2026-07-20T22:06:43.771Z",
+        "durationSec": 2,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtry2hm000n52x06skie4pv",
+        "startedAt": "2026-07-20T22:06:31.450Z",
+        "finishedAt": "2026-07-20T22:06:37.119Z",
+        "durationSec": 6,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtrj5yw000k52x0fgcje736",
+        "startedAt": "2026-07-20T21:54:56.120Z",
+        "finishedAt": "2026-07-20T22:06:25.360Z",
+        "durationSec": 689,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtrf539000g52x0cboseqb1",
+        "startedAt": "2026-07-20T21:51:48.357Z",
+        "finishedAt": "2026-07-20T21:54:23.676Z",
+        "durationSec": 155,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtrcjvs000c52x01p3pby02",
+        "startedAt": "2026-07-20T21:49:47.560Z",
+        "finishedAt": "2026-07-20T21:50:22.496Z",
+        "durationSec": 35,
+        "exerciseCount": 0,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtm1mnn000952x0ppdu373a",
+        "startedAt": "2026-07-20T19:21:19.859Z",
+        "finishedAt": "2026-07-20T19:21:23.749Z",
+        "durationSec": 4,
+        "exerciseCount": 1,
+        "volumeKg": 640,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtl3ja3000652x0z7sh4o3e",
+        "startedAt": "2026-07-20T18:54:49.179Z",
+        "finishedAt": "2026-07-20T18:54:49.915Z",
+        "durationSec": 1,
+        "exerciseCount": 2,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtjxrhj000dlex0uni5wq8b",
+        "startedAt": "2026-07-20T18:22:20.263Z",
+        "finishedAt": "2026-07-20T18:43:35.504Z",
+        "durationSec": 1275,
+        "exerciseCount": 0,
+        "volumeKg": 0,
+        "templateId": null,
+        "templateName": null
+    },
+    {
+        "id": "cmrtjw63v0009lex0oxr4hjaf",
+        "startedAt": "2026-07-20T18:21:05.899Z",
+        "finishedAt": "2026-07-20T18:22:16.931Z",
+        "durationSec": 71,
+        "exerciseCount": 2,
+        "volumeKg": 120,
+        "templateId": null,
+        "templateName": null
+    }
+]

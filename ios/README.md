@@ -223,7 +223,9 @@ Treino livre e atualizar rotina (`.scratch/app-ios-completo/issues/20-sessao-liv
 
 Rotinas, leitura (`.scratch/app-ios-completo/issues/21-rotinas-leitura.md`): linhas 12–17.
 
-Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linhas 18–26. As capturas da web saem de um `--steps` que abre os editores e nunca toca em Salvar. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
+Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linhas 18–26.
+
+Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 27–34. A lista tem destino próprio (`gymHistory`); os detalhes são por toque. As capturas da web saem de um `--steps` que abre os editores e nunca toca em Salvar. As telas empilhadas não têm destino próprio no modo de validação: o agente abre Rotinas e o usuário toca. As capturas da web saem de um `--steps` que só navega (abre "Upper" e o primeiro exercício). O aviso de rotinas vazias também ganhou "Começar treino livre", mas não entra na lista: a conta de teste tem rotinas.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -253,6 +255,14 @@ Editor de rotina (`.scratch/app-ios-completo/issues/22-editor-rotina.md`): linha
 | 24 | Cancelar com alteração: "Descartar alterações?" | claro · PT | como a 20 + mudar o nome + Cancelar | — (a web confirma numa faixa inline) | desvio aceito: folha de ações nativa no lugar da faixa inline (2026-10-23) |
 | 25 | Editar rotina | Dynamic Type máx. | como a 20 | — | ok (2026-10-23) |
 | 26 | Funcional: criar uma rotina, reordenar arrastando, mudar metas e salvar; editar e salvar uma existente | — | manual | — | ok (usuário, 2026-10-23: criou, arrastou, mudou metas, salvou; editou removendo um exercício; ordem e metas conferidas no detalhe) |
+| 27 | Histórico (KPIs, barras semanais, Recentes por semana) | claro · PT | `SOTREINA_SCREEN=gymHistory SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page gym/history` | ok (2026-10-23; cartões de KPI com 150 pt como na web) |
+| 28 | Histórico › barra tocada (leitura da semana) | claro · PT | como a 27 + tocar na barra da semana atual | — | ok (2026-10-23) |
+| 29 | Treino finalizado › detalhe (data, 4 stats, exercícios com médias) | claro · PT | como a 27 + primeira linha | `--page gym/history` + primeira linha | ok (2026-10-23; "1 séries" sem plural também na web) |
+| 30 | Exercício no treino (séries, volume, 1RM est., série a série, melhor série) | claro · PT | como a 29 + primeiro exercício | como a 29 + primeiro exercício | ok (2026-10-23; tabela de séries espalhada como na web) |
+| 31 | Histórico | escuro · EN | `SOTREINA_SCREEN=gymHistory SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page gym/history --theme dark --lang en` | ok (2026-10-23) |
+| 32 | Treino finalizado › detalhe | escuro · EN | como a 31 + primeira linha | como a 31 + primeira linha | ok (2026-10-23) |
+| 33 | Exercício no treino | escuro · EN | como a 32 + primeiro exercício | como a 32 + primeiro exercício | ok (2026-10-23) |
+| 34 | Histórico | Dynamic Type máx. | `SOTREINA_SCREEN=gymHistory` | — | ok (2026-10-23); desvios aceitos por enquanto na fase: sem animação de entrada das barras/semanas, barras desenhadas à mão (não Swift Charts) |
 
 ## Checklist da Fase 0 (go/no-go)
 

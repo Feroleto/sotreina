@@ -11,6 +11,7 @@ struct AppShell: View {
     let me: Me
     @Binding var pendingLink: ActivityLink?
     @State private var store: WorkoutStore
+    @State private var history: GymHistoryStore
     @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
     private let session: SessionStore
     @Environment(AppLanguageStore.self) private var language
@@ -22,6 +23,7 @@ struct AppShell: View {
         self.me = me
         _pendingLink = pendingLink
         _store = State(initialValue: WorkoutStore(session: session))
+        _history = State(initialValue: GymHistoryStore(session: session))
     }
 
     private var tabs: [AppTab] { AppTab.tabs(for: me.enabledAreas) }
@@ -109,10 +111,10 @@ struct AppShell: View {
             ProfileView(session: session, me: me)
         case .gym:
             AreaScreen(tab: tab) { page in
-                if page == .gymRoutines {
-                    RoutinesView(store: store)
-                } else {
-                    ComingSoonView()
+                switch page {
+                case .gymRoutines: RoutinesView(store: store)
+                case .gymHistory: GymHistoryView(store: history)
+                default: ComingSoonView()
                 }
             }
         case .today, .run, .diet:
