@@ -196,3 +196,16 @@
 "gym.session.syncTemplateBack" = "Voltar";
 "gym.session.syncTemplateKeep" = "Manter rotina";
 "gym.session.syncTemplateUpdate" = "Atualizar rotina";
+
+"gym.routineDetail.open" = "Ver rotina";
+"gym.routineDetail.exercises" = "Exercícios";
+"gym.routineDetail.lastPerformed %@" = "última vez %@";
+"gym.routineDetail.spec %@ %@" = "%1$@ séries · %2$@ reps";
+"gym.routineDetail.rest %@" = "descanso %@";
+"gym.routineDetail.start" = "Iniciar treino";
+"gym.routineDetail.delete" = "Excluir";
+"gym.routineDetail.deleteConfirm" = "Excluir esta rotina?";
+"gym.exerciseDetail.sets" = "Séries";
+"gym.exerciseDetail.reps" = "Reps";
+"gym.exerciseDetail.prevWeight" = "Peso anterior";
+"gym.exerciseDetail.howTo" = "Como executar";

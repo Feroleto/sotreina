@@ -165,6 +165,54 @@ final class WorkoutStore {
         }
     }
 
+    // MARK: - Routine and exercise detail (read only)
+
+    /// `GET /workout-templates/:id` — the per-exercise targets the summary
+    /// list doesn't carry. Returns the error message to show, nil on a 401.
+    func templateDetail(_ id: String) async -> Result<TemplateDetail, DetailError> {
+        do {
+            guard let detail: TemplateDetail = try await session.api.get("workout-templates/\(id)") else {
+                return .failure(DetailError(message: Self.message(for: APIError.http(status: 404), lang: AppLanguageStore.shared.lang)))
+            }
+            return .success(detail)
+        } catch {
+            return .failure(DetailError(message: handle(error)))
+        }
+    }
+
+    /// `GET /exercises/:id`. Best-effort, like the web: the exercise detail
+    /// falls back field by field when it's missing.
+    func exerciseDetail(_ id: String) async -> ExerciseDetail? {
+        try? await session.api.get("exercises/\(id)")
+    }
+
+    /// "Peso anterior": the cached last performance when the session already
+    /// fetched it, else a fresh fetch (not cached: it doesn't feed proposals).
+    func lastPerformance(exerciseId: String) async -> LastPerformance? {
+        if let cached = lastPerformance[exerciseId] { return cached }
+        return try? await session.api.get("exercises/\(exerciseId)/last-performance")
+    }
+
+    /// `DELETE /workout-templates/:id`. Past workouts survive (their
+    /// `templateId` goes null on the server). True when it's gone.
+    func deleteTemplate(_ id: String) async -> Bool {
+        do {
+            try await session.api.deleteEmpty("workout-templates/\(id)")
+            templates.removeAll { $0.id == id }
+            log.notice("template deleted")
+            await load()
+            return true
+        } catch {
+            actionError = handle(error)
+            return false
+        }
+    }
+
+    struct DetailError: Error {
+        /// nil = the session expired (the app is going back to login)
+        let message: String?
+    }
+
     /// `DELETE /workouts/:id` — throws the whole session away (sets cascade).
     func discard() async {
         guard let id = active?.id else { return }

@@ -64,7 +64,61 @@ public enum MuscleGroup {
     }
 }
 
+/// Labels of the server `Equipment` enum (`equipment` strings of gym.json).
+public enum Equipment {
+    private static let labelsPT: [String: String] = [
+        "BARBELL": "Barra",
+        "DUMBBELL": "Halteres",
+        "MACHINE": "Máquina",
+        "CABLE": "Cabo",
+        "BODY_ONLY": "Peso corporal",
+        "KETTLEBELLS": "Kettlebell",
+        "BANDS": "Elástico",
+        "MEDICINE_BALL": "Medicine ball",
+        "EXERCISE_BALL": "Bola suíça",
+        "FOAM_ROLL": "Rolo de espuma",
+        "EZ_CURL_BAR": "Barra EZ",
+        "OTHER": "Outro",
+    ]
+
+    private static let labelsEN: [String: String] = [
+        "BARBELL": "Barbell",
+        "DUMBBELL": "Dumbbell",
+        "MACHINE": "Machine",
+        "CABLE": "Cable",
+        "BODY_ONLY": "Bodyweight",
+        "KETTLEBELLS": "Kettlebell",
+        "BANDS": "Band",
+        "MEDICINE_BALL": "Medicine ball",
+        "EXERCISE_BALL": "Exercise ball",
+        "FOAM_ROLL": "Foam roll",
+        "EZ_CURL_BAR": "EZ curl bar",
+        "OTHER": "Other",
+    ]
+
+    /// `nil` = the library entry has no equipment (`exerciseDetail.equipmentFallback`);
+    /// an unknown value shows as itself, like `MuscleGroup.label`.
+    public static func label(_ raw: String?, lang: Lang) -> String {
+        guard let raw else { return lang == .pt ? "Musculação" : "Strength training" }
+        return (lang == .pt ? labelsPT : labelsEN)[raw] ?? raw
+    }
+}
+
 public enum RoutineFormat {
+    /// "8–12", "10", or "—" with no target (the web's `formatRepsRange`).
+    public static func repsRange(min: Int?, max: Int?) -> String {
+        switch (min, max) {
+        case (nil, nil): return "—"
+        case let (min?, max?) where min != max: return "\(min)–\(max)"
+        default: return String(min ?? max!)
+        }
+    }
+
+    /// "1:30" (the web's `formatRestSeconds`).
+    public static func rest(seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
     /// "hoje", "ontem", "há 3 dias"… — same buckets as the web's
     /// `relativeTimeFromNow` (elapsed 24h periods, not calendar days).
     public static func lastPerformed(_ date: Date?, now: Date = .now, lang: Lang = .pt) -> String {

@@ -135,3 +135,14 @@ private func fixture<T: Decodable>(_ name: String, as type: T.Type) throws -> T 
         #expect(FinishPrompt.needsDriftCheck(templateId: "t1"))
     }
 }
+
+@Suite struct ExerciseDetailDecodingTests {
+    @Test func decodesExerciseDetail() throws {
+        let detail = try fixture("exercise-detail", as: ExerciseDetail.self)
+        #expect(detail.name == "Barra Fixa com Peso")
+        #expect(detail.equipment == "OTHER")
+        #expect(detail.primaryMuscles == ["LATS"])
+        #expect(detail.instructions.count == 4)
+        #expect(detail.imageUrls.first?.absoluteString.hasSuffix("Weighted_Pull_Ups/0.jpg") == true)
+    }
+}
