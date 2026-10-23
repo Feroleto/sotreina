@@ -302,7 +302,7 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 
 ### Fase D
 
-O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`): linhas 01–07. Adicionar Registros (`28-dieta-adicionar-registros.md`): linhas 08–15, web por `ios/validation/D/add.mjs` (só põe no carrinho, nunca salva). As capturas da web do modo de edição saem de `ios/validation/D/edit.mjs` (só abre o modo e o seletor, nunca salva nem apaga). O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
+O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`): linhas 01–07. Adicionar Registros (`28-dieta-adicionar-registros.md`): linhas 08–15, web por `ios/validation/D/add.mjs` (só põe no carrinho, nunca salva). Cadastro manual e scanner (`29-dieta-manual-scanner.md`): linhas 16–22, web por `ios/validation/D/manual.mjs` (só preenche, nunca envia). As capturas da web do modo de edição saem de `ios/validation/D/edit.mjs` (só abre o modo e o seletor, nunca salva nem apaga). O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -321,6 +321,13 @@ O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`):
 | 13 | Item no carrinho | escuro · EN | manual: idem com `SOTREINA_THEME=dark SOTREINA_LANG=en` | `--theme dark --lang en`, mesmos passos (shot `cart`) | ok (2026-10-23) |
 | 14 | Funcional: salvar aparece na Visão geral e na web; tocar num Registro salvo e mudar a quantidade aparece na web; o × remove; com o modo avião o item vira ⚠ "Não salvo" e, sem modo avião, "Salvar refeição" reenvia sem duplicar | — | manual | — | pendente: não conferido no aparelho nesta tarefa, vai pro Uso real da Fase D (a deduplicação por `clientId` foi conferida no servidor local) |
 | 15 | Adicionar com o QuantitySheet aberto | Dynamic Type máx. | manual | — | pendente: vai pro Uso real da Fase D |
+| 16 | Adicionar com o botão de scanner ao lado da busca e "Não encontrou? Adicionar manualmente →" | claro · PT | manual: tocar em "Café da manhã" | `--page diet/overview --steps ios/validation/D/manual.mjs` (shot `add`) | ok (2026-10-23; o link saiu marrom (`accTx`), virou mostarda como a web; o botão de Refeições salvas vem na próxima tarefa) |
+| 17 | Cadastro manual vazio (nome, porção, unidade, kcal, macros) | claro · PT | manual: tocar em "Adicionar manualmente" | idem (shot `manual`) | ok (2026-10-23; o voltar dizia "Back" e o foco automático escondia o botão atrás do teclado: o Adicionar ganhou `navigationTitle` e o foco saiu, como na web — o rótulo novo do voltar fica pra conferir no Uso real) |
+| 18 | Cadastro manual preenchido com unidade ("Granola caseira", "50 g", porção, 225/5/30/7,5) | claro · PT | manual: preencher | idem (shot `filled`) | ok (2026-10-23; "7,5" com vírgula é aceito; o teclado numérico não fechava, ganhou "OK" acima do teclado, conferido pelo usuário) |
+| 19 | Cadastro manual | escuro · EN | manual: idem com `SOTREINA_THEME=dark SOTREINA_LANG=en` | `--theme dark --lang en`, mesmos passos (shot `manual`) | pendente: vai pro Uso real da Fase D |
+| 20 | Scanner (câmera, moldura mostarda, entorno escurecido, instruções, Cancelar) | — | manual: botão de scanner; screenshot pelo cabo | — (o Chromium headless não tem câmera) | ok (usuário, 2026-10-23, no aparelho; a captura saiu na tela de bloqueio) |
+| 21 | Funcional: produto conhecido (ex. 7891000053508) abre o QuantitySheet; código desconhecido abre o cadastro e, depois de criado, o próximo scan do mesmo código acha o alimento (exige o backend novo em produção); criar abre o QuantitySheet com a porção; câmera negada mostra "Abrir Ajustes" | — | manual | — | parcial (2026-10-23): produto conhecido (água, 7898571360042) abriu o QuantitySheet; o 404 → cadastro com o código e o próximo scan achando o alimento vão pro Uso real, depois do deploy do backend |
+| 22 | Cadastro manual | Dynamic Type máx. | manual | — | pendente: vai pro Uso real da Fase D |
 
 ## Checklist da Fase 0 (go/no-go)
 

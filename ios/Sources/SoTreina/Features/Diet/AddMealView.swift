@@ -2,15 +2,21 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// One meal's "Adicionar" (the web's `AddMealPage`, without scanner, manual
-/// entry and Refeições salvas yet): the meal and today's date on top, the
-/// search, "Nesta refeição" with the saved Registros and the cart, the
-/// results, and the bottom bar with the totals and "Salvar refeição". Every
-/// food goes through the QuantitySheet; tapping a row in the meal reopens it.
+/// One meal's "Adicionar" (the web's `AddMealPage`, without Refeições salvas
+/// yet): the meal and today's date on top, the search and the scanner,
+/// "Nesta refeição" with the saved Registros and the cart, the results, the
+/// manual cadastro link, and the bottom bar with the totals and "Salvar
+/// refeição". Every food goes through the QuantitySheet, whichever way it
+/// came in; tapping a row in the meal reopens it.
 struct AddMealView: View {
     @State private var store: AddMealStore
     @State private var query = ""
     @State private var sheet: SheetTarget?
+    @State private var scanning = false
+    /// what the scan found, acted on once the scanner is gone: a product
+    /// opens the sheet, a 404 code the manual cadastro linked to it
+    @State private var scanned: ScanOutcome?
+    @State private var manual: ManualTarget?
     @Environment(\.dismiss) private var dismiss
     @Environment(AppLanguageStore.self) private var language
 
@@ -49,18 +55,41 @@ struct AddMealView: View {
         }
     }
 
+    enum ScanOutcome {
+        case found(FoodListItem)
+        case notFound(String)
+    }
+
+    /// The manual cadastro, linked to the scanned code after a 404.
+    struct ManualTarget: Identifiable, Hashable {
+        let externalId: String?
+        var id: String { externalId ?? "" }
+    }
+
     var body: some View {
         let lang = language.lang
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                SearchField(text: $query)
-                    .padding(.top, 16)
+                HStack(spacing: 8) {
+                    SearchField(text: $query)
+                    scanButton
+                }
+                .padding(.top, 16)
                 if store.cart.totalItems(saved: store.saved) > 0 {
                     inThisMeal(lang: lang)
                         .padding(.top, 20)
                 }
                 results(lang: lang)
                     .padding(.top, 20)
+                Button { manual = ManualTarget(externalId: nil) } label: {
+                    Text("diet.addMeal.manualLink", bundle: .l10n)
+                        .font(Font.geist(12.5, relativeTo: .footnote).weight(.medium))
+                        .foregroundStyle(Color.acc)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
                 if let error = store.error {
                     Text(verbatim: error)
                         .font(DSFont.caption)
@@ -77,6 +106,8 @@ struct AddMealView: View {
         .scrollDismissesKeyboard(.immediately)
         .background(Color.pageBg)
         .task(id: query) { await store.search(query) }
+        // hidden behind the principal item; it's what the next screen's back button says
+        .navigationTitle(Text(verbatim: mealLabel(store.meal.type, lang: lang)))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -93,6 +124,29 @@ struct AddMealView: View {
         // a full screen with its own bottom bar, like the web hides the pill
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar(lang: lang) }
+        .navigationDestination(item: $manual) { target in
+            ManualFoodView(externalId: target.externalId) { food in
+                manual = nil
+                sheet = .new(food)
+            }
+        }
+        .fullScreenCover(isPresented: $scanning, onDismiss: {
+            // a sheet or a push can't start while the cover is still on screen
+            switch scanned {
+            case .found(let food): sheet = .new(food)
+            case .notFound(let code): manual = ManualTarget(externalId: code)
+            case nil: break
+            }
+            scanned = nil
+        }) {
+            BarcodeScannerView { food in
+                scanned = .found(food)
+                scanning = false
+            } onNotFound: { code in
+                scanned = .notFound(code)
+                scanning = false
+            }
+        }
         .sheet(item: $sheet) { target in
             QuantitySheetView(
                 food: target.food, initial: target.initial, lang: lang,
@@ -107,6 +161,21 @@ struct AddMealView: View {
             }
             .monolitoTheme()
         }
+    }
+
+    /// The web's square button beside the search (`h-[42px] rounded-[10px] bg-chip`).
+    private var scanButton: some View {
+        Button { scanning = true } label: {
+            Image(systemName: "barcode.viewfinder")
+                .font(.system(size: 18))
+                .foregroundStyle(Color.mutedFg)
+                .frame(width: 42, height: 42)
+                .background(Color.chip, in: RoundedRectangle(cornerRadius: 10))
+                .overlay { RoundedRectangle(cornerRadius: 10).strokeBorder(Color.border, lineWidth: 1) }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("diet.addMeal.scanBarcode", bundle: .l10n))
     }
 
     // MARK: Nesta refeição

@@ -91,12 +91,36 @@ export class FoodsService {
     });
   }
 
+  // A scanned code with no match comes back here as externalId, so the next
+  // scan finds the food (see findByBarcode). @@unique([source, externalId])
+  // is global, though: a resend returns the caller's food already linked,
+  // and a code another user linked first saves this food unlinked, without a
+  // 500 and without saying whose food holds it.
   async createCustom(userId: string, input: CreateCustomFoodInput): Promise<FoodListItem> {
+    const { externalId } = input;
+    if (externalId) {
+      const own = await this.findOwnLinked(userId, externalId);
+      if (own) return own;
+    }
+    try {
+      return await this.insertCustom(userId, input, externalId);
+    } catch (e) {
+      // duck-typed rather than instanceof — tests mock @prisma/client
+      if (!(externalId && (e as { code?: unknown }).code === 'P2002')) throw e;
+      return (await this.findOwnLinked(userId, externalId)) ?? this.insertCustom(userId, input, undefined);
+    }
+  }
+
+  private insertCustom(
+    userId: string,
+    input: CreateCustomFoodInput,
+    externalId: string | undefined,
+  ): Promise<FoodListItem> {
     return this.prisma.food.create({
       data: {
         name: input.name,
         source: 'CUSTOM',
-        externalId: input.externalId,
+        externalId,
         createdByUserId: userId,
         kcal: input.kcal,
         protein: input.protein,
@@ -111,11 +135,22 @@ export class FoodsService {
     });
   }
 
-  // local cache (source OFF, externalId = barcode) → Open Food Facts →
-  // upsert into the cache → 404 if neither has it, so the frontend can
-  // offer manual cadastro. Never hits OFF for a barcode already cached,
+  private findOwnLinked(userId: string, barcode: string): Promise<FoodListItem | null> {
+    return this.prisma.food.findFirst({
+      where: { source: 'CUSTOM', externalId: barcode, createdByUserId: userId },
+      select: FOOD_SELECT,
+    });
+  }
+
+  // the caller's own CUSTOM food linked to the code (a manual cadastro after
+  // an earlier 404) → local cache (source OFF, externalId = barcode) → Open
+  // Food Facts → upsert into the cache → 404 if none has it, so the frontend
+  // can offer manual cadastro. Never hits OFF for a barcode already cached,
   // except to fill in a serving size the cache predates (see below).
   async findByBarcode(userId: string, barcode: string): Promise<FoodListItem> {
+    const own = await this.findOwnLinked(userId, barcode);
+    if (own) return own;
+
     const cached = await this.prisma.food.findUnique({
       where: { source_externalId: { source: 'OFF', externalId: barcode } },
       select: FOOD_SELECT,

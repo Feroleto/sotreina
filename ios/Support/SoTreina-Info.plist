@@ -8,6 +8,10 @@
 	<!-- without this, Activity.request() throws and nothing shows up -->
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<!-- the diet's barcode scanner (BarcodeScannerView); one language only:
+	     InfoPlist.strings would have to live in the main bundle -->
+	<key>NSCameraUsageDescription</key>
+	<string>O SoTreina usa a câmera para ler o código de barras dos alimentos.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<!-- the Live Activity's buttons are sotreina:// links (ActivityLink):
