@@ -266,7 +266,7 @@ Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 2
 
 ### Fase C
 
-Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–07. Detalhe da atividade (`35-corrida-detalhe.md`): linhas 08–13. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
+Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–07. Detalhe da atividade (`35-corrida-detalhe.md`): linhas 08–13. Visão geral (`37-corrida-visao-geral.md`): linhas 14–20. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -283,6 +283,13 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 | 11 | Detalhe de intervalado (badge mostarda, "Tiro N"/"Rec.") | claro · PT | manual: tocar num intervalado | — |  ok (2026-10-23; selo mostarda, "Aquecimento N"/"Tiro N"/"Rec. N") |
 | 12 | "View on Strava" abre a atividade na Strava | — | manual: tocar no link | — |  ok (2026-10-23; abriu a atividade no app da Strava) |
 | 13 | Detalhe | Dynamic Type máx. | manual | — |  ok (2026-10-23; a tabela de voltas para de crescer em `.xLarge` e a coluna FC média ficou com 52 pt; o resto da tela segue o Dynamic Type) |
+| 14 | Corrida › Visão geral (totais, calendário, início dos recordes) | claro · PT | `SOTREINA_SCREEN=runOverview SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/overview` |  ok (2026-10-23; vírgula decimal em PT, a web escreve "2080.8") |
+| 15 | Corrida › Visão geral | escuro · EN | `SOTREINA_SCREEN=runOverview SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/overview --theme dark --lang en` |  ok (2026-10-23) |
+| 16 | Recordes (1k/5k/10k + mais longa), tênis e "Powered by Strava" | claro · PT | manual: rolar até o fim | `--page run/overview` rolada |  ok (2026-10-23) |
+| 17 | "Ver todos": 12 distâncias, 5k expandido (2º/3º) | claro · PT | manual: "Ver todos" → 5k | sheet "Ver todos" |  ok (2026-10-23; sheet nativo; nome e data em linhas separadas, como a web) |
+| 18 | Calendário num mês com corridas, dia tocado no rodapé | claro · PT | manual: voltar até agosto, tocar num dia | — |  ok (2026-10-23) |
+| 19 | Visão geral | Dynamic Type máx. | manual | — |  ok (2026-10-23; com o texto grande, nome e data dos recordes vão pra linhas separadas, o texto do chip para em `.large` e a meta do tênis quebra em duas linhas) |
+| 20 | Recorde novo: selo "Novo" + pop em mola no chip | claro · PT | só com um recorde real: Uso real da Fase C | — |  pendente: precisa de um recorde real, fica pro Uso real da Fase C (a regra está testada no Kit) |
 
 ## Checklist da Fase 0 (go/no-go)
 

@@ -20,14 +20,62 @@ final class RunStore {
     private(set) var activities: [ActivityListItem] = []
     private(set) var loadState: LoadState = .idle
 
+    /// Visão geral: `GET /personal-bests` (empty on a failure, like the web)
+    private(set) var records: [PersonalBestRecord] = []
+    /// `GET /gear`; nil until it answers, so the section doesn't flash "no shoes"
+    private(set) var gear: [Gear]?
+    /// distances whose top 1 changed since this device last saw the records;
+    /// kept for the rest of the launch, so the "Novo" badge doesn't vanish on a reload
+    private(set) var newRecordKeys: Set<String> = []
+
     private let session: SessionStore
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "run")
     @ObservationIgnored private var restoredFromCache = false
+    @ObservationIgnored private var restoredOverviewFromCache = false
 
     static let query = [URLQueryItem(name: "limit", value: "1000")]
 
     init(session: SessionStore) {
         self.session = session
+    }
+
+    /// Records and shoes, in parallel; the activities come from `load()`.
+    func loadOverview() async {
+        guard let api = session.cachedAPI else { return }
+        if !restoredOverviewFromCache {
+            restoredOverviewFromCache = true
+            if let hit: ResponseCache.Hit<[PersonalBestRecord]> = api.cached("personal-bests") { records = hit.value ?? [] }
+            if let hit: ResponseCache.Hit<[Gear]> = api.cached("gear") { gear = hit.value ?? [] }
+        }
+        async let fetchedRecords: [PersonalBestRecord]? = api.get("personal-bests")
+        async let fetchedGear: [Gear]? = api.get("gear")
+        do {
+            let fresh = try await fetchedRecords ?? []
+            records = fresh
+            celebrate(fresh, userId: api.userId)
+        } catch APIError.unauthorized {
+            session.expire()
+            return
+        } catch {
+            log.error("personal-bests failed: \(String(describing: error), privacy: .public)")
+        }
+        do {
+            gear = try await fetchedGear ?? []
+        } catch {
+            log.error("gear failed: \(String(describing: error), privacy: .public)")
+            if gear == nil { gear = [] }
+        }
+    }
+
+    /// Only a successful fetch moves the snapshot: writing the empty list of
+    /// a failed one would make every record "new" next time (prSnapshot.ts).
+    private func celebrate(_ records: [PersonalBestRecord], userId: String) {
+        let key = PrSnapshot.storageKey(userId: userId)
+        let defaults = UserDefaults.standard
+        let previous = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(PrSnapshot.Snapshot.self, from: $0) }
+        let next = PrSnapshot.topIdentities(records)
+        newRecordKeys.formUnion(PrSnapshot.newKeys(previous: previous, next: next))
+        if let data = try? JSONEncoder().encode(next) { defaults.set(data, forKey: key) }
     }
 
     func load() async {

@@ -124,10 +124,10 @@ struct AppShell: View {
             }
         case .run:
             AreaScreen(tab: tab) { page in
-                if page == .runActivities {
-                    RunActivitiesView(store: runStore)
-                } else {
-                    ComingSoonView()
+                switch page {
+                case .runOverview: RunOverviewView(store: runStore)
+                case .runActivities: RunActivitiesView(store: runStore)
+                default: ComingSoonView()
                 }
             }
         case .today, .diet:

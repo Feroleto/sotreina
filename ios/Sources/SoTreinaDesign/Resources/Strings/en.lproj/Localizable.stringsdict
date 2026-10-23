@@ -2,6 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>activity.laps.count %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@laps@</string>
+		<key>laps</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Lap</string>
+			<key>other</key>
+			<string>%lld Laps</string>
+		</dict>
+	</dict>
 	<key>dashboard.chart.barHint %@ %@ %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -194,20 +210,68 @@
 			<string>%lld areas selected</string>
 		</dict>
 	</dict>
-	<key>activity.laps.count %lld</key>
+	<key>overview.calendar.dayMultiRuns %lld %@ %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@laps@</string>
-		<key>laps</key>
+		<string>%1$#@n@ · %2$@ %3$@</string>
+		<key>n</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>%lld Lap</string>
+			<string>%1$lld run</string>
 			<key>other</key>
-			<string>%lld Laps</string>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.calendar.monthSummary %lld %@ %@ %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@ · %2$@ %3$@ in %4$@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.shoes.runsOnly %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.shoes.runsSince %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@ · since %2$@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
 		</dict>
 	</dict>
 </dict>
