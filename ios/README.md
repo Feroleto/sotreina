@@ -302,7 +302,7 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 
 ### Fase D
 
-O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`): linhas 01–07. As capturas da web do modo de edição saem de `ios/validation/D/edit.mjs` (só abre o modo e o seletor, nunca salva nem apaga). O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
+O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`): linhas 01–07. Adicionar Registros (`28-dieta-adicionar-registros.md`): linhas 08–15, web por `ios/validation/D/add.mjs` (só põe no carrinho, nunca salva). As capturas da web do modo de edição saem de `ios/validation/D/edit.mjs` (só abre o modo e o seletor, nunca salva nem apaga). O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
 
 | # | Tela | Estado | App | Web | Resultado |
 |---|------|--------|-----|-----|-----------|
@@ -313,6 +313,14 @@ O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`):
 | 05 | Confirmação de exclusão (contagem de Registros, "de todos os dias") | claro · PT | manual: lixeira de uma Refeição com Registros | — (a web confirma em linha; o app usa o diálogo nativo) | desvio aceito: diálogo nativo com as cores do sistema no lugar da faixa em linha da web; texto igual ("e 5 alimentos registrados, de todos os dias?") |
 | 06 | Funcional: reordenar, renomear, adicionar e excluir aparecem na web; a lixeira da última Refeição fica desabilitada; a engrenagem abre a Meta diária e salvar volta à Visão geral com a meta nova | — | manual | — | ok (usuário, 2026-10-23); a lixeira da última Refeição ficou só no teste do Kit, pra não apagar Refeições reais |
 | 07 | Dieta › Visão geral | Dynamic Type máx. | `SOTREINA_SCREEN=dietOverview` | — | ok (2026-10-23; "Carboidrato" quebrava no meio da palavra: rótulo de macro em uma linha, encolhendo até 70%) |
+| 08 | Adicionar (refeição e data no topo, busca, "Nesta refeição", barra com totais) | claro · PT | manual: tocar em "Café da manhã" | `--page diet/overview --steps ios/validation/D/add.mjs` (shot `add`) | ok (2026-10-23; saiu no escuro, tema do sistema; a busca é um campo próprio, os botões de scanner e Refeições salvas vêm nas próximas tarefas) |
+| 09 | Busca "ovo" (prévia da porção padrão, + / ✓) | claro · PT | manual: buscar "ovo" | idem (shot `search`) | ok (2026-10-23; linha fina entre os resultados, a web não tem: mesmo padrão das listas do app) |
+| 10 | QuantitySheet em unidade ("1 unidade", "= 50 g", atalhos, prévia de kcal/macros) | claro · PT | manual: tocar no "Ovo, de galinha, inteiro, cozido" | idem (shot `sheetServing`) | ok (2026-10-23; sheet nativo, com alça e fundo menos escurecido que a camada da web) |
+| 11 | QuantitySheet em gramas (trocar de modo carrega o peso) | claro · PT | manual: tocar em "Gramas" | idem (shot `sheetGrams`) | ok (2026-10-23; o peso veio junto: 1 unidade → 50 g) |
+| 12 | Item no carrinho (✓ no resultado, linha em "Nesta refeição", "1 item · 73 kcal") | claro · PT | manual: "Adicionar" no sheet | idem (shot `cart`) | ok (2026-10-23; "Salvar como refeição salva" e "Adicionar manualmente" ficam pras tarefas deles) |
+| 13 | Item no carrinho | escuro · EN | manual: idem com `SOTREINA_THEME=dark SOTREINA_LANG=en` | `--theme dark --lang en`, mesmos passos (shot `cart`) | ok (2026-10-23) |
+| 14 | Funcional: salvar aparece na Visão geral e na web; tocar num Registro salvo e mudar a quantidade aparece na web; o × remove; com o modo avião o item vira ⚠ "Não salvo" e, sem modo avião, "Salvar refeição" reenvia sem duplicar | — | manual | — | pendente: não conferido no aparelho nesta tarefa, vai pro Uso real da Fase D (a deduplicação por `clientId` foi conferida no servidor local) |
+| 15 | Adicionar com o QuantitySheet aberto | Dynamic Type máx. | manual | — | pendente: vai pro Uso real da Fase D |
 
 ## Checklist da Fase 0 (go/no-go)
 

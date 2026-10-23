@@ -19,7 +19,7 @@ final class DietStore {
     /// a failed meal mutation, shown as an alert
     var actionError: String?
 
-    private let session: SessionStore
+    let session: SessionStore
     @ObservationIgnored private var restoredDate: String?
     @ObservationIgnored private let log = Logger(subsystem: "com.feroleto.sotreina", category: "diet")
 

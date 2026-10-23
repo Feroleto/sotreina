@@ -76,17 +76,43 @@ export class FoodLogsService {
     // replaced — without this, a log could be attached to another user's meal
     await this.mealsService.assertOwned(userId, input.mealId);
 
-    return this.prisma.foodLog.create({
-      data: {
-        userId,
-        foodId: input.foodId,
-        quantity: input.quantity,
-        enteredAsServing: input.enteredAsServing,
-        mealId: input.mealId,
-        loggedAt: input.loggedAt,
-      },
-      select: FOOD_LOG_SELECT,
-    });
+    // a resend of a log the server already has (response lost on the way
+    // back) answers with the stored row instead of a duplicate — same
+    // contract as WorkoutsService.addSet
+    const { clientId } = input;
+    if (clientId) {
+      const existing = await this.prisma.foodLog.findFirst({
+        where: { userId, clientId },
+        select: FOOD_LOG_SELECT,
+      });
+      if (existing) return existing;
+    }
+
+    try {
+      return await this.prisma.foodLog.create({
+        data: {
+          userId,
+          foodId: input.foodId,
+          quantity: input.quantity,
+          enteredAsServing: input.enteredAsServing,
+          mealId: input.mealId,
+          loggedAt: input.loggedAt,
+          clientId,
+        },
+        select: FOOD_LOG_SELECT,
+      });
+    } catch (e) {
+      // two resends racing past the findFirst above: the unique
+      // [userId, clientId] lets exactly one through. Duck-typed rather than
+      // instanceof PrismaClientKnownRequestError — tests mock @prisma/client
+      if (!(clientId && (e as { code?: unknown }).code === 'P2002')) throw e;
+      const winner = await this.prisma.foodLog.findFirst({
+        where: { userId, clientId },
+        select: FOOD_LOG_SELECT,
+      });
+      if (!winner) throw e;
+      return winner;
+    }
   }
 
   // updateMany (not update) for the same reason as remove() below: ownership

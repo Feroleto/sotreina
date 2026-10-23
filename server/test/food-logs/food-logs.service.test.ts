@@ -11,6 +11,7 @@ const { mockPrisma } = vi.hoisted(() => {
       $queryRaw: vi.fn(),
       foodLog: {
         create: vi.fn(),
+        findFirst: vi.fn(),
         findMany: vi.fn(),
         findUniqueOrThrow: vi.fn(),
         updateMany: vi.fn(),
@@ -113,6 +114,64 @@ describe('FoodLogsService', () => {
       const data = mockPrisma.foodLog.create.mock.calls[0][0].data;
       expect(data.quantity).toBe(100);
       expect(data.enteredAsServing).toBe(true);
+    });
+
+    describe('clientId', () => {
+      const CLIENT_ID = '6f1c2b7e-3d4a-4b5c-9e8f-0a1b2c3d4e5f';
+      const input = {
+        foodId: 'food1',
+        quantity: 150,
+        enteredAsServing: false,
+        mealId: 'meal1',
+        loggedAt: new Date('2026-07-29T12:00:00.000Z'),
+        clientId: CLIENT_ID,
+      };
+
+      it('stores the clientId on a new log', async () => {
+        mockPrisma.foodLog.findFirst.mockResolvedValueOnce(null);
+        mockPrisma.foodLog.create.mockResolvedValueOnce({ id: 'log1' });
+
+        await service.create(USER_ID, input);
+
+        expect(mockPrisma.foodLog.findFirst).toHaveBeenCalledWith(
+          expect.objectContaining({ where: { userId: USER_ID, clientId: CLIENT_ID } }),
+        );
+        expect(mockPrisma.foodLog.create.mock.calls[0][0].data.clientId).toBe(CLIENT_ID);
+      });
+
+      it('a resend with a known clientId returns the stored log without creating a duplicate', async () => {
+        mockPrisma.foodLog.findFirst.mockResolvedValueOnce({ id: 'log1' });
+
+        const log = await service.create(USER_ID, input);
+
+        expect(log).toEqual({ id: 'log1' });
+        expect(mockPrisma.foodLog.create).not.toHaveBeenCalled();
+      });
+
+      it('two resends racing past the lookup: the P2002 is swallowed and the winner is returned', async () => {
+        mockPrisma.foodLog.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'log1' });
+        mockPrisma.foodLog.create.mockRejectedValueOnce({ code: 'P2002' });
+
+        const log = await service.create(USER_ID, input);
+
+        expect(log).toEqual({ id: 'log1' });
+      });
+
+      it('without a clientId a P2002 is not swallowed and no lookup happens', async () => {
+        mockPrisma.foodLog.create.mockRejectedValueOnce({ code: 'P2002' });
+
+        await expect(service.create(USER_ID, { ...input, clientId: undefined })).rejects.toEqual({
+          code: 'P2002',
+        });
+        expect(mockPrisma.foodLog.findFirst).not.toHaveBeenCalled();
+      });
+
+      it('checks meal ownership before answering a resend', async () => {
+        assertOwned.mockRejectedValueOnce(new NotFoundException());
+
+        await expect(service.create(USER_ID, input)).rejects.toThrow(NotFoundException);
+        expect(mockPrisma.foodLog.findFirst).not.toHaveBeenCalled();
+      });
     });
   });
 

@@ -6,7 +6,7 @@ import SwiftUI
 /// "Monolito"): today's kcal in Geist Mono against the daily goal, the macro
 /// strip, then the meals in the server's order with their sums. The pencil
 /// turns the list into its edit mode (reorder, rename, delete, add); the
-/// gear opens Perfil's daily goal. Tapping a meal adds nothing yet.
+/// gear opens Perfil's daily goal. Tapping a meal opens its "Adicionar".
 struct DietOverviewView: View {
     let store: DietStore
     let profile: ProfileStore
@@ -232,6 +232,7 @@ private struct MealsSection: View {
     @State private var editing = false
     @State private var picker: PickerMode?
     @State private var deleting: Meal?
+    @State private var adding: Meal?
     @Environment(AppLanguageStore.self) private var language
 
     enum PickerMode: Identifiable {
@@ -272,7 +273,8 @@ private struct MealsSection: View {
                     if editing {
                         editRow(meal, index: index)
                     } else {
-                        row(meal)
+                        Button { adding = meal } label: { row(meal) }
+                            .buttonStyle(.plain)
                     }
                 }
                 .overlay(alignment: .bottom) { Hairline() }
@@ -302,6 +304,9 @@ private struct MealsSection: View {
                 .buttonStyle(.plain)
                 .padding(.top, 12)
             }
+        }
+        .navigationDestination(item: $adding) { meal in
+            AddMealView(meal: meal, diet: store)
         }
         .sheet(item: $picker) { mode in
             MealTypePicker(mode: mode) { type in
@@ -360,6 +365,7 @@ private struct MealsSection: View {
                 .accessibilityHidden(true)
         }
         .padding(.vertical, 13)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
     }
 

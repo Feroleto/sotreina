@@ -107,6 +107,37 @@ public struct DailySummary: Codable, Hashable, Sendable {
     }
 }
 
+/// `POST /food-logs`. `clientId` makes a resend after a lost response
+/// answer with the stored Registro instead of a duplicate.
+public struct CreateFoodLogRequest: Encodable, Equatable, Sendable {
+    public let foodId: String
+    public let quantity: Double
+    public let enteredAsServing: Bool
+    public let mealId: String
+    public let loggedAt: Date
+    public let clientId: UUID
+
+    public init(foodId: String, quantity: Double, enteredAsServing: Bool, mealId: String, loggedAt: Date, clientId: UUID) {
+        self.foodId = foodId
+        self.quantity = quantity
+        self.enteredAsServing = enteredAsServing
+        self.mealId = mealId
+        self.loggedAt = loggedAt
+        self.clientId = clientId
+    }
+}
+
+/// `PATCH /food-logs/:id` — only how much was eaten is editable.
+public struct UpdateFoodLogRequest: Encodable, Equatable, Sendable {
+    public let quantity: Double
+    public let enteredAsServing: Bool
+
+    public init(_ portion: Portion) {
+        quantity = portion.quantity
+        enteredAsServing = portion.enteredAsServing
+    }
+}
+
 // MARK: - The day
 
 /// Dieta › Visão geral's numbers (`DietOverviewPage.tsx`): the day's kcal
@@ -222,6 +253,16 @@ public enum DietFormat {
         switch lang {
         case .pt: return "\(RunFormat.weekdaysPt[weekday]), \(c.day!) de \(RunFormat.monthsLongPtLower[month])"
         case .en: return "\(RunFormat.weekdaysEn[weekday]), \(RunFormat.monthsLongEnNames[month]) \(c.day!)"
+        }
+    }
+
+    /// "23 de outubro" | "October 23" (AddMealPage's subtitle)
+    public static func dayShort(_ date: Date, lang: Lang, calendar: Calendar) -> String {
+        let c = calendar.dateComponents([.day, .month], from: date)
+        let month = c.month! - 1
+        switch lang {
+        case .pt: return "\(c.day!) de \(RunFormat.monthsLongPtLower[month])"
+        case .en: return "\(RunFormat.monthsLongEnNames[month]) \(c.day!)"
         }
     }
 

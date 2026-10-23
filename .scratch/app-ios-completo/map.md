@@ -57,11 +57,14 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Corrida: Atividades](issues/34-corrida-atividades.md): feito e validado, no worktree `fase-c` — semana × semana passada, barras de 12 semanas, lista por semana e período em sheet nativo (`RunBins`/`RunFormat` no Kit), selo Strava em PNG @3x a partir do SVG oficial; a aba Corrida abre em Atividades
 - [Corrida: detalhe da atividade](issues/35-corrida-detalhe.md): feito e validado, no worktree `fase-c`. MapKit funciona com xtool (mapa estático). `Polyline`/`lapLabels`/`dateFull` estão no Kit. A tabela de voltas para de crescer em `.xLarge`. A linha da esteira ficou pro Uso real
 - [Corrida: Visão geral](issues/37-corrida-visao-geral.md): feito e validado, no worktree `fase-c`: totais, calendário, recordes com sheet "Ver todos" e recorde novo (snapshot no `UserDefaults`), tênis. A aba Corrida segue abrindo em Atividades, como na web. A comemoração ficou pro Uso real
+- [Dieta: adicionar Registros](issues/28-dieta-adicionar-registros.md): feito e validado (galeria 08–13). Busca, carrinho, QuantitySheet, editar e remover Registro salvo, ⚠ com reenvio pelo `clientId` (`DietQuantity` no Kit). O backend ganhou `FoodLog.clientId`, com a migration pendente no Neon. O funcional e o Dynamic Type ficaram pro Uso real da Fase D
 
 ## Not yet specified
 
 - **Animações de entrada no app**: a web anima a chegada dos dados (barras crescendo, grupos subindo, uma vez por sessão; `.plans/animacoes-vida-spec.md`), e o app ainda mostra tudo pronto. O usuário aceitou a falta "por enquanto" no [Histórico do Treino](issues/23-historico-treino.md). Falta decidir se e quando o app ganha um equivalente (provavelmente transversal, depois das áreas portadas).
 - **"1 séries" sem plural**: `history.detail.exerciseSummary` não pluraliza na web, e o app copiou a frase. Mesma família: o rodapé do calendário da Visão geral do Treino escreve "0 treino" na web (o app já diz "0 treinos"), e a web formata volume com ponto em PT ("0.1 t"). É uma correção pequena, mas mexe na web e no app ao mesmo tempo.
+
+- **"Salvar refeição" da web duplica num reenvio**: o `handleSave` do `AddMealPage.tsx` para no primeiro POST que falha, mas mantém o carrinho inteiro. Tentar de novo reenvia os itens que já tinham sido gravados. O app resolve isso com `clientId` por item ([Dieta: adicionar Registros](issues/28-dieta-adicionar-registros.md)). Falta decidir se a web adota o mesmo (gerar o `clientId` no carrinho e tirar do carrinho cada item salvo). É uma correção pequena, só na web.
 
 - **Proposta de série depois de um exercício pulado**: `GET /exercises/:id/last-performance` devolve o último treino finalizado com o exercício mesmo sem séries, então pular um exercício apaga a proposta dele no treino seguinte (web e app). Decidir se o backend deve pular treinos sem série; mexe no backend, que a Fase T deixou de fora.
 

@@ -15,6 +15,12 @@ export interface CreateFoodLogInput {
    */
   mealId: string;
   loggedAt: Date;
+  /**
+   * optional idempotency key (the iOS app sends one per cart item): a resend
+   * after a lost response returns the stored log instead of a duplicate.
+   * Same contract as WorkoutSet.clientId; the web never sends it.
+   */
+  clientId?: string;
 }
 
 export interface UpdateFoodLogInput {
@@ -27,7 +33,10 @@ export function parseCreateFoodLogInput(body: unknown): CreateFoodLogInput {
     throw new BadRequestException('Request body must be an object');
   }
 
-  const { foodId, quantity, enteredAsServing, mealId, loggedAt } = body as Record<string, unknown>;
+  const { foodId, quantity, enteredAsServing, mealId, loggedAt, clientId } = body as Record<
+    string,
+    unknown
+  >;
 
   if (typeof foodId !== 'string' || foodId.trim().length === 0) {
     throw new BadRequestException('foodId is required');
@@ -45,14 +54,23 @@ export function parseCreateFoodLogInput(body: unknown): CreateFoodLogInput {
     throw new BadRequestException('loggedAt must be a valid ISO date string');
   }
 
-  return {
+  const result: CreateFoodLogInput = {
     foodId: foodId.trim(),
     quantity: parsedQuantity,
     enteredAsServing: parsedEnteredAsServing,
     mealId: mealId.trim(),
     loggedAt: parsedLoggedAt,
   };
+  if (clientId !== undefined && clientId !== null) {
+    if (typeof clientId !== 'string' || !UUID_RE.test(clientId)) {
+      throw new BadRequestException('clientId must be a UUID');
+    }
+    result.clientId = clientId;
+  }
+  return result;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // PATCH only ever changes how much was eaten — foodId/mealId/loggedAt are
 // not editable (moving a log to another meal would be a different feature)

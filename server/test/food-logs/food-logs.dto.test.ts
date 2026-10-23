@@ -66,6 +66,20 @@ describe('parseCreateFoodLogInput', () => {
       BadRequestException,
     );
   });
+
+  it('accepts a UUID clientId (Swift sends it uppercase)', () => {
+    const clientId = '6F1C2B7E-3D4A-4B5C-9E8F-0A1B2C3D4E5F';
+    expect(parseCreateFoodLogInput({ ...validBody, clientId }).clientId).toBe(clientId);
+  });
+
+  it('treats a missing or null clientId as absent (the web never sends one)', () => {
+    expect(parseCreateFoodLogInput(validBody).clientId).toBeUndefined();
+    expect(parseCreateFoodLogInput({ ...validBody, clientId: null }).clientId).toBeUndefined();
+  });
+
+  it.each([123, '', 'not-a-uuid'])('rejects clientId %j', (clientId) => {
+    expect(() => parseCreateFoodLogInput({ ...validBody, clientId })).toThrow(BadRequestException);
+  });
 });
 
 describe('parseDateQuery', () => {

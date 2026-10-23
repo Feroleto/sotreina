@@ -528,7 +528,12 @@ model FoodLog {
   meal             Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
   loggedAt         DateTime @map("logged_at")
   createdAt        DateTime @default(now()) @map("created_at")
+  // optional idempotency key sent by the iOS app per cart item: a resend
+  // after a lost response finds the row instead of duplicating it (same as
+  // WorkoutSet.clientId). The web never sends it, so most rows are null
+  clientId         String?  @map("client_id")
 
+  @@unique([userId, clientId])
   @@index([userId, loggedAt])
   @@index([mealId])
   @@map("food_logs")
