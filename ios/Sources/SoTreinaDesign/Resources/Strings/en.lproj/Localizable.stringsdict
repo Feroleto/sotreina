@@ -2,68 +2,84 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>gym.summary.prTitle %lld</key>
+	<key>activity.laps.count %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@records@</string>
-		<key>records</key>
+		<string>%#@laps@</string>
+		<key>laps</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>Personal record</string>
+			<string>%lld Lap</string>
 			<key>other</key>
-			<string>Personal records</string>
+			<string>%lld Laps</string>
 		</dict>
 	</dict>
-	<key>onboarding.areas.count %lld</key>
+	<key>dashboard.chart.barHint %@ %@ %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@areas@</string>
-		<key>areas</key>
+		<string>%1$@ %2$@ in %3$#@weeks@ · tap a bar</string>
+		<key>weeks</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>%lld area selected</string>
+			<string>%3$lld week</string>
 			<key>other</key>
-			<string>%lld areas selected</string>
+			<string>%3$lld weeks</string>
 		</dict>
 	</dict>
-	<key>gym.routines.exerciseCount %lld</key>
+	<key>dashboard.list.olderWeeks %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@exercises@</string>
-		<key>exercises</key>
+		<string>%#@weeks@</string>
+		<key>weeks</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>%lld exercise</string>
+			<string>+ %lld previous week</string>
 			<key>other</key>
-			<string>%lld exercises</string>
+			<string>+ %lld previous weeks</string>
 		</dict>
 	</dict>
-	<key>gym.routines.savedCount %lld</key>
+	<key>dashboard.list.runsCount %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@n@</string>
-		<key>n</key>
+		<string>%#@runs@</string>
+		<key>runs</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
 			<string>NSStringPluralRuleType</string>
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>%lld saved routine</string>
+			<string>%lld run</string>
 			<key>other</key>
-			<string>%lld saved routines</string>
+			<string>%lld runs</string>
+		</dict>
+	</dict>
+	<key>dashboard.rangeChip.daysCount %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@days@</string>
+		<key>days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld day</string>
+			<key>other</key>
+			<string>%lld days</string>
 		</dict>
 	</dict>
 	<key>gym.editor.exercisesAdded %lld</key>
@@ -98,6 +114,22 @@
 			<string>%lld selected</string>
 		</dict>
 	</dict>
+	<key>gym.history.olderWeeks %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>+ %lld previous week</string>
+			<key>other</key>
+			<string>+ %lld previous weeks</string>
+		</dict>
+	</dict>
 	<key>gym.history.weeksCount %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -114,7 +146,23 @@
 			<string>%lld weeks</string>
 		</dict>
 	</dict>
-	<key>gym.history.olderWeeks %lld</key>
+	<key>gym.routines.exerciseCount %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@exercises@</string>
+		<key>exercises</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld exercise</string>
+			<key>other</key>
+			<string>%lld exercises</string>
+		</dict>
+	</dict>
+	<key>gym.routines.savedCount %lld</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@n@</string>
@@ -125,9 +173,105 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>one</key>
-			<string>+ %lld previous week</string>
+			<string>%lld saved routine</string>
 			<key>other</key>
-			<string>+ %lld previous weeks</string>
+			<string>%lld saved routines</string>
+		</dict>
+	</dict>
+	<key>gym.summary.prTitle %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@records@</string>
+		<key>records</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Personal record</string>
+			<key>other</key>
+			<string>Personal records</string>
+		</dict>
+	</dict>
+	<key>onboarding.areas.count %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@areas@</string>
+		<key>areas</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld area selected</string>
+			<key>other</key>
+			<string>%lld areas selected</string>
+		</dict>
+	</dict>
+	<key>overview.calendar.dayMultiRuns %lld %@ %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@ · %2$@ %3$@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.calendar.monthSummary %lld %@ %@ %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@ · %2$@ %3$@ in %4$@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.shoes.runsOnly %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
+		</dict>
+	</dict>
+	<key>overview.shoes.runsSince %lld %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@ · since %2$@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%1$lld run</string>
+			<key>other</key>
+			<string>%1$lld runs</string>
 		</dict>
 	</dict>
 </dict>

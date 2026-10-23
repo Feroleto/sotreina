@@ -264,6 +264,33 @@ Histórico (`.scratch/app-ios-completo/issues/23-historico-treino.md`): linhas 2
 | 33 | Exercício no treino | escuro · EN | como a 32 + primeiro exercício | como a 32 + primeiro exercício | ok (2026-10-23) |
 | 34 | Histórico | Dynamic Type máx. | `SOTREINA_SCREEN=gymHistory` | — | ok (2026-10-23); desvios aceitos por enquanto na fase: sem animação de entrada das barras/semanas, barras desenhadas à mão (não Swift Charts) |
 
+### Fase C
+
+Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no working tree principal): linhas 01–07. Detalhe da atividade (`35-corrida-detalhe.md`): linhas 08–13. Visão geral (`37-corrida-visao-geral.md`): linhas 14–20. O app roda contra produção e a web contra o banco local, então semanas e números não batem: o par compara a estrutura.
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Corrida › Atividades (semana, barras de 12 semanas, lista, "Powered by Strava") | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/activities` |  ok (2026-10-23; números com vírgula em PT, a web escreve "12.4"; a tab bar nativa no lugar da pílula é o desvio já aceito na Navegação) |
+| 02 | Corrida › Atividades | escuro · EN | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/activities --theme dark --lang en` |  ok (2026-10-23) |
+| 03 | Barra tocada (leitura da semana em cima) | claro · PT | manual: tocar numa barra | — |  ok (2026-10-23) |
+| 04 | Sheet de período (atalhos + início/fim, até 3 meses) | claro · PT | manual: tocar em "Personalizado" | — (a web usa um calendário de dois toques, sem equivalente nativo) |  desvio aceito: sheet nativo com atalhos + Início/Fim no lugar do calendário de dois toques da web |
+| 05 | Período aplicado (chip, barras e lista do período) | claro · PT | manual: escolher "Mês Passado" | — |  ok (2026-10-23; "Últimos 3 Meses": 14 semanas, chip "9 corridas · 54,6 mi · 93 dias") |
+| 06 | Corrida › Atividades em mi | claro · PT | `SOTREINA_SCREEN=runActivities SOTREINA_THEME=light SOTREINA_LANG=pt` (conta em mi) | — |  ok (2026-10-23; coberta pelas linhas 01–05, todas com a conta em mi) |
+| 07 | Corrida › Atividades | Dynamic Type máx. | `SOTREINA_SCREEN=runActivities` | — |  ok (2026-10-23; saiu no escuro, que era o tema do sistema) |
+| 08 | Detalhe de corrida com GPS (badge, stats, mapa, voltas, "View on Strava") | claro · PT | manual: tocar numa corrida com mapa | `--page run/activities --steps …` (abrir a primeira) |  ok (2026-10-23; mapa MapKit estático, com o logo "Maps"/"Legal" obrigatórios no lugar da atribuição Leaflet/OSM; selo do tipo na barra de navegação no lugar do "← Voltar"; "Km N" com mi como na web) |
+| 09 | Detalhe de corrida com GPS | escuro · EN | manual: idem | `--page run/activities --theme dark --lang en --steps …` |  ok (2026-10-23; o mapa escuro é o estilo escuro do MapKit, mais azulado que o OSM filtrado da web) |
+| 10 | Detalhe de esteira (grade "Sem dados de GPS") | claro · PT | manual: tocar numa esteira | — |  pulada pelo usuário: conferir no Uso real da Fase C |
+| 11 | Detalhe de intervalado (badge mostarda, "Tiro N"/"Rec.") | claro · PT | manual: tocar num intervalado | — |  ok (2026-10-23; selo mostarda, "Aquecimento N"/"Tiro N"/"Rec. N") |
+| 12 | "View on Strava" abre a atividade na Strava | — | manual: tocar no link | — |  ok (2026-10-23; abriu a atividade no app da Strava) |
+| 13 | Detalhe | Dynamic Type máx. | manual | — |  ok (2026-10-23; a tabela de voltas para de crescer em `.xLarge` e a coluna FC média ficou com 52 pt; o resto da tela segue o Dynamic Type) |
+| 14 | Corrida › Visão geral (totais, calendário, início dos recordes) | claro · PT | `SOTREINA_SCREEN=runOverview SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page run/overview` |  ok (2026-10-23; vírgula decimal em PT, a web escreve "2080.8") |
+| 15 | Corrida › Visão geral | escuro · EN | `SOTREINA_SCREEN=runOverview SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page run/overview --theme dark --lang en` |  ok (2026-10-23) |
+| 16 | Recordes (1k/5k/10k + mais longa), tênis e "Powered by Strava" | claro · PT | manual: rolar até o fim | `--page run/overview` rolada |  ok (2026-10-23) |
+| 17 | "Ver todos": 12 distâncias, 5k expandido (2º/3º) | claro · PT | manual: "Ver todos" → 5k | sheet "Ver todos" |  ok (2026-10-23; sheet nativo; nome e data em linhas separadas, como a web) |
+| 18 | Calendário num mês com corridas, dia tocado no rodapé | claro · PT | manual: voltar até agosto, tocar num dia | — |  ok (2026-10-23) |
+| 19 | Visão geral | Dynamic Type máx. | manual | — |  ok (2026-10-23; com o texto grande, nome e data dos recordes vão pra linhas separadas, o texto do chip para em `.large` e a meta do tênis quebra em duas linhas) |
+| 20 | Recorde novo: selo "Novo" + pop em mola no chip | claro · PT | só com um recorde real: Uso real da Fase C | — |  pendente: precisa de um recorde real, fica pro Uso real da Fase C (a regra está testada no Kit) |
+
 ## Checklist da Fase 0 (go/no-go)
 
 - [x] `deploy.sh` instala e abre o app no iPhone

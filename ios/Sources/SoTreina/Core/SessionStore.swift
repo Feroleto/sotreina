@@ -102,6 +102,12 @@ final class SessionStore {
         return me.weightUnit
     }
 
+    /// Same for distance and pace: the API always speaks km.
+    var distanceUnit: DistanceUnit {
+        guard case .loggedIn(let me) = state else { return .km }
+        return me.distanceUnit
+    }
+
     /// Perfil's saves (`ProfileStore`): the signed-in `Me` with the name,
     /// areas or units already applied — optimistically, then the server's.
     func setMe(_ me: Me) {

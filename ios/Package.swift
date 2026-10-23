@@ -35,6 +35,8 @@ let package = Package(
                 .copy("Resources/Fonts"),
                 // {pt,en}.lproj/Localizable.strings(dict), read through L10n.swift
                 .process("Resources/Strings"),
+                // "Powered by Strava", the official SVGs rendered @3x (StravaBrand.swift)
+                .copy("Resources/Strava"),
             ]
         ),
         .target(
