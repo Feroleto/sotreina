@@ -13,6 +13,8 @@ struct AppShell: View {
     @State private var store: WorkoutStore
     @State private var runStore: RunStore
     @State private var history: GymHistoryStore
+    @State private var diet: DietStore
+    @State private var profile: ProfileStore
     @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
     private let session: SessionStore
     @Environment(AppLanguageStore.self) private var language
@@ -26,6 +28,8 @@ struct AppShell: View {
         _store = State(initialValue: WorkoutStore(session: session))
         _runStore = State(initialValue: RunStore(session: session))
         _history = State(initialValue: GymHistoryStore(session: session))
+        _diet = State(initialValue: DietStore(session: session))
+        _profile = State(initialValue: ProfileStore(session: session))
     }
 
     private var tabs: [AppTab] { AppTab.tabs(for: me.enabledAreas) }
@@ -81,6 +85,8 @@ struct AppShell: View {
             if phase == .active {
                 Task { await store.load() }
                 Task { await runStore.load() }
+                // Registros added on the web, or a day that turned at midnight
+                Task { await diet.load() }
             }
         }
         // exercise names come localized from the API (`Accept-Language`):
@@ -113,7 +119,7 @@ struct AppShell: View {
     private func content(for tab: AppTab) -> some View {
         switch tab {
         case .profile:
-            ProfileView(session: session, me: me)
+            ProfileView(me: me, store: profile)
         case .gym:
             AreaScreen(tab: tab) { page in
                 switch page {
@@ -131,7 +137,14 @@ struct AppShell: View {
                 default: ComingSoonView()
                 }
             }
-        case .today, .diet:
+        case .diet:
+            AreaScreen(tab: tab) { page in
+                switch page {
+                case .dietOverview: DietOverviewView(store: diet, profile: profile)
+                default: ComingSoonView()
+                }
+            }
+        case .today:
             AreaScreen(tab: tab) { _ in ComingSoonView() }
         }
     }

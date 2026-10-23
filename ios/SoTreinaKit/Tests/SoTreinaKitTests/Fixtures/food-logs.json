@@ -1,0 +1,46 @@
+[
+  {
+    "id": "cms6q3dnc00001gx0258s2ohe",
+    "quantity": 100,
+    "enteredAsServing": false,
+    "mealId": "a4a4ebee-544d-4af5-b504-9467c408b76b",
+    "loggedAt": "2026-07-29T23:35:40.344Z",
+    "food": {
+      "id": "cms6orftf0051o2x0naxn5zg9",
+      "name": "Banana, prata, crua",
+      "brand": null,
+      "source": "TACO",
+      "imageUrl": null,
+      "kcal": 98.24970217391306,
+      "protein": 1.2681159420289856,
+      "carbs": 25.956884057971017,
+      "fat": 0.065,
+      "fiber": 2.0433333333333334,
+      "sodium": 0.00001,
+      "servingLabel": "unit",
+      "servingGrams": 60
+    }
+  },
+  {
+    "id": "cms6q41lw00011gx086xpvmlg",
+    "quantity": 100,
+    "enteredAsServing": false,
+    "mealId": "a4a4ebee-544d-4af5-b504-9467c408b76b",
+    "loggedAt": "2026-07-29T23:36:11.911Z",
+    "food": {
+      "id": "cms6org4900dio2x01wz2kvwh",
+      "name": "Ovo, de galinha, gema, cozida/10minutos",
+      "brand": null,
+      "source": "TACO",
+      "imageUrl": null,
+      "kcal": 352.67334000000005,
+      "protein": 15.9,
+      "carbs": 1.5600000000000065,
+      "fat": 30.777,
+      "fiber": null,
+      "sodium": 44.90866666666667,
+      "servingLabel": "unit",
+      "servingGrams": 17
+    }
+  }
+]

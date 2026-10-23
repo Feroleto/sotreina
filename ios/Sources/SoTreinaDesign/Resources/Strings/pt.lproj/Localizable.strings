@@ -373,3 +373,31 @@
 "gym.records.reps %lld" = "%lld reps";
 "gym.records.noRecordYet" = "Nenhum registro ainda";
 "gym.records.loading" = "Carregando…";
+
+/* Dieta › Visão geral (web: diet.json overview.*, meals.*, meal.*) */
+"diet.overview.kcal" = "kcal";
+"diet.overview.goalLine %@" = "meta %@";
+"diet.overview.remaining %@" = "faltam %@";
+"diet.overview.overGoal %@" = "%@ acima";
+"diet.overview.editGoal" = "Editar meta diária";
+"diet.overview.mealsTitle" = "Refeições de hoje";
+"diet.overview.noItems" = "Nenhum item ainda";
+"diet.overview.loadFailed" = "Não foi possível carregar o dia";
+"diet.meals.editMeals" = "Editar refeições";
+"diet.meals.done" = "Concluir";
+"diet.meals.add" = "Adicionar refeição";
+"diet.meals.addTitle" = "Nova refeição";
+"diet.meals.renameTitle" = "Renomear refeição";
+"diet.meals.save" = "Salvar";
+"diet.meals.moveUp" = "Mover para cima";
+"diet.meals.moveDown" = "Mover para baixo";
+"diet.meals.remove" = "Excluir";
+"diet.meals.empty" = "Nenhuma refeição configurada.";
+"diet.meals.lastMealHint" = "O dia precisa de pelo menos uma refeição.";
+"diet.meals.deleteConfirmEmpty" = "Excluir esta refeição?";
+"diet.meal.BREAKFAST" = "Café da manhã";
+"diet.meal.LUNCH" = "Almoço";
+"diet.meal.SNACK" = "Lanche";
+"diet.meal.DINNER" = "Jantar";
+"diet.meal.SUPPER" = "Ceia";
+"diet.attribution" = "Dados nutricionais: Tabela Brasileira de Composição de Alimentos (TACO) — NEPA/UNICAMP. Dados de produtos industrializados: Open Food Facts (openfoodfacts.org), sob licença ODbL.";

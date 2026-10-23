@@ -338,5 +338,41 @@
 			<string>%1$lld workouts</string>
 		</dict>
 	</dict>
+	<key>diet.overview.items %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>%1$lld items</string>
+			<key>one</key>
+			<string>%1$lld item</string>
+			<key>other</key>
+			<string>%1$lld items</string>
+		</dict>
+	</dict>
+	<key>diet.meals.deleteConfirm %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>Delete this meal?</string>
+			<key>one</key>
+			<string>Delete this meal and %1$lld logged food, on every day?</string>
+			<key>other</key>
+			<string>Delete this meal and %1$lld logged foods, on every day?</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

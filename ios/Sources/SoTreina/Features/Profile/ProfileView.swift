@@ -8,14 +8,10 @@ import SwiftUI
 /// "adicionar senha" stay on the web, behind a link.
 struct ProfileView: View {
     let me: Me
-    @State private var store: ProfileStore
+    /// owned by the shell: Dieta's gear opens the same daily goal
+    let store: ProfileStore
     @Environment(SessionStore.self) private var session
     @Environment(AppLanguageStore.self) private var language
-
-    init(session: SessionStore, me: Me) {
-        self.me = me
-        _store = State(initialValue: ProfileStore(session: session))
-    }
 
     var body: some View {
         NavigationStack {

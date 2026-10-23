@@ -1,0 +1,32 @@
+[
+  {
+    "id": "a4a4ebee-544d-4af5-b504-9467c408b76b",
+    "type": "BREAKFAST",
+    "order": 1,
+    "logCount": 2
+  },
+  {
+    "id": "8894cb0b-092d-47cd-bed0-5a141f5b73d9",
+    "type": "LUNCH",
+    "order": 2,
+    "logCount": 0
+  },
+  {
+    "id": "2db6e3e4-ba9b-40a7-bb8e-bd877f7c7edc",
+    "type": "SNACK",
+    "order": 3,
+    "logCount": 0
+  },
+  {
+    "id": "fd5aeaac-c8bd-4852-9c72-f60ad453d301",
+    "type": "DINNER",
+    "order": 4,
+    "logCount": 0
+  },
+  {
+    "id": "83bd9788-6103-4453-82ee-eb4aa2bce255",
+    "type": "SUPPER",
+    "order": 5,
+    "logCount": 0
+  }
+]

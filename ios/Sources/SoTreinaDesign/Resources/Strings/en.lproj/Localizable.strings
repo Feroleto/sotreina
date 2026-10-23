@@ -373,3 +373,31 @@
 "gym.records.reps %lld" = "%lld reps";
 "gym.records.noRecordYet" = "No record yet";
 "gym.records.loading" = "Loading…";
+
+/* Dieta › Visão geral (web: diet.json overview.*, meals.*, meal.*) */
+"diet.overview.kcal" = "kcal";
+"diet.overview.goalLine %@" = "goal %@";
+"diet.overview.remaining %@" = "%@ left";
+"diet.overview.overGoal %@" = "%@ over";
+"diet.overview.editGoal" = "Edit daily goal";
+"diet.overview.mealsTitle" = "Today's meals";
+"diet.overview.noItems" = "No items yet";
+"diet.overview.loadFailed" = "Couldn't load the day";
+"diet.meals.editMeals" = "Edit meals";
+"diet.meals.done" = "Done";
+"diet.meals.add" = "Add meal";
+"diet.meals.addTitle" = "New meal";
+"diet.meals.renameTitle" = "Rename meal";
+"diet.meals.save" = "Save";
+"diet.meals.moveUp" = "Move up";
+"diet.meals.moveDown" = "Move down";
+"diet.meals.remove" = "Delete";
+"diet.meals.empty" = "No meals configured.";
+"diet.meals.lastMealHint" = "A day needs at least one meal.";
+"diet.meals.deleteConfirmEmpty" = "Delete this meal?";
+"diet.meal.BREAKFAST" = "Breakfast";
+"diet.meal.LUNCH" = "Lunch";
+"diet.meal.SNACK" = "Snack";
+"diet.meal.DINNER" = "Dinner";
+"diet.meal.SUPPER" = "Supper";
+"diet.attribution" = "Nutrition data: Tabela Brasileira de Composição de Alimentos (TACO) — NEPA/UNICAMP. Packaged product data: Open Food Facts (openfoodfacts.org), under ODbL license.";

@@ -300,6 +300,20 @@ Atividades (`.scratch/app-ios-completo/issues/34-corrida-atividades.md`, no work
 | 19 | Visão geral | Dynamic Type máx. | manual | — |  ok (2026-10-23; com o texto grande, nome e data dos recordes vão pra linhas separadas, o texto do chip para em `.large` e a meta do tênis quebra em duas linhas) |
 | 20 | Recorde novo: selo "Novo" + pop em mola no chip | claro · PT | só com um recorde real: Uso real da Fase C | — |  pendente: precisa de um recorde real, fica pro Uso real da Fase C (a regra está testada no Kit) |
 
+### Fase D
+
+O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`): linhas 01–07. As capturas da web do modo de edição saem de `ios/validation/D/edit.mjs` (só abre o modo e o seletor, nunca salva nem apaga). O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Dieta › Visão geral (data, kcal, meta, macros, Refeições, atribuição) | claro · PT | `SOTREINA_SCREEN=dietOverview SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page diet/overview` | |
+| 02 | Dieta › Visão geral | escuro · EN | `SOTREINA_SCREEN=dietOverview SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page diet/overview --theme dark --lang en` | |
+| 03 | Modo de edição (↑ ↓ renomear excluir, "Adicionar refeição") | claro · PT | manual: tocar no lápis | `--page diet/overview --steps ios/validation/D/edit.mjs` (shot `edit`) | ✓ (2026-10-23; "0 itens" no plural, a web escreve "0 item": mesmo desvio do Treino) |
+| 04 | Seletor de nome (renomear) | claro · PT | manual: lápis de uma Refeição | idem (shot `rename`) | ✓ (2026-10-23; o sheet passou a abraçar o conteúdo, sobrava ~100 pt embaixo; conferido no aparelho, fica só a área do indicador de início) |
+| 05 | Confirmação de exclusão (contagem de Registros, "de todos os dias") | claro · PT | manual: lixeira de uma Refeição com Registros | — (a web confirma em linha; o app usa o diálogo nativo) | desvio aceito: diálogo nativo com as cores do sistema no lugar da faixa em linha da web; texto igual ("e 5 alimentos registrados, de todos os dias?") |
+| 06 | Funcional: reordenar, renomear, adicionar e excluir aparecem na web; a lixeira da última Refeição fica desabilitada; a engrenagem abre a Meta diária e salvar volta à Visão geral com a meta nova | — | manual | — | ok (usuário, 2026-10-23); a lixeira da última Refeição ficou só no teste do Kit, pra não apagar Refeições reais |
+| 07 | Dieta › Visão geral | Dynamic Type máx. | `SOTREINA_SCREEN=dietOverview` | — | ok (2026-10-23; "Carboidrato" quebrava no meio da palavra: rótulo de macro em uma linha, encolhendo até 70%) |
+
 ## Checklist da Fase 0 (go/no-go)
 
 - [x] `deploy.sh` instala e abre o app no iPhone
