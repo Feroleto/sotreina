@@ -7,15 +7,13 @@ public enum SetPlan {
     /// the server's ceiling for `targetSets`
     public static let maxSets = 20
 
-    /// Planned sets; an exercise with no target (a workout opened before
-    /// planned sets existed, or a routine without one) counts as one — the
-    /// same rule as the Live Activity's cursor (done once it has a set).
+    /// Planned sets — only a visual guide, the exercise is done when the
+    /// lifter marks it (`completedAt`). No target (a workout opened before
+    /// planned sets existed, or a routine without one) shows as one.
     public static func target(_ exercise: WorkoutExercise) -> Int {
         exercise.target?.sets ?? 1
     }
 
-    /// Done = logged + unconfirmed sets reached the plan.
-    public static func isDone(target: Int, done: Int) -> Bool { done >= target }
 
     /// A planned set can go only while it isn't done yet, and at least one
     /// stays (to drop the whole exercise there's "Remover exercício").
@@ -41,17 +39,22 @@ public enum SetPlan {
 }
 
 extension WorkoutDetail {
-    /// The workout with planned sets the app changed but the server hasn't
-    /// answered yet (keyed by workout exercise id), so the screen moves at
-    /// the tap instead of after the round trip.
-    public func applyingTargetSets(_ overrides: [String: Int]) -> WorkoutDetail {
-        guard !overrides.isEmpty else { return self }
+    /// The workout with the edits the app made but the server hasn't
+    /// answered yet (keyed by workout exercise id): planned sets and the done
+    /// mark, so the screen moves at the tap instead of after the round trip.
+    public func applying(targetSets: [String: Int] = [:], completed: [String: Bool] = [:], now: Date = Date()) -> WorkoutDetail {
+        guard !targetSets.isEmpty || !completed.isEmpty else { return self }
         var copy = self
         for index in copy.exercises.indices {
-            guard let sets = overrides[copy.exercises[index].id] else { continue }
-            var target = copy.exercises[index].target ?? ExerciseTarget(sets: nil, repsMin: nil, repsMax: nil)
-            target.sets = sets
-            copy.exercises[index].target = target
+            let id = copy.exercises[index].id
+            if let sets = targetSets[id] {
+                var target = copy.exercises[index].target ?? ExerciseTarget(sets: nil, repsMin: nil, repsMax: nil)
+                target.sets = sets
+                copy.exercises[index].target = target
+            }
+            if let done = completed[id] {
+                copy.exercises[index].completedAt = done ? (copy.exercises[index].completedAt ?? now) : nil
+            }
         }
         return copy
     }

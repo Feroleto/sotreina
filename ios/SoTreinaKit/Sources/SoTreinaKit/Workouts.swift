@@ -68,6 +68,10 @@ public struct WorkoutExercise: Codable, Equatable, Sendable, Identifiable {
     /// goal from the originating routine; nil for an exercise added ad hoc
     public var target: ExerciseTarget?
     public var sets: [WorkoutSet]
+    /// marked done by the lifter ("Concluir exercício"), whatever the number
+    /// of sets — the target is only a visual guide; nil = still open (absent
+    /// from servers older than the column)
+    public var completedAt: Date? = nil
 }
 
 /// `ExerciseTarget`.
@@ -238,12 +242,15 @@ public struct AddSetRequest: Codable, Equatable, Sendable {
 }
 
 /// `PATCH /workouts/:id/exercises/:workoutExerciseId` — `parseUpdateExerciseInput`;
-/// the app only sends the planned sets (the web sends `order`).
+/// the app sends the planned sets or the done mark (the web sends `order`).
+/// Nil fields are left out of the body.
 public struct UpdateExerciseRequest: Codable, Equatable, Sendable {
-    public var targetSets: Int
+    public var targetSets: Int?
+    public var completed: Bool?
 
-    public init(targetSets: Int) {
+    public init(targetSets: Int? = nil, completed: Bool? = nil) {
         self.targetSets = targetSets
+        self.completed = completed
     }
 }
 

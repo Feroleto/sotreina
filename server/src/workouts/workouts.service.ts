@@ -65,6 +65,8 @@ export interface WorkoutExerciseDetail {
   // goal carried over from the originating template, matched by exerciseId —
   // null for free workouts or exercises added ad hoc after starting from one
   target: ExerciseTarget | null;
+  /** marked done by the lifter; null = still open */
+  completedAt: Date | null;
   sets: WorkoutSetItem[];
 }
 
@@ -123,6 +125,7 @@ const WORKOUT_DETAIL_SELECT = {
       order: true,
       supersetGroupId: true,
       targetSets: true,
+      completedAt: true,
       exerciseId: true,
       exercise: { select: { name: true, namePt: true } },
       sets: {
@@ -153,6 +156,7 @@ type WorkoutWithExercises = {
     order: number;
     supersetGroupId: string | null;
     targetSets?: number | null;
+    completedAt?: Date | null;
     exerciseId: string;
     exercise: { name: string; namePt: string | null };
     sets: {
@@ -227,6 +231,7 @@ export class WorkoutsService {
         order: we.order,
         supersetGroupId: we.supersetGroupId,
         target: resolveTarget(targetsByExerciseId.get(we.exerciseId), we.targetSets),
+        completedAt: we.completedAt ?? null,
         sets: we.sets.map((s) => ({
           id: s.id,
           setNumber: s.setNumber,
@@ -540,7 +545,7 @@ export class WorkoutsService {
   // WorkoutSession's drag handle diffs against a pre-drag snapshot client-side
   // and calls this once per row whose position actually changed. The same
   // PATCH edits the planned sets (the iOS session's "+ Série" / remove),
-  // never below the sets already logged
+  // never below the sets already logged, and marks the exercise done/open
   async updateExercise(
     userId: string,
     workoutId: string,
@@ -562,6 +567,7 @@ export class WorkoutsService {
       data: {
         ...(input.order !== undefined && { order: input.order }),
         ...(input.targetSets !== undefined && { targetSets: input.targetSets }),
+        ...(input.completed !== undefined && { completedAt: input.completed ? new Date() : null }),
       },
     });
     return (await this.findById(userId, workoutId, lang))!;

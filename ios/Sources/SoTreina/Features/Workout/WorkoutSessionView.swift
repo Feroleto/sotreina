@@ -17,13 +17,16 @@ struct WorkoutSessionView: View {
     /// the logged set open for editing (one at a time)
     @State private var editingSetId: String?
     /// an exercise picked by hand; nil follows the cursor (the Live
-    /// Activity's rule: stay until the target is met, then the next one)
+    /// Activity's rule: stay until marked done, then the next open one)
     @State private var selectedId: String?
     @FocusState private var focus: SetField?
     @Environment(AppLanguageStore.self) private var language
 
-    /// the workout with the planned sets still on their way to the server
-    private var shown: WorkoutDetail { workout.applyingTargetSets(store.targetOverrides) }
+    /// the workout with the planned sets and done marks still on their way
+    /// to the server
+    private var shown: WorkoutDetail {
+        workout.applying(targetSets: store.targetOverrides, completed: store.completedOverrides)
+    }
 
     private var exercises: [WorkoutExercise] { shown.exercises.sorted { $0.order < $1.order } }
 
@@ -31,9 +34,8 @@ struct WorkoutSessionView: View {
         exercise.sets.count + store.pendingSets(for: exercise.id).count
     }
 
-    private func isDone(_ exercise: WorkoutExercise) -> Bool {
-        SetPlan.isDone(target: SetPlan.target(exercise), done: count(exercise))
-    }
+    /// done only when the lifter marked it — the target is a visual guide
+    private func isDone(_ exercise: WorkoutExercise) -> Bool { exercise.completedAt != nil }
 
     private var active: WorkoutExercise? {
         if let selectedId, let picked = exercises.first(where: { $0.id == selectedId }) { return picked }
@@ -57,7 +59,12 @@ struct WorkoutSessionView: View {
                                 total: exercises.count,
                                 store: store,
                                 focus: $focus,
-                                editingSetId: $editingSetId
+                                editingSetId: $editingSetId,
+                                onCompleted: {
+                                    // hand back to the cursor: the next open exercise
+                                    editingSetId = nil
+                                    withAnimation(.snappy) { selectedId = nil }
+                                }
                             )
                             .id(active.id)
                             .transition(.opacity)
@@ -83,6 +90,12 @@ struct WorkoutSessionView: View {
                     }
                     .padding(.horizontal, 14)
                     .padding(.bottom, 16)
+                    // a tap anywhere else closes (and saves) the set being edited
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        focus = nil
+                        editingSetId = nil
+                    }
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .refreshable { await store.load() }
@@ -121,7 +134,7 @@ struct WorkoutSessionView: View {
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    // also closes a set being edited, without saving
+                    // also closes (and saves) a set being edited
                     Button {
                         focus = nil
                         editingSetId = nil
@@ -154,10 +167,6 @@ struct WorkoutSessionView: View {
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 RestBar(rest: store.rest)
-            }
-            // a hand-picked exercise hands back to the cursor once its target is met
-            .onChange(of: active.map(count) ?? 0) { old, new in
-                if new > old, let active, active.id == selectedId, isDone(active) { selectedId = nil }
             }
             .onChange(of: active?.id) { editingSetId = nil }
             // spec §6.6: asked on the first workout; iOS shows it only once
@@ -276,6 +285,7 @@ private struct ActiveExerciseCard: View {
     let store: WorkoutStore
     var focus: FocusState<SetField?>.Binding
     @Binding var editingSetId: String?
+    let onCompleted: () -> Void
     @State private var confirmingRemove = false
     @State private var expanded = false
     @Environment(AppLanguageStore.self) private var language
@@ -285,6 +295,7 @@ private struct ActiveExerciseCard: View {
     private var done: Int { exercise.sets.count + pending.count }
     private var target: Int { SetPlan.target(exercise) }
     private var nextNumber: Int { done + 1 }
+    private var isCompleted: Bool { exercise.completedAt != nil }
 
     var body: some View {
         let lang = language.lang
@@ -318,8 +329,8 @@ private struct ActiveExerciseCard: View {
                     PendingSetRow(number: exercise.sets.count + offset + 1, pending: item, store: store)
                 }
 
-                // done with the plan: no row to log; "+ Série" brings it back
-                if done < target {
+                // marked done: no row to log; "Reabrir" brings it back
+                if !isCompleted {
                     CurrentSetRow(
                         exercise: exercise,
                         setNumber: nextNumber,
@@ -456,29 +467,54 @@ private struct ActiveExerciseCard: View {
         }
     }
 
-    /// "+ Série", plus "Remover série" when the only set left to do is the
-    /// current one (the planned rows carry their own ×).
-    private var planControls: some View {
-        HStack(spacing: 18) {
-            Button {
-                setTarget(max(target, done) + 1)
-            } label: {
-                Label { Text("gym.session.addSet", bundle: .l10n) } icon: { Image(systemName: "plus") }
-            }
-            .disabled(!SetPlan.canAdd(target: max(target, done)))
-            if plannedNumbers.isEmpty, done < target, SetPlan.canRemove(target: target, done: done) {
+    /// Open: "+ Série" (and − when the only planned set left is the current
+    /// one — the planned rows carry their own ×) and "Concluir exercício".
+    /// Done: "Reabrir exercício".
+    @ViewBuilder private var planControls: some View {
+        HStack(spacing: 14) {
+            if isCompleted {
+                Label { Text("gym.session.exerciseDone", bundle: .l10n) } icon: { Image(systemName: "checkmark.circle.fill") }
+                    .foregroundStyle(Color.pos)
+                Spacer()
                 Button {
-                    setTarget(target - 1)
+                    Task { await store.setCompleted(workoutExerciseId: exercise.id, false) }
                 } label: {
-                    Label { Text("gym.session.removeSet", bundle: .l10n) } icon: { Image(systemName: "minus") }
+                    Text("gym.session.reopenExercise", bundle: .l10n)
                 }
+                .buttonStyle(.chip)
+            } else {
+                Button {
+                    // past the plan, the current row counts as planned first
+                    setTarget(max(target, nextNumber) + 1)
+                } label: {
+                    Label { Text("gym.session.addSet", bundle: .l10n) } icon: { Image(systemName: "plus") }
+                }
+                .disabled(!SetPlan.canAdd(target: max(target, nextNumber)))
+                if plannedNumbers.isEmpty, SetPlan.canRemove(target: target, done: done) {
+                    Button {
+                        setTarget(target - 1)
+                    } label: {
+                        Image(systemName: "minus")
+                            .frame(width: 28, height: 28)
+                    }
+                    .accessibilityLabel(Text("gym.session.removeSet", bundle: .l10n))
+                }
+                Spacer()
+                Button {
+                    editingSetId = nil
+                    focus.wrappedValue = nil
+                    onCompleted()
+                    Task { await store.setCompleted(workoutExerciseId: exercise.id, true) }
+                } label: {
+                    Label { Text("gym.session.completeExercise", bundle: .l10n) } icon: { Image(systemName: "checkmark") }
+                }
+                .buttonStyle(.chip)
             }
-            Spacer()
         }
         .buttonStyle(.plain)
         .font(Font.geist(13.5, relativeTo: .subheadline).weight(.medium))
         .foregroundStyle(Color.accTx)
-        .padding(.horizontal, 12)
+        .padding(.leading, 12)
         .frame(minHeight: 36)
     }
 
@@ -488,7 +524,7 @@ private struct ActiveExerciseCard: View {
 
     /// set numbers after the current one still within the plan
     private var plannedNumbers: [Int] {
-        guard target > nextNumber else { return [] }
+        guard !isCompleted, target > nextNumber else { return [] }
         return Array((nextNumber + 1)...target)
     }
 
@@ -661,6 +697,8 @@ private struct EditSetRow: View {
     @State private var weightText: String
     @State private var repsText: String
     @State private var holdHint = false
+    /// saved with ✓ or deleted: nothing left to save when the row goes away
+    @State private var settled = false
 
     init(exerciseId: String, workoutSet: WorkoutSet, store: WorkoutStore, focus: FocusState<SetField?>.Binding, onClose: @escaping () -> Void) {
         self.exerciseId = exerciseId
@@ -689,24 +727,15 @@ private struct EditSetRow: View {
                 )
                 Spacer(minLength: 0)
                 HoldToDeleteButton(showHint: $holdHint) {
+                    settled = true
                     focus.wrappedValue = nil
                     onClose()
                     Task { await store.deleteSet(workoutExerciseId: exerciseId, setId: workoutSet.id) }
                 }
                 Button {
+                    save()
                     focus.wrappedValue = nil
                     onClose()
-                    Task {
-                        await store.updateSet(
-                            workoutExerciseId: exerciseId,
-                            setId: workoutSet.id,
-                            weightKg: SetInput.editedWeightKg(
-                                weightText, original: workoutSet.weightKg,
-                                unit: store.weightUnit, lang: AppLanguageStore.shared.lang
-                            ),
-                            reps: SetInput.reps(repsText)
-                        )
-                    }
                 } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 15, weight: .bold))
@@ -729,8 +758,30 @@ private struct EditSetRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color.pageBg, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background {
+            // taps on the row's own empty space don't count as "elsewhere"
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.pageBg)
+                .onTapGesture {}
+        }
         .animation(.easeOut(duration: 0.2), value: holdHint)
+        // closed by a tap elsewhere, another set, the keyboard's OK or the
+        // exercise switching: same as ✓
+        .onDisappear { save() }
+    }
+
+    /// PATCH when the values are valid and changed; once per row
+    private func save() {
+        guard !settled else { return }
+        settled = true
+        guard isValid else { return }
+        let weightKg = SetInput.editedWeightKg(
+            weightText, original: workoutSet.weightKg,
+            unit: store.weightUnit, lang: AppLanguageStore.shared.lang
+        )
+        let reps = SetInput.reps(repsText)
+        guard weightKg != workoutSet.weightKg || reps != workoutSet.reps else { return }
+        Task { await store.updateSet(workoutExerciseId: exerciseId, setId: workoutSet.id, weightKg: weightKg, reps: reps) }
     }
 
     private var isValid: Bool {

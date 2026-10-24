@@ -343,6 +343,19 @@ describe('WorkoutsService', () => {
       });
     });
 
+    it('stamps completedAt when marked done and clears it when reopened', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValue({ id: 'we1' });
+      mockPrisma.workoutExercise.update.mockResolvedValue({});
+      mockPrisma.workout.findFirst.mockResolvedValue(DETAIL_STUB);
+
+      await service.updateExercise(USER_ID, 'w1', 'we1', { completed: true });
+      expect(mockPrisma.workoutExercise.update.mock.calls[0][0].data.completedAt).toBeInstanceOf(Date);
+
+      await service.updateExercise(USER_ID, 'w1', 'we1', { completed: false });
+      expect(mockPrisma.workoutExercise.update.mock.calls[1][0].data).toEqual({ completedAt: null });
+      expect(mockPrisma.workoutSet.count).not.toHaveBeenCalled();
+    });
+
     it('rejects planned sets below the sets already logged (400)', async () => {
       mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
       mockPrisma.workoutSet.count.mockResolvedValueOnce(3);

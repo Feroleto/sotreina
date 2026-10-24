@@ -35,6 +35,12 @@ describe('parseUpdateExerciseInput', () => {
     expect(parseUpdateExerciseInput({ order: 1, targetSets: 20 })).toEqual({ order: 1, targetSets: 20 });
   });
 
+  it('accepts completed as a boolean only', () => {
+    expect(parseUpdateExerciseInput({ completed: true })).toEqual({ completed: true });
+    expect(parseUpdateExerciseInput({ completed: false })).toEqual({ completed: false });
+    expect(() => parseUpdateExerciseInput({ completed: 'yes' })).toThrow(BadRequestException);
+  });
+
   it('requires at least one field', () => {
     expect(() => parseUpdateExerciseInput({})).toThrow(BadRequestException);
     expect(() => parseUpdateExerciseInput(null)).toThrow(BadRequestException);

@@ -436,6 +436,10 @@ model WorkoutExercise {
   // exercise added mid-workout, editable live; null = workouts opened before
   // this column existed (read falls back to the routine's targetSets)
   targetSets      Int?         @map("target_sets")
+  // marked done by the lifter (iOS session's "Concluir exercício"), whatever
+  // the number of sets — the planned sets are only a visual guide; null =
+  // still open (also every exercise of a workout from before this column)
+  completedAt     DateTime?    @map("completed_at")
   sets            WorkoutSet[]
   createdAt       DateTime     @default(now()) @map("created_at")
 

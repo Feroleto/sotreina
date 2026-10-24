@@ -62,10 +62,10 @@ public enum WorkoutActivity {
     }
 
     /// The exercise being worked on and its next set number. Stays on the
-    /// exercise of the latest set until its routine target is met, then
-    /// moves to the first exercise (in order) still short of its target —
-    /// an exercise added ad hoc (no target) counts as pending until it has
-    /// a set. When everything is done it stays on the last one touched.
+    /// exercise of the latest set until the lifter marks it done
+    /// (`completedAt`; the target is only a guide), then moves to the first
+    /// exercise (in order) still open. When everything is done it stays on
+    /// the last one touched.
     public static func cursor(
         in workout: WorkoutDetail,
         pending: [PendingSet]
@@ -76,10 +76,7 @@ public enum WorkoutActivity {
         func count(_ exercise: WorkoutExercise) -> Int {
             exercise.sets.count + pending.filter { $0.workoutExerciseId == exercise.id }.count
         }
-        func isDone(_ exercise: WorkoutExercise) -> Bool {
-            guard let target = exercise.target?.sets else { return count(exercise) > 0 }
-            return count(exercise) >= target
-        }
+        func isDone(_ exercise: WorkoutExercise) -> Bool { exercise.completedAt != nil }
 
         let latestLogged = exercises
             .compactMap { exercise in exercise.sets.map(\.completedAt).max().map { (exercise, $0) } }
@@ -88,7 +85,7 @@ public enum WorkoutActivity {
             ?? latestLogged
 
         let current: WorkoutExercise
-        if let lastTouched, lastTouched.target?.sets == nil || !isDone(lastTouched) {
+        if let lastTouched, !isDone(lastTouched) {
             current = lastTouched
         } else if let next = exercises.first(where: { !isDone($0) }) {
             current = next

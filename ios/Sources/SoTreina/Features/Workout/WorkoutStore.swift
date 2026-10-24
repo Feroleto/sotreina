@@ -370,23 +370,32 @@ final class WorkoutStore {
         await mutate("POST exercise", path: "exercises", method: .post(AddExerciseRequest(exerciseId: exerciseId)))
     }
 
-    /// Planned sets changed by "+ Série" / remove, shown before the server
-    /// answers (`WorkoutDetail.applyingTargetSets`); each one is dropped once
-    /// its exercise's latest PATCH is back, so an older answer arriving in
-    /// between can't make the count jump back.
+    /// Planned sets ("+ Série" / remove) and done marks ("Concluir" /
+    /// "Reabrir") shown before the server answers (`WorkoutDetail.applying`);
+    /// each one is dropped once its exercise's latest PATCH is back, so an
+    /// older answer arriving in between can't make the screen jump back.
     private(set) var targetOverrides: [String: Int] = [:]
-    private var targetTickets: [String: Int] = [:]
+    private(set) var completedOverrides: [String: Bool] = [:]
+    private var exerciseTickets: [String: Int] = [:]
 
     func setTargetSets(workoutExerciseId: String, _ sets: Int) async {
         targetOverrides[workoutExerciseId] = sets
-        let ticket = (targetTickets[workoutExerciseId] ?? 0) + 1
-        targetTickets[workoutExerciseId] = ticket
-        await mutate(
-            "PATCH exercise",
-            path: "exercises/\(workoutExerciseId)",
-            method: .patch(UpdateExerciseRequest(targetSets: sets))
-        )
-        if targetTickets[workoutExerciseId] == ticket { targetOverrides[workoutExerciseId] = nil }
+        await updateExercise(workoutExerciseId, UpdateExerciseRequest(targetSets: sets))
+    }
+
+    func setCompleted(workoutExerciseId: String, _ completed: Bool) async {
+        completedOverrides[workoutExerciseId] = completed
+        await updateExercise(workoutExerciseId, UpdateExerciseRequest(completed: completed))
+    }
+
+    private func updateExercise(_ workoutExerciseId: String, _ body: UpdateExerciseRequest) async {
+        let ticket = (exerciseTickets[workoutExerciseId] ?? 0) + 1
+        exerciseTickets[workoutExerciseId] = ticket
+        await mutate("PATCH exercise", path: "exercises/\(workoutExerciseId)", method: .patch(body))
+        if exerciseTickets[workoutExerciseId] == ticket {
+            targetOverrides[workoutExerciseId] = nil
+            completedOverrides[workoutExerciseId] = nil
+        }
     }
 
     func removeExercise(workoutExerciseId: String) async {

@@ -151,6 +151,9 @@
 "gym.session.addSet" = "Série";
 "gym.session.removeSet" = "Remover série";
 "gym.session.holdToDelete" = "Segure para apagar";
+"gym.session.completeExercise" = "Concluir";
+"gym.session.reopenExercise" = "Reabrir";
+"gym.session.exerciseDone" = "Concluído";
 "gym.entry.weightLabel %@" = "Peso (%@)";
 "gym.entry.repsLabel" = "Repetições";
 "gym.entry.deleteSet" = "Apagar série";

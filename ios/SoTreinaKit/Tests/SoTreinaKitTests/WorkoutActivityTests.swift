@@ -12,12 +12,13 @@ import Testing
         )
     }
 
-    private func exercise(_ id: String, order: Int, target: Int?, sets: [WorkoutSet] = []) -> WorkoutExercise {
+    private func exercise(_ id: String, order: Int, target: Int?, sets: [WorkoutSet] = [], done: Bool = false) -> WorkoutExercise {
         WorkoutExercise(
             id: id, exerciseId: "ex-\(id)", exerciseName: "Exercício \(id)", order: order,
             supersetGroupId: nil,
             target: target.map { ExerciseTarget(sets: $0, repsMin: 8, repsMax: 12) },
-            sets: sets
+            sets: sets,
+            completedAt: done ? t0 : nil
         )
     }
 
@@ -39,7 +40,7 @@ import Testing
         #expect(cursor.setNumber == 1)
     }
 
-    @Test func staysOnTheLatestExerciseUntilItsTargetIsMet() throws {
+    @Test func staysOnTheLatestExerciseUntilMarkedDone() throws {
         let w = workout([
             exercise("a", order: 1, target: 3, sets: [set(1, 20, 5, at: 1)]),
             exercise("b", order: 2, target: 3, sets: [set(1, 40, 8, at: 5)]),
@@ -50,10 +51,21 @@ import Testing
         #expect(cursor.setNumber == 2)
     }
 
-    @Test func movesToTheFirstUnfinishedExerciseOnceTheTargetIsMet() throws {
+    @Test func theTargetIsOnlyAGuideItNeverMovesTheCursor() throws {
         let w = workout([
             exercise("a", order: 1, target: 2, sets: [set(1, 20, 5, at: 1), set(2, 20, 5, at: 2)]),
             exercise("b", order: 2, target: 2),
+        ])
+        let cursor = try #require(WorkoutActivity.cursor(in: w, pending: []))
+        #expect(cursor.exercise.id == "a")
+        #expect(cursor.setNumber == 3)
+    }
+
+    @Test func movesToTheFirstOpenExerciseOnceMarkedDone() throws {
+        let w = workout([
+            exercise("a", order: 1, target: 3, sets: [set(1, 20, 5, at: 1)], done: true),
+            exercise("b", order: 2, target: 3),
+            exercise("c", order: 3, target: 3),
         ])
         let cursor = try #require(WorkoutActivity.cursor(in: w, pending: []))
         #expect(cursor.exercise.id == "b")
@@ -70,7 +82,7 @@ import Testing
 
     @Test func anAdHocExerciseWithoutTargetStaysCurrentWhileBeingWorked() throws {
         let w = workout([
-            exercise("a", order: 1, target: 1, sets: [set(1, 20, 5, at: 1)]),
+            exercise("a", order: 1, target: 1, sets: [set(1, 20, 5, at: 1)], done: true),
             exercise("x", order: 2, target: nil, sets: [set(1, 10, 12, at: 3), set(2, 10, 12, at: 4)]),
         ])
         let cursor = try #require(WorkoutActivity.cursor(in: w, pending: []))
@@ -80,8 +92,8 @@ import Testing
 
     @Test func everythingDoneStaysOnTheLastTouched() throws {
         let w = workout([
-            exercise("a", order: 1, target: 1, sets: [set(1, 20, 5, at: 2)]),
-            exercise("b", order: 2, target: 1, sets: [set(1, 40, 8, at: 1)]),
+            exercise("a", order: 1, target: 1, sets: [set(1, 20, 5, at: 2)], done: true),
+            exercise("b", order: 2, target: 1, sets: [set(1, 40, 8, at: 1)], done: true),
         ])
         let cursor = try #require(WorkoutActivity.cursor(in: w, pending: []))
         #expect(cursor.exercise.id == "a")

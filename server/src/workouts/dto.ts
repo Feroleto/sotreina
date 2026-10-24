@@ -91,19 +91,21 @@ export function parseFinishWorkoutInput(body: unknown): FinishWorkoutInput {
 export interface UpdateExerciseInput {
   order?: number;
   targetSets?: number;
+  completed?: boolean;
 }
 
 export const MAX_TARGET_SETS = 20;
 
-// PATCH of one exercise in an open workout: its position and/or its planned
-// sets (WorkoutExercise.targetSets, editable live — the routine's own target
-// only changes through finish's syncTemplate). At least one field; the web
+// PATCH of one exercise in an open workout: its position, its planned sets
+// (WorkoutExercise.targetSets, editable live — the routine's own target only
+// changes through finish's syncTemplate) and/or whether the lifter marked it
+// done (`completed`, stamps/clears completedAt). At least one field; the web
 // sends only `order`
 export function parseUpdateExerciseInput(body: unknown): UpdateExerciseInput {
   if (typeof body !== 'object' || body === null) {
     throw new BadRequestException('Request body must be an object');
   }
-  const { order, targetSets } = body as Record<string, unknown>;
+  const { order, targetSets, completed } = body as Record<string, unknown>;
   const input: UpdateExerciseInput = {};
   if (order !== undefined) {
     if (typeof order !== 'number' || !Number.isInteger(order) || order < 1 || order > 1000) {
@@ -122,8 +124,14 @@ export function parseUpdateExerciseInput(body: unknown): UpdateExerciseInput {
     }
     input.targetSets = targetSets;
   }
-  if (input.order === undefined && input.targetSets === undefined) {
-    throw new BadRequestException('order or targetSets is required');
+  if (completed !== undefined) {
+    if (typeof completed !== 'boolean') {
+      throw new BadRequestException('completed must be a boolean');
+    }
+    input.completed = completed;
+  }
+  if (input.order === undefined && input.targetSets === undefined && input.completed === undefined) {
+    throw new BadRequestException('order, targetSets or completed is required');
   }
   return input;
 }

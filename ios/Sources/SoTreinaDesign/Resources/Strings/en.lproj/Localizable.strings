@@ -151,6 +151,9 @@
 "gym.session.addSet" = "Set";
 "gym.session.removeSet" = "Remove set";
 "gym.session.holdToDelete" = "Hold to delete";
+"gym.session.completeExercise" = "Done";
+"gym.session.reopenExercise" = "Reopen";
+"gym.session.exerciseDone" = "Done";
 "gym.entry.weightLabel %@" = "Weight (%@)";
 "gym.entry.repsLabel" = "Reps";
 "gym.entry.deleteSet" = "Delete set";
