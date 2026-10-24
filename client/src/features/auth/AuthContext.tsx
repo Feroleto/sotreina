@@ -14,6 +14,8 @@ export interface AuthUser {
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
+  /** false for every account that predates verification; never blocking */
+  emailVerified: boolean;
   /** empty = not chosen yet (new account) → App shows AreaPickerPage */
   enabledAreas: Area[];
   /** display/entry units; the API always speaks km and kg (lib/units.ts) */

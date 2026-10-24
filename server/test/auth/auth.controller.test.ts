@@ -27,6 +27,8 @@ describe('AuthController', () => {
     setPassword: ReturnType<typeof vi.fn>;
     requestPasswordReset: ReturnType<typeof vi.fn>;
     resetPassword: ReturnType<typeof vi.fn>;
+    sendVerificationCode: ReturnType<typeof vi.fn>;
+    verifyEmail: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(async () => {
@@ -44,6 +46,8 @@ describe('AuthController', () => {
       setPassword: vi.fn(),
       requestPasswordReset: vi.fn().mockResolvedValue(undefined),
       resetPassword: vi.fn().mockResolvedValue(undefined),
+      sendVerificationCode: vi.fn().mockResolvedValue(undefined),
+      verifyEmail: vi.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -331,6 +335,90 @@ describe('AuthController', () => {
         controller.resetPassword({ token: '', newPassword: 'newpassword123' }),
       ).rejects.toThrow(BadRequestException);
       expect(authService.resetPassword).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('registerToken', () => {
+    it('returns the signed JWT plus the MeResponse in the body, without setting a cookie', async () => {
+      authService.register.mockResolvedValue({
+        userId: USER_ID,
+        tokenVersion: 0,
+      });
+      authService.authenticate.mockResolvedValue({ id: USER_ID });
+
+      const result = await controller.registerToken({
+        email: 'test@example.com',
+        password: 'password123',
+        firstName: 'Ana',
+      });
+
+      expect(authService.register).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123',
+        firstName: 'Ana',
+      });
+      expect(session.signToken).toHaveBeenCalledWith(USER_ID, 0);
+      expect(session.setCookie).not.toHaveBeenCalled();
+      expect(result).toEqual({ token: 'signed-jwt', user: { id: USER_ID } });
+    });
+
+    it('propagates ConflictException, signing nothing', async () => {
+      authService.register.mockRejectedValue(
+        new ConflictException('Email already in use'),
+      );
+
+      await expect(
+        controller.registerToken({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+      ).rejects.toThrow(ConflictException);
+      expect(session.signToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sendEmailCode', () => {
+    it('sends a code for the session user', async () => {
+      session.extractSession.mockReturnValue({
+        userId: USER_ID,
+        tokenVersion: 0,
+      });
+
+      const result = await controller.sendEmailCode({} as any);
+
+      expect(authService.sendVerificationCode).toHaveBeenCalledWith(USER_ID);
+      expect(result).toEqual({ ok: true });
+    });
+  });
+
+  describe('verifyEmail', () => {
+    it('verifies the parsed code and returns the refreshed MeResponse', async () => {
+      const extractedSession = { userId: USER_ID, tokenVersion: 0 };
+      session.extractSession.mockReturnValue(extractedSession);
+      authService.authenticate.mockResolvedValue({
+        id: USER_ID,
+        emailVerified: true,
+      });
+
+      const result = await controller.verifyEmail({} as any, {
+        code: ' 012345 ',
+      });
+
+      expect(authService.verifyEmail).toHaveBeenCalledWith(USER_ID, '012345');
+      expect(authService.authenticate).toHaveBeenCalledWith(extractedSession);
+      expect(result).toEqual({ id: USER_ID, emailVerified: true });
+    });
+
+    it('rejects a malformed code before calling the service', async () => {
+      session.extractSession.mockReturnValue({
+        userId: USER_ID,
+        tokenVersion: 0,
+      });
+
+      await expect(
+        controller.verifyEmail({} as any, { code: '12345' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(authService.verifyEmail).not.toHaveBeenCalled();
     });
   });
 });

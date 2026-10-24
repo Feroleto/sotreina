@@ -59,7 +59,10 @@
     "goalDietDetail": "calories per day",
     "app": "App",
     "account": "Account",
-    "passwordRow": "Password"
+    "passwordRow": "Password",
+    "emailUnverified": "Not verified",
+    "emailVerified": "Verified",
+    "verifyEmail": "Verify"
   },
   "addSport": "Add a Sport",
   "yourProfile": "Your profile",

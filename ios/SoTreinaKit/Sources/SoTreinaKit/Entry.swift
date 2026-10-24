@@ -1,22 +1,22 @@
 import Foundation
 
-/// Why the register form can't be sent yet — the same checks the web makes
-/// before `POST /auth/register` (the server enforces them again).
+/// Why the register form can't be sent yet — the web's checks before
+/// `POST /auth/register` (the server enforces them again), minus "confirm
+/// password": the app has no such field, iOS suggests and saves a strong
+/// password instead (spec login-app-ios §3.2).
 public enum RegisterProblem: Equatable, Sendable {
     case emailMissing
     /// under `EntryForm.minPasswordLength` (server/src/auth/dto.ts)
     case passwordTooShort
-    case passwordMismatch
 }
 
 /// Rules of the entry screens: login, register and the area picker.
 public enum EntryForm {
     public static let minPasswordLength = 8
 
-    public static func registerProblem(email: String, password: String, confirm: String) -> RegisterProblem? {
+    public static func registerProblem(email: String, password: String) -> RegisterProblem? {
         if email.trimmingCharacters(in: .whitespaces).isEmpty { return .emailMissing }
         if password.count < minPasswordLength { return .passwordTooShort }
-        if password != confirm { return .passwordMismatch }
         return nil
     }
 

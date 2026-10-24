@@ -7,14 +7,15 @@ import { apiFetch } from '@/lib/api';
 import SegmentedControl from '@/components/SegmentedControl';
 import PasswordInput from '@/components/PasswordInput';
 import { useAppLanguage } from '@/i18n/useAppLanguage';
-import { useAuth } from '@/features/auth/AuthContext';
+import { useAuth, type AuthUser } from '@/features/auth/AuthContext';
+import EmailCodeForm from '@/features/auth/EmailCodeForm';
 import { THEME_OPTIONS, type ThemePref } from '@/lib/theme';
 import HeroTrace from '@/features/auth/HeroTrace';
 import { ConnectWithStrava } from '@/components/StravaBrand';
 import { Logo } from '@/components/Logo';
 
 type Mode = 'login' | 'register';
-type View = 'main' | 'form' | 'forgot';
+type View = 'main' | 'form' | 'forgot' | 'verify';
 
 function HowItWorksPopover() {
   const { t } = useTranslation('auth');
@@ -78,6 +79,9 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
   const [firstName, setFirstName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // the account already exists (and the session cookie is set) while the
+  // code step shows; setUser only runs when it's done or skipped
+  const [registeredUser, setRegisteredUser] = useState<AuthUser | null>(null);
 
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
@@ -181,7 +185,13 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
         else setFormError(t('login.genericError'));
         return;
       }
-      setUser(await res.json());
+      const me = (await res.json()) as AuthUser;
+      if (mode === 'register') {
+        setRegisteredUser(me);
+        setView('verify');
+        return;
+      }
+      setUser(me);
     } catch {
       setFormError(t('login.genericError'));
     } finally {
@@ -262,18 +272,22 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
             ? t('login.signIn')
             : view === 'forgot'
               ? t('login.forgotTitle')
-              : mode === 'login'
-                ? t('login.tabLogin')
-                : t('login.tabRegister')}
+              : view === 'verify'
+                ? t('verify.title')
+                : mode === 'login'
+                  ? t('login.tabLogin')
+                  : t('login.tabRegister')}
         </h2>
         <p className="mt-[7px] text-[13px] leading-[1.55] text-muted-foreground">
           {view === 'main'
             ? t('login.signInSubtitle')
             : view === 'forgot'
               ? t('login.forgotSubtitle')
-              : mode === 'login'
-                ? t('login.formSubtitleLogin')
-                : t('login.formSubtitleRegister')}
+              : view === 'verify'
+                ? t('verify.subtitle', { email: registeredUser?.email ?? '' })
+                : mode === 'login'
+                  ? t('login.formSubtitleLogin')
+                  : t('login.formSubtitleRegister')}
         </p>
 
         {view === 'form' && (
@@ -420,6 +434,14 @@ export default function LoginPage({ themePref, onThemePref }: LoginPageProps) {
               </button>
             </form>
           ))}
+
+        {view === 'verify' && registeredUser && (
+          <EmailCodeForm
+            sendOnMount={false}
+            onVerified={setUser}
+            onSkip={() => setUser(registeredUser)}
+          />
+        )}
 
         {view === 'main' && (
           <div className="mt-[22px]">

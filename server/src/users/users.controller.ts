@@ -1,4 +1,15 @@
-import { BadRequestException, Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import { AccountDeletionService } from './account-deletion.service';
 import { UsersService, type UpdateMeInput } from './users.service';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -33,11 +44,27 @@ function parseOptionalIntInRange(
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {
-  constructor(private readonly service: UsersService) {}
+  constructor(
+    private readonly service: UsersService,
+    private readonly accountDeletion: AccountDeletionService,
+  ) {}
 
   @Get('me')
   async me(@CurrentUser() user: AuthenticatedUser) {
     return this.service.getMe(user.id);
+  }
+
+  // password confirmation, so same brute-force throttle as login
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Delete('me')
+  @HttpCode(204)
+  async remove(@CurrentUser() user: AuthenticatedUser, @Body() body: unknown): Promise<void> {
+    const password = (body as Record<string, unknown> | null)?.password;
+    // same upper bound as the auth DTOs: caps argon2's hashing cost
+    if (typeof password !== 'string' || password.length === 0 || password.length > 128) {
+      throw new BadRequestException('password is required');
+    }
+    await this.accountDeletion.deleteAccount(user.id, password);
   }
 
   @Patch('me')

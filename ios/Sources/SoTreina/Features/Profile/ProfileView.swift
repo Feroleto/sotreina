@@ -251,6 +251,7 @@ struct ProfileView: View {
     private var accountSection: some View {
         Section {
             header("nav.profile.account")
+            ProfileEmailRow(me: me)
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(verbatim: "Strava").font(DSFont.row)
@@ -281,6 +282,22 @@ struct ProfileView: View {
                 .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                 .font(DSFont.row)
                 .foregroundStyle(Color.neg)
+            }
+
+            // a Strava-only account has no password to confirm with (and
+            // can't sign in here anyway)
+            if me.hasPassword {
+                NavigationLink {
+                    DeleteAccountView()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "trash")
+                        Text("nav.profile.deleteAccount", bundle: .l10n)
+                    }
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+                    .font(DSFont.row)
+                    .foregroundStyle(Color.neg)
+                }
             }
         }
         .listRowBackground(Color.pageBg)

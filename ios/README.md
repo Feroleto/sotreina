@@ -103,7 +103,13 @@ Testado em 2026-10-22 (iPhone 15, iOS 27.0.1): `scripts/launch.sh [CHAVE=VALOR .
 
 ### Testar contra a API local
 
-O campo "Servidor" da tela de login aceita outra URL. O iPhone não alcança o `localhost` do WSL. É preciso expor o NestJS na rede local: `netsh interface portproxy` no Windows, apontando a porta 3000 do IP de LAN do PC pro IP do WSL. Depois, use `http://<IP-do-PC>:3000`. HTTP sem TLS exige uma exceção de ATS no Info.plist, o que ainda não foi feito. Por isso o caminho mais simples na Fase 0 é testar contra produção.
+Funciona desde 2026-10-23 (usado pra conferir a exclusão de conta). O servidor fica num sheet aberto por **toque longo no logo** do Entrar.
+
+- **Windows (PowerShell como admin, uma vez)**: `netsh interface portproxy add v4tov4 listenaddress=<IP-do-PC> listenport=3001 connectaddress=<IP-do-WSL> connectport=3001` e `New-NetFirewallRule -DisplayName "SoTreina dev API 3001" -Direction Inbound -Protocol TCP -LocalPort 3001 -RemoteAddress LocalSubnet -Action Allow -Profile Public,Private` (o Wi-Fi do PC está como rede **pública**). O IP do WSL (`ip -4 addr show eth0`) pode mudar no reboot, e aí o portproxy precisa ser refeito.
+- **Backend**: `PORT=3001 npm run start:dev` (o `main.ts` já escuta em `0.0.0.0`). Com `RESEND_API_KEY=re_fake...` nenhum email real sai.
+- **App**: `NSAllowsLocalNetworking` no `SoTreina-Info.plist` libera HTTP só pra endereços locais, e `NSLocalNetworkUsageDescription` é o texto do pedido de **Rede local** (sem ele o iOS 14+ bloqueia IPs da LAN). Permitir na primeira conexão.
+- **URL exata**: `http://<IP-do-PC>:3001`, **sem `s` e sem `/api`** (o `/api` é só o proxy da Vercel). Com `https` o login falha com `-1200`/`bad protocol version` no `logs.sh`.
+- Voltar pra produção: o mesmo sheet, "Usar produção".
 
 ## Live Activity
 

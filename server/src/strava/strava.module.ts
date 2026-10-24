@@ -43,6 +43,6 @@ import { StravaWebhookController } from './webhook/strava-webhook.controller';
     HrZonesBackfillService,
     StravaWebhookService,
   ],
-  exports: [StravaClientService],
+  exports: [StravaClientService, StravaAuthService],
 })
 export class StravaModule {}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { ChevronRight, LogOut } from 'lucide-react';
+import { Check, ChevronRight, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SegmentedControl from '@/components/SegmentedControl';
 import PasswordInput from '@/components/PasswordInput';
@@ -21,6 +21,7 @@ import { useUserGoals } from '@/features/today/useUserGoals';
 import WeeklyGoalsPage from '@/features/today/WeeklyGoalsPage';
 import GoalPage from '@/features/diet/GoalPage';
 import EditNamePage from './EditNamePage';
+import VerifyEmailPage from './VerifyEmailPage';
 import { distanceLabel, goalToDisplay } from '@/lib/units';
 
 interface ProfilePageProps {
@@ -104,7 +105,7 @@ function AreaSwitch({
   );
 }
 
-type ProfileView = 'main' | 'name' | 'weeklyGoals' | 'dietGoal';
+type ProfileView = 'main' | 'name' | 'verifyEmail' | 'weeklyGoals' | 'dietGoal';
 
 /**
  * Perfil — Redesign 21d: personal data, the areas in use (same selection as
@@ -250,6 +251,8 @@ export default function ProfilePage({
   const detail =
     view === 'name' ? (
       <EditNamePage onBack={back} />
+    ) : view === 'verifyEmail' ? (
+      <VerifyEmailPage onBack={back} />
     ) : view === 'weeklyGoals' && goals ? (
       <WeeklyGoalsPage
         goals={goals}
@@ -423,7 +426,46 @@ export default function ProfilePage({
           </div>
 
           <SectionTitle>{t('profile.account')}</SectionTitle>
-          <div className="mt-1.5 border-b border-border py-[13px]">
+          {user?.email && (
+            <div className="mt-1.5 flex items-center justify-between gap-2.5 border-b border-border py-[13px]">
+              <div className="min-w-0">
+                <div className="text-[14.5px] font-medium text-foreground">
+                  {t('profile.email')}
+                </div>
+                <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-[12px] text-muted-foreground">
+                    {user.email}
+                  </span>
+                  {user.emailVerified ? (
+                    <Check
+                      aria-label={t('profile.emailVerified')}
+                      className="h-3.5 w-3.5 flex-none text-pos"
+                      strokeWidth={2.2}
+                    />
+                  ) : (
+                    <span className="flex-none rounded-full bg-chip px-[7px] py-px text-[11px] font-medium text-muted-foreground">
+                      {t('profile.emailUnverified')}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {!user.emailVerified && (
+                <button
+                  type="button"
+                  onClick={() => setView('verifyEmail')}
+                  className="shrink-0 cursor-pointer rounded-[9px] bg-chip px-[13px] py-1.5 text-[12.5px] font-medium text-foreground hover:bg-grid-ax"
+                >
+                  {t('profile.verifyEmail')}
+                </button>
+              )}
+            </div>
+          )}
+          <div
+            className={cn(
+              'border-b border-border py-[13px]',
+              !user?.email && 'mt-1.5',
+            )}
+          >
             <div className="flex items-center justify-between gap-2.5">
               <div className="min-w-0">
                 <div className="text-[14.5px] font-medium text-foreground">

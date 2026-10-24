@@ -9,52 +9,61 @@ import SwiftUI
 struct ForgotPasswordView: View {
     @Environment(SessionStore.self) private var session
     @State var email: String
-    let baseURL: String
     @State private var isSubmitting = false
     @State private var sent = false
+    @FocusState private var focused: Bool
+
+    private var canSubmit: Bool {
+        !isSubmitting && !email.trimmingCharacters(in: .whitespaces).isEmpty
+    }
 
     var body: some View {
-        Form {
-            Section {
-                TextField(text: $email) { Text("auth.login.emailLabel", bundle: .l10n) }
-                    .textContentType(.username)
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .disabled(sent)
-            } footer: {
-                Text(sent ? "auth.login.forgotSuccess" : "auth.login.forgotSubtitle", bundle: .l10n)
-                    .font(DSFont.caption)
+        EntryScroll(submitID: "submit", focused: focused) {
+            EntryHeading(
+                title: "auth.login.forgotTitle",
+                subtitle: sent ? "auth.login.forgotSuccess" : "auth.login.forgotSubtitle"
+            )
+            .padding(.top, 12)
+
+            TextField(text: $email) {
+                Text("auth.login.emailLabel", bundle: .l10n).foregroundStyle(Color.mutedFg)
             }
+            .textContentType(.username)
+            .keyboardType(.emailAddress)
+            .textInputAutocapitalization(.never)
+            .autocorrectionDisabled()
+            .submitLabel(.send)
+            .focused($focused)
+            .onSubmit { if canSubmit { Task { await submit() } } }
+            .entryFieldBox()
+            .disabled(sent)
+            .opacity(sent ? 0.6 : 1)
+            .padding(.top, 28)
 
             if !sent {
-                Section {
-                    Button {
-                        Task { await submit() }
-                    } label: {
-                        if isSubmitting {
-                            ProgressView().tint(Color.accFg)
-                        } else {
-                            Text("auth.login.forgotSubmit", bundle: .l10n)
-                        }
+                Button {
+                    Task { await submit() }
+                } label: {
+                    if isSubmitting {
+                        ProgressView().tint(Color.accFg)
+                    } else {
+                        Text("auth.login.forgotSubmit", bundle: .l10n)
                     }
-                    .buttonStyle(.primary)
-                    .disabled(email.trimmingCharacters(in: .whitespaces).isEmpty || isSubmitting)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
                 }
+                .buttonStyle(EntryButtonStyle())
+                .disabled(!canSubmit)
+                .padding(.top, 14)
+                .id("submit")
             }
         }
-        .monolitoForm()
-        .navigationTitle(Text("auth.login.forgotTitle", bundle: .l10n))
-        .navigationBarTitleDisplayMode(.inline)
+        .entryPushedScreen()
     }
 
     private func submit() async {
-        guard let url = URL(string: baseURL.trimmingCharacters(in: .whitespaces)) else { return }
         isSubmitting = true
         defer { isSubmitting = false }
-        try? await session.requestPasswordReset(email: email, baseURL: url)
+        try? await session.requestPasswordReset(email: email, baseURL: APIClient.storedBaseURL)
+        focused = false
         sent = true
     }
 }
