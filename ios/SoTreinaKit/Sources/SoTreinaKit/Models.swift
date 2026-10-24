@@ -17,6 +17,10 @@ public struct Me: Codable, Equatable, Sendable {
     public var weightUnit: WeightUnit
     /// Areas the user follows; empty = not chosen yet (the area picker shows).
     public var enabledAreas: [Area]
+    /// Proved the email with the 6-digit code (spec login-app-ios §3.3).
+    /// `true` when the payload has none: a backend from before verification
+    /// has nothing to verify with.
+    public var emailVerified: Bool
 
     public init(
         id: String,
@@ -28,7 +32,8 @@ public struct Me: Codable, Equatable, Sendable {
         hasPassword: Bool = true,
         distanceUnit: DistanceUnit = .km,
         weightUnit: WeightUnit = .kg,
-        enabledAreas: [Area] = []
+        enabledAreas: [Area] = [],
+        emailVerified: Bool = true
     ) {
         self.id = id
         self.email = email
@@ -40,6 +45,7 @@ public struct Me: Codable, Equatable, Sendable {
         self.distanceUnit = distanceUnit
         self.weightUnit = weightUnit
         self.enabledAreas = enabledAreas
+        self.emailVerified = emailVerified
     }
 
     // the unit fields arrived later: a response from an older backend, or
@@ -58,6 +64,7 @@ public struct Me: Codable, Equatable, Sendable {
         // an area value this build doesn't know is skipped, not a failed decode
         let rawAreas = try c.decodeIfPresent([String].self, forKey: .enabledAreas) ?? []
         enabledAreas = rawAreas.compactMap(Area.init(rawValue:))
+        emailVerified = try c.decodeIfPresent(Bool.self, forKey: .emailVerified) ?? true
     }
 }
 

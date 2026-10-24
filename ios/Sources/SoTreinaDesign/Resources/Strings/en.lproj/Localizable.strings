@@ -48,13 +48,9 @@
 "app.expiry.notificationBody" = "Run ios/scripts/deploy.sh to reinstall. Your data stays.";
 
 /* register and forgot password (auth:login.*) */
-"auth.login.tabLogin" = "Sign in";
-"auth.login.tabRegister" = "Create account";
 "auth.login.namePlaceholder" = "Name";
-"auth.login.confirmPasswordPlaceholder" = "Confirm password";
 "auth.login.submitRegister" = "Create account";
 "auth.login.passwordTooShort" = "Password must be at least 8 characters.";
-"auth.login.passwordMismatch" = "Passwords don't match.";
 "auth.login.emailInUse" = "This email is already registered.";
 "auth.login.genericError" = "Something went wrong. Please try again.";
 "auth.login.forgotPassword" = "Forgot password";
@@ -64,6 +60,24 @@
 "auth.login.forgotSuccess" = "If that email exists, you'll receive a password reset link shortly.";
 "auth.login.stravaOnly" = "Sign in with Strava on the web? The app only takes email and password: add a password in SoTreina's Profile on the web.";
 "auth.login.openWeb" = "Open sotreina.com";
+"auth.login.welcomeTitle" = "Welcome back";
+"auth.login.welcomeSubtitle" = "Sign in to continue your training.";
+"auth.login.noAccount" = "Don't have an account?";
+"auth.login.showPassword" = "Show password";
+"auth.login.hidePassword" = "Hide password";
+"auth.login.formSubtitleRegister" = "Create your account to start tracking your training.";
+"auth.register.consent" = "By creating an account, you agree to the [Privacy Policy](https://www.sotreina.com/privacidade).";
+"auth.server.useProduction" = "Use production";
+"auth.verify.title" = "Confirm your email";
+"auth.verify.subtitle %@" = "We sent a 6-digit code to %@.";
+"auth.verify.codeLabel" = "6-digit code";
+"auth.verify.invalidCode" = "Wrong or expired code. Check the latest email or ask for another one.";
+"auth.verify.genericError" = "Couldn't verify right now. Try again.";
+"auth.verify.sendError" = "Couldn't send the code. Try again.";
+"auth.verify.resend" = "Resend code";
+"auth.verify.resendIn %lld" = "Resend in %lld s";
+"auth.verify.resent" = "We sent a new code.";
+"auth.verify.later" = "Do it later";
 
 /* area picker (onboarding:areas.*) */
 "onboarding.areas.title" = "What do you want to track?";
@@ -150,6 +164,9 @@
 "nav.profile.name" = "Name";
 "nav.profile.email" = "Email";
 "nav.profile.emailReadOnly" = "Your email is used to sign in and can’t be changed here.";
+"nav.profile.emailUnverified" = "Not verified";
+"nav.profile.emailVerified" = "Verified";
+"nav.profile.verifyEmail" = "Verify";
 "nav.profile.personalData" = "Personal data";
 "nav.profile.save" = "Save";
 "nav.profile.saving" = "Saving…";
@@ -461,3 +478,17 @@
 "diet.scanner.cameraDenied" = "SoTreina isn't allowed to use the camera.";
 "diet.scanner.openSettings" = "Open Settings";
 "diet.scanner.retry" = "Try again";
+
+/* delete account (Profile › Account, spec login-app-ios §3.5) */
+"nav.profile.deleteAccount" = "Delete account";
+"nav.profile.deleteIntro" = "This deletes your SoTreina account and everything in it:";
+"nav.profile.deleteItemGym" = "Workouts and routines";
+"nav.profile.deleteItemDiet" = "Diet, meals and the foods you added";
+"nav.profile.deleteItemRun" = "Imported runs";
+"nav.profile.deleteItemStrava" = "The Strava connection";
+"nav.profile.deleteIrreversible" = "There's no undo: none of this can be recovered later.";
+"nav.profile.deletePasswordHeader" = "Confirm with your password";
+"nav.profile.deleteWrongPassword" = "Wrong password.";
+"nav.profile.deleteTooManyAttempts" = "Too many attempts. Wait a minute and try again.";
+"nav.profile.deleteError" = "Couldn't delete the account right now. Try again.";
+"auth.login.accountDeleted" = "Account deleted.";

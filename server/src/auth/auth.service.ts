@@ -1,17 +1,27 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient, type Area, type DistanceUnit, type WeightUnit } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes, randomInt, createHash } from 'node:crypto';
 import { hashPassword, verifyPassword } from './password';
 import type { LoginInput, RegisterInput, SetPasswordInput } from './dto';
 import { EmailService } from '../email/email.service';
 
 const PASSWORD_RESET_TTL_MS = 30 * 60 * 1000;
+const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
+const EMAIL_CODE_MAX_ATTEMPTS = 5;
+const EMAIL_CODE_COOLDOWN_MS = 60 * 1000;
+const EMAIL_CODE_WINDOW_MS = 60 * 60 * 1000;
+const EMAIL_CODE_MAX_PER_WINDOW = 5;
+
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 export interface MeResponse {
   id: string;
@@ -21,6 +31,7 @@ export interface MeResponse {
   maxHr: number | null;
   hasStravaAccount: boolean;
   hasPassword: boolean;
+  emailVerified: boolean;
   /** empty = not chosen yet (new account) → the client shows the area picker */
   enabledAreas: Area[];
   /** display/entry preference; the API itself always speaks km and kg */
@@ -63,6 +74,7 @@ export class AuthService {
         weightUnit: true,
         tokenVersion: true,
         passwordHash: true,
+        emailVerifiedAt: true,
         stravaAccount: { select: { id: true } },
       },
     });
@@ -71,6 +83,7 @@ export class AuthService {
     const {
       tokenVersion: _tokenVersion,
       passwordHash,
+      emailVerifiedAt,
       stravaAccount,
       ...rest
     } = user;
@@ -78,6 +91,7 @@ export class AuthService {
       ...rest,
       hasStravaAccount: !!stravaAccount,
       hasPassword: !!passwordHash,
+      emailVerified: !!emailVerifiedAt,
     };
   }
 
@@ -108,9 +122,10 @@ export class AuthService {
         firstName: input.firstName ?? null,
       },
     });
-    // fire-and-forget — EmailService never throws, and a Resend outage must
-    // not block/fail account creation
-    void this.emailService.sendWelcomeEmail(user.email!, user.firstName);
+    // the verification code is the only email a new account gets (it doubles
+    // as the welcome). Sending is fire-and-forget inside issueVerificationCode,
+    // and verifying is never required — a lost email is "Reenviar código"
+    await this.issueVerificationCode(user.id, user.email!);
     return { userId: user.id, tokenVersion: user.tokenVersion };
   }
 
@@ -162,7 +177,7 @@ export class AuthService {
     if (!user || !user.passwordHash) return;
 
     const token = randomBytes(32).toString('hex');
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const tokenHash = sha256(token);
     await this.prisma.passwordResetToken.create({
       data: {
         userId: user.id,
@@ -180,7 +195,7 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const tokenHash = sha256(token);
     const resetToken = await this.prisma.passwordResetToken.findUnique({
       where: { tokenHash },
     });
@@ -202,6 +217,123 @@ export class AuthService {
         where: { id: resetToken.id },
         data: { usedAt: new Date() },
       }),
+      // the link only reached the inbox, so the reset proves ownership of
+      // the address; updateMany so an earlier verification date is kept
+      this.prisma.user.updateMany({
+        where: { id: resetToken.userId, emailVerifiedAt: null },
+        data: { emailVerifiedAt: new Date() },
+      }),
     ]);
+  }
+
+  // per-account limits (1 per 60s, 5 per hour) are counted from the codes
+  // themselves rather than a throttler bucket, so they hold across Bearer and
+  // cookie, across IPs, and survive a restart. retryAfterSeconds lets the
+  // client show the countdown instead of a generic error
+  async sendVerificationCode(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, emailVerifiedAt: true },
+    });
+    if (!user?.email) throw new BadRequestException('Account has no email');
+    if (user.emailVerifiedAt)
+      throw new ConflictException('Email already verified');
+
+    const now = Date.now();
+    const recent = await this.prisma.emailVerificationCode.findMany({
+      where: { userId, createdAt: { gte: new Date(now - EMAIL_CODE_WINDOW_MS) } },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    let retryAt: number | null = null;
+    if (recent.length >= EMAIL_CODE_MAX_PER_WINDOW) {
+      retryAt =
+        recent[EMAIL_CODE_MAX_PER_WINDOW - 1].createdAt.getTime() +
+        EMAIL_CODE_WINDOW_MS;
+    } else if (
+      recent[0] &&
+      now - recent[0].createdAt.getTime() < EMAIL_CODE_COOLDOWN_MS
+    ) {
+      retryAt = recent[0].createdAt.getTime() + EMAIL_CODE_COOLDOWN_MS;
+    }
+    if (retryAt !== null) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          message: 'Too many verification codes requested',
+          retryAfterSeconds: Math.ceil((retryAt - now) / 1000),
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    await this.issueVerificationCode(userId, user.email);
+  }
+
+  // idempotent once verified. A wrong code spends one of the live code's 5
+  // attempts and the 5th kills it — with 10^6 codes and a fresh code at most
+  // 5 times an hour, guessing is out of reach
+  async verifyEmail(userId: string, code: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailVerifiedAt: true },
+    });
+    if (user?.emailVerifiedAt) return;
+
+    const live = await this.prisma.emailVerificationCode.findFirst({
+      where: { userId, consumedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!live || live.attempts >= EMAIL_CODE_MAX_ATTEMPTS) {
+      throw new BadRequestException('Invalid or expired code');
+    }
+
+    if (sha256(code) !== live.codeHash) {
+      const { attempts } = await this.prisma.emailVerificationCode.update({
+        where: { id: live.id },
+        data: { attempts: { increment: 1 } },
+      });
+      if (attempts >= EMAIL_CODE_MAX_ATTEMPTS) {
+        await this.prisma.emailVerificationCode.update({
+          where: { id: live.id },
+          data: { consumedAt: new Date() },
+        });
+      }
+      throw new BadRequestException('Invalid or expired code');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { emailVerifiedAt: new Date() },
+      }),
+      this.prisma.emailVerificationCode.update({
+        where: { id: live.id },
+        data: { consumedAt: new Date() },
+      }),
+    ]);
+  }
+
+  // one live code per user: issuing consumes whatever was still pending, so
+  // only the code in the latest email works
+  private async issueVerificationCode(
+    userId: string,
+    email: string,
+  ): Promise<void> {
+    const code = randomInt(0, 1_000_000).toString().padStart(6, '0');
+    await this.prisma.$transaction([
+      this.prisma.emailVerificationCode.updateMany({
+        where: { userId, consumedAt: null },
+        data: { consumedAt: new Date() },
+      }),
+      this.prisma.emailVerificationCode.create({
+        data: {
+          userId,
+          codeHash: sha256(code),
+          expiresAt: new Date(Date.now() + EMAIL_CODE_TTL_MS),
+        },
+      }),
+    ]);
+    void this.emailService.sendVerificationCodeEmail(email, code);
   }
 }

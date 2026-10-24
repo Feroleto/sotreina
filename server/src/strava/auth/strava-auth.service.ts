@@ -171,7 +171,8 @@ export class StravaAuthService {
     return result;
   }
 
-  private async revokeToken(refreshToken: string): Promise<void> {
+  // best-effort, never throws — also used by account deletion
+  async revokeToken(refreshToken: string): Promise<void> {
     const credentials = Buffer.from(
       `${this.config.get('STRAVA_CLIENT_ID')}:${this.config.get('STRAVA_CLIENT_SECRET')}`,
     ).toString('base64');

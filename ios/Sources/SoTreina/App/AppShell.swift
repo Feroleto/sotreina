@@ -10,6 +10,11 @@ import SwiftUI
 struct AppShell: View {
     let me: Me
     @Binding var pendingLink: ActivityLink?
+    /// during the entry transition: an open workout's cover waits for it to
+    /// end instead of sliding up over the ball
+    let holdsCovers: Bool
+    /// the first `WorkoutStore.load()` finished (the entry transition waits on it)
+    let onFirstLoad: () -> Void
     @State private var store: WorkoutStore
     @State private var runStore: RunStore
     @State private var history: GymHistoryStore
@@ -21,10 +26,15 @@ struct AppShell: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var appliedLaunchTab = false
 
-    init(session: SessionStore, me: Me, pendingLink: Binding<ActivityLink?>) {
+    init(
+        session: SessionStore, me: Me, pendingLink: Binding<ActivityLink?>,
+        holdsCovers: Bool = false, onFirstLoad: @escaping () -> Void = {}
+    ) {
         self.session = session
         self.me = me
         _pendingLink = pendingLink
+        self.holdsCovers = holdsCovers
+        self.onFirstLoad = onFirstLoad
         _store = State(initialValue: WorkoutStore(session: session))
         _runStore = State(initialValue: RunStore(session: session))
         _history = State(initialValue: GymHistoryStore(session: session))
@@ -67,7 +77,10 @@ struct AppShell: View {
             }
             .monolitoTheme()
         }
-        .task { await store.load() }
+        .task {
+            await store.load()
+            onFirstLoad()
+        }
         .onAppear {
             // a validation launch opens on its screen's tab, once (debug only)
             guard !appliedLaunchTab, let tab = ValidationLaunch.current.tab else { return }
@@ -107,7 +120,7 @@ struct AppShell: View {
     /// The summary, or an open session that isn't minimized.
     private var sessionCovers: Binding<Bool> {
         Binding(
-            get: { store.lastFinished != nil || (store.active != nil && !store.sessionMinimized) },
+            get: { !holdsCovers && (store.lastFinished != nil || (store.active != nil && !store.sessionMinimized)) },
             set: { presented in
                 guard !presented else { return }
                 if store.lastFinished != nil { store.dismissSummary() } else { store.sessionMinimized = true }

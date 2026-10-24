@@ -6,6 +6,7 @@ import {
   parseSetPasswordInput,
   parseForgotPasswordInput,
   parseResetPasswordInput,
+  parseVerifyEmailInput,
 } from 'src/auth/dto';
 
 describe('parseRegisterInput', () => {
@@ -200,5 +201,24 @@ describe('parseResetPasswordInput', () => {
     expect(() =>
       parseResetPasswordInput({ token: 'abc123', newPassword: 'short' }),
     ).toThrow(BadRequestException);
+  });
+});
+
+describe('parseVerifyEmailInput', () => {
+  it('accepts 6 digits, trimming whitespace and keeping leading zeros', () => {
+    expect(parseVerifyEmailInput({ code: ' 004219 ' })).toEqual({
+      code: '004219',
+    });
+  });
+
+  it.each([
+    ['too short', { code: '12345' }],
+    ['too long', { code: '1234567' }],
+    ['not digits', { code: '12a456' }],
+    ['a number, not a string', { code: 123456 }],
+    ['missing', {}],
+    ['not an object', null],
+  ])('rejects a code that is %s', (_label, body) => {
+    expect(() => parseVerifyEmailInput(body)).toThrow(BadRequestException);
   });
 });

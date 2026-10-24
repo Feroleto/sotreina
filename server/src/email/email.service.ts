@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { welcomeTemplate } from './templates/welcome.template';
 import { resetPasswordTemplate } from './templates/reset-password.template';
+import { verifyEmailTemplate } from './templates/verify-email.template';
 
 // Every send is best-effort: a Resend outage must never surface as a 500 on
 // register/forgot-password, so failures are only logged, never thrown.
@@ -24,6 +25,11 @@ export class EmailService {
 
   async sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
     const { subject, html, text } = resetPasswordTemplate(resetUrl);
+    await this.send(to, subject, html, text);
+  }
+
+  async sendVerificationCodeEmail(to: string, code: string): Promise<void> {
+    const { subject, html, text } = verifyEmailTemplate(code);
     await this.send(to, subject, html, text);
   }
 

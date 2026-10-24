@@ -3,11 +3,10 @@ import Testing
 @testable import SoTreinaKit
 
 @Suite struct EntryTests {
-    @Test func registerNeedsAnEmailAndAPasswordOfEightThatMatches() {
-        #expect(EntryForm.registerProblem(email: " ", password: "12345678", confirm: "12345678") == .emailMissing)
-        #expect(EntryForm.registerProblem(email: "a@b.co", password: "1234567", confirm: "1234567") == .passwordTooShort)
-        #expect(EntryForm.registerProblem(email: "a@b.co", password: "12345678", confirm: "12345679") == .passwordMismatch)
-        #expect(EntryForm.registerProblem(email: "a@b.co", password: "12345678", confirm: "12345678") == nil)
+    @Test func registerNeedsAnEmailAndAPasswordOfEight() {
+        #expect(EntryForm.registerProblem(email: " ", password: "12345678") == .emailMissing)
+        #expect(EntryForm.registerProblem(email: "a@b.co", password: "1234567") == .passwordTooShort)
+        #expect(EntryForm.registerProblem(email: "a@b.co", password: "12345678") == nil)
     }
 
     @Test func registerBodyTrimsAndDropsAnEmptyName() throws {

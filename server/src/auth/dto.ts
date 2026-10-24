@@ -30,6 +30,10 @@ export interface ForgotPasswordInput {
   email: string;
 }
 
+export interface VerifyEmailInput {
+  code: string;
+}
+
 export interface ResetPasswordInput {
   token: string;
   newPassword: string;
@@ -103,6 +107,19 @@ export function parseResetPasswordInput(body: unknown): ResetPasswordInput {
     token,
     newPassword: parsePassword(newPassword, MIN_PASSWORD_LEN),
   };
+}
+
+// a string, never a number: leading zeros are part of the code
+export function parseVerifyEmailInput(body: unknown): VerifyEmailInput {
+  if (typeof body !== 'object' || body === null) {
+    throw new BadRequestException('Request body must be an object');
+  }
+  const { code } = body as Record<string, unknown>;
+  const trimmed = typeof code === 'string' ? code.trim() : '';
+  if (!/^\d{6}$/.test(trimmed)) {
+    throw new BadRequestException('code must be 6 digits');
+  }
+  return { code: trimmed };
 }
 
 // trims + lowercases here — the ONE normalization point; every write/read of

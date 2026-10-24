@@ -21,6 +21,7 @@ import {
   parseSetPasswordInput,
   parseForgotPasswordInput,
   parseResetPasswordInput,
+  parseVerifyEmailInput,
 } from './dto';
 
 @Controller('auth')
@@ -84,6 +85,48 @@ export class AuthController {
       token: this.session.signToken(result.userId, result.tokenVersion),
       user: (await this.authService.authenticate(result))!,
     };
+  }
+
+  // Native iOS app sign-up: same as POST /register, but the JWT comes back in
+  // the body like POST /token — one call (and one throttle bucket) instead of
+  // register followed by token
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('register-token')
+  @HttpCode(201)
+  async registerToken(
+    @Body() body: unknown,
+  ): Promise<{ token: string; user: MeResponse }> {
+    const input = parseRegisterInput(body);
+    const result = await this.authService.register(input);
+    return {
+      token: this.session.signToken(result.userId, result.tokenVersion),
+      user: (await this.authService.authenticate(result))!,
+    };
+  }
+
+  // the real limits (1/60s, 5/hour) are per account, enforced in the service
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @UseGuards(AuthGuard)
+  @Post('email/send-code')
+  @HttpCode(200)
+  async sendEmailCode(@Req() req: Request): Promise<{ ok: true }> {
+    const session = this.session.extractSession(req)!;
+    await this.authService.sendVerificationCode(session.userId);
+    return { ok: true };
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @UseGuards(AuthGuard)
+  @Post('email/verify')
+  @HttpCode(200)
+  async verifyEmail(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ): Promise<MeResponse> {
+    const { code } = parseVerifyEmailInput(body);
+    const session = this.session.extractSession(req)!;
+    await this.authService.verifyEmail(session.userId, code);
+    return (await this.authService.authenticate(session))!;
   }
 
   // guarded + pre-auth-style throttle: this touches the same email-uniqueness

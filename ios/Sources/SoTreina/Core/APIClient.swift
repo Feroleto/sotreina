@@ -75,6 +75,11 @@ struct APIClient {
         let _: EmptyResponse? = try await send("DELETE", path, body: Optional<String>.none)
     }
 
+    /// A DELETE that needs a body (`DELETE /users/me {password}`), answer ignored.
+    func deleteEmpty<Body: Encodable>(_ path: String, body: Body) async throws {
+        let _: EmptyResponse? = try await send("DELETE", path, body: body)
+    }
+
     /// Returns `nil` for an empty 2xx body — `GET /auth/me` answers 200 with
     /// no body (not 401) for a visitor without a valid session.
     private func send<Body: Encodable, Response: Decodable>(
@@ -88,6 +93,14 @@ struct APIClient {
         return try APICoding.makeDecoder().decode(Response.self, from: data)
     }
 
+    /// The status and body of a POST whose non-2xx answers carry meaning
+    /// (`send-code`'s 429 with `retryAfterSeconds`). Only 401 throws.
+    func postRaw(_ path: String) async throws -> (status: Int, body: Data) {
+        let (data, http) = try await perform("POST", path, query: [], body: Optional<String>.none)
+        if http.statusCode == 401 { throw APIError.unauthorized }
+        return (http.statusCode, data)
+    }
+
     /// The 2xx body as received; 401 and other statuses throw.
     private func sendData<Body: Encodable>(
         _ method: String,
@@ -95,6 +108,23 @@ struct APIClient {
         query: [URLQueryItem] = [],
         body: Body?
     ) async throws -> Data {
+        let (data, http) = try await perform(method, path, query: query, body: body)
+        switch http.statusCode {
+        case 200..<300:
+            return data
+        case 401:
+            throw APIError.unauthorized
+        default:
+            throw APIError.http(status: http.statusCode)
+        }
+    }
+
+    private func perform<Body: Encodable>(
+        _ method: String,
+        _ path: String,
+        query: [URLQueryItem],
+        body: Body?
+    ) async throws -> (Data, HTTPURLResponse) {
         // query items go in separately: appending(path:) would encode a "?"
         var url = baseURL.appending(path: path)
         if !query.isEmpty { url.append(queryItems: query) }
@@ -120,15 +150,7 @@ struct APIClient {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError.invalidResponse }
         Self.log.notice("\(method, privacy: .public) \(path, privacy: .public) -> \(http.statusCode) in \(Date().timeIntervalSince(started), format: .fixed(precision: 2))s")
-
-        switch http.statusCode {
-        case 200..<300:
-            return data
-        case 401:
-            throw APIError.unauthorized
-        default:
-            throw APIError.http(status: http.statusCode)
-        }
+        return (data, http)
     }
 }
 

@@ -13,6 +13,13 @@ final class SessionStore {
     }
 
     private(set) var state: State = .loading
+    /// Set by `enter(_:animated:)` after the entry form signs in: `RootView`
+    /// plays the "bola percorre o pulso" transition over the destination,
+    /// then calls `entryTransitionEnded()`. Never on a cold launch.
+    private(set) var entryTransition = false
+    /// Why the app is back at Entrar, when it's worth saying (shown there
+    /// until the next sign-in).
+    private(set) var signedOutNotice: SignedOutNotice?
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "session")
 
     /// A client carrying the current token — what every feature store uses.
@@ -50,7 +57,9 @@ final class SessionStore {
         }
     }
 
-    func login(email: String, password: String, baseURL: URL) async throws {
+    /// Saves the token and returns the user, without leaving the login
+    /// screen: the entry form plays its exit first, then calls `enter`.
+    func login(email: String, password: String, baseURL: URL) async throws -> Me {
         APIClient.storedBaseURL = baseURL
         let client = APIClient(baseURL: baseURL, token: nil)
         guard let response: TokenResponse = try await client.post(
@@ -59,19 +68,56 @@ final class SessionStore {
         ) else { throw APIError.invalidResponse }
 
         Keychain.saveToken(response.token)
-        state = .loggedIn(response.user)
         log.notice("logged in as \(response.user.id, privacy: .public)")
+        return response.user
     }
 
-    /// `POST /auth/register` returns the web's cookie session, not a token,
-    /// so the Bearer comes from logging in with the same credentials (spec
-    /// §3, Entrada: no backend change). A 409 means the email is taken.
-    func register(_ request: RegisterRequest, baseURL: URL) async throws {
+    /// `POST /auth/register-token`: creates the account, sends the first
+    /// verification code and answers with the Bearer, in one call. Like
+    /// `login`, it doesn't leave the entry screens (the code step comes
+    /// next). A 409 means the email is taken.
+    func register(_ request: RegisterRequest, baseURL: URL) async throws -> Me {
         APIClient.storedBaseURL = baseURL
         let client = APIClient(baseURL: baseURL, token: nil)
-        let _: Me? = try await client.post("auth/register", body: request)
-        log.notice("registered")
-        try await login(email: request.email, password: request.password, baseURL: baseURL)
+        guard let response: TokenResponse = try await client.post("auth/register-token", body: request)
+        else { throw APIError.invalidResponse }
+
+        Keychain.saveToken(response.token)
+        log.notice("registered as \(response.user.id, privacy: .public)")
+        return response.user
+    }
+
+    /// Asks for a verification code. `nil` when one went out; otherwise the
+    /// seconds until another can (a 429: one is already on its way).
+    /// Already verified (409) counts as sent: the verify call settles it.
+    func sendEmailCode() async throws -> Int? {
+        let (status, body) = try await api.postRaw("auth/email/send-code")
+        switch status {
+        case 200..<300, 409: return nil
+        case 429: return EmailCode.retryAfterSeconds(from: body)
+        default: throw APIError.http(status: status)
+        }
+    }
+
+    /// `POST /auth/email/verify` → the user with `emailVerified: true`. Also
+    /// updates the signed-in `Me` (Perfil); during sign-up the caller enters
+    /// the app with the returned one.
+    func verifyEmail(code: String) async throws -> Me {
+        guard let me: Me = try await api.post("auth/email/verify", body: VerifyEmailRequest(code: code))
+        else { throw APIError.invalidResponse }
+        setMe(me)
+        return me
+    }
+
+    /// Leaves the entry screens for the app (the token is already saved).
+    func enter(_ me: Me, animated: Bool) {
+        entryTransition = animated
+        signedOutNotice = nil
+        state = .loggedIn(me)
+    }
+
+    func entryTransitionEnded() {
+        entryTransition = false
     }
 
     /// Always succeeds on the server's side when it answers (anti-enumeration);
@@ -126,6 +172,22 @@ final class SessionStore {
         signOutLocally()
     }
 
+    /// Perfil › Excluir conta: `DELETE /users/me {password}`, then everything
+    /// local goes like on logout and Entrar says "Conta excluída". A wrong
+    /// password comes back as `APIError.http(403)` and leaves the session
+    /// alone; a 401 is a real expiry, handled like everywhere else.
+    func deleteAccount(password: String) async throws {
+        do {
+            try await api.deleteEmpty("users/me", body: DeleteAccountRequest(password: password))
+        } catch APIError.unauthorized {
+            expire()
+            throw APIError.unauthorized
+        }
+        log.notice("account deleted")
+        signOutLocally()
+        signedOutNotice = .accountDeleted
+    }
+
     /// A 401 anywhere means the JWT expired (30d) or a logout elsewhere bumped
     /// tokenVersion: drop it and go back to the login screen.
     func expire() {
@@ -141,4 +203,8 @@ final class SessionStore {
         LiveActivityController.endEverything()
         state = .loggedOut
     }
+}
+
+enum SignedOutNotice {
+    case accountDeleted
 }

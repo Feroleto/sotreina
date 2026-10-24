@@ -10,6 +10,8 @@ model User {
   id                  String               @id @default(cuid())
   email               String?              @unique
   passwordHash        String?              @map("password_hash")
+  // null = not verified (every account that predates verification starts here)
+  emailVerifiedAt     DateTime?            @map("email_verified_at")
   firstName           String?              @map("first_name")
   profileImgUrl       String?              @map("profile_img_url")
   maxHr               Int?                 @map("max_hr")
@@ -36,6 +38,7 @@ model User {
   createdExercises    Exercise[]
   workoutTemplates    WorkoutTemplate[]
   passwordResetTokens PasswordResetToken[]
+  emailVerificationCodes EmailVerificationCode[]
   createdFoods        Food[]
   meals               Meal[]
   foodLogs            FoodLog[]
@@ -69,6 +72,23 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+// 6-digit email verification code, same shape as PasswordResetToken: only the
+// SHA-256 of the code is stored. One live code per user at a time (sending a
+// new one consumes the old), dead after 10 min or 5 wrong attempts
+model EmailVerificationCode {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  attempts   Int       @default(0)
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("email_verification_codes")
 }
 
 model Activity {
