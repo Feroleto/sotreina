@@ -4,22 +4,28 @@ import Testing
 
 @Suite struct NavigationTests {
     @Test func tabsFollowTheWebsMobileTabsFor() {
-        #expect(AppTab.tabs(for: [.run, .gym, .diet]) == [.today, .run, .gym, .diet, .profile])
-        #expect(AppTab.tabs(for: [.gym, .diet]) == [.today, .gym, .diet, .profile])
+        #expect(AppTab.tabs(for: [.run, .gym, .diet]) == [.today, .run, .gym, .diet])
+        #expect(AppTab.tabs(for: [.gym, .diet]) == [.today, .gym, .diet])
         // a single area: Hoje is already its summary, so its tab drops out
-        #expect(AppTab.tabs(for: [.gym]) == [.today, .profile])
-        #expect(AppTab.tabs(for: []) == [.today, .profile])
+        #expect(AppTab.tabs(for: [.gym]) == [.today])
+        #expect(AppTab.tabs(for: []) == [.today])
+    }
+
+    @Test func tabBarOnlyWithSomewhereToGo() {
+        #expect(AppTab.showsTabBar(for: [.run, .gym]))
+        #expect(!AppTab.showsTabBar(for: [.gym]))
+        #expect(!AppTab.showsTabBar(for: []))
     }
 
     @Test func areaOrderInTheTabBarIsFixedNotThePayloads() {
-        #expect(AppTab.tabs(for: [.diet, .run]) == [.today, .run, .diet, .profile])
+        #expect(AppTab.tabs(for: [.diet, .run]) == [.today, .run, .diet])
     }
 
     @Test func subPagesAndLandingPages() {
         #expect(AppTab.gym.pages == [.gymOverview, .gymRoutines, .gymHistory])
         #expect(AppTab.run.landingPage == .runActivities)
         #expect(AppTab.today.pages.isEmpty)
-        #expect(AppTab.profile.landingPage == nil)
+        #expect(AppTab.today.landingPage == nil)
         for tab in AppTab.allCases {
             if let landing = tab.landingPage { #expect(tab.pages.contains(landing)) }
         }

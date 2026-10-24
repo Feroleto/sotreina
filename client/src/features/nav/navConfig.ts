@@ -117,7 +117,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-export type MobileTabId = 'overview' | 'run' | 'gym' | 'diet' | 'profile';
+export type MobileTabId = 'overview' | 'run' | 'gym' | 'diet';
 
 export interface MobileTab {
   id: MobileTabId;
@@ -156,23 +156,19 @@ export const MOBILE_TABS: MobileTab[] = [
     page: 'diet/overview',
     icon: 'M12 4.5a7.5 7.5 0 110 15 7.5 7.5 0 010-15zM12 8v4l2.5 2',
   },
-  {
-    id: 'profile',
-    labelKey: 'tabs.profile',
-    page: 'profile',
-    icon: 'M12 12a4 4 0 100-8 4 4 0 000 8zM5 20a7 7 0 0114 0',
-  },
 ];
 
 /**
- * the pill's tabs for the user's enabled areas (Redesign 21b/21c): Hoje, one
- * tab per enabled area, Perfil. With a single area Hoje already is that
- * area's summary, so its own tab drops out and the pill is Hoje + Perfil
+ * the pill's tabs for the user's enabled areas (Redesign 21b/21c): Hoje plus
+ * one tab per enabled area. Perfil lives in the header's account menu. With
+ * a single area Hoje already is that area's summary, and a pill with only
+ * Hoje navigates nowhere, so there is no pill at all ([])
  */
 export function mobileTabsFor(areas: readonly Area[]): MobileTab[] {
+  if (areas.length < 2) return [];
   return MOBILE_TABS.filter((tab) => {
     const area = areaOfNavId(tab.id);
-    return !area || (areas.length > 1 && areas.includes(area));
+    return !area || areas.includes(area);
   });
 }
 

@@ -5,7 +5,8 @@ import SwiftUI
 /// Perfil (spec §2/§3, web Redesign 21d): the user row → name, the area
 /// switches, the goals of the enabled areas, app preferences (theme,
 /// language, units of the enabled areas) and the account. Strava and
-/// "adicionar senha" stay on the web, behind a link.
+/// "adicionar senha" stay on the web, behind a link. Pushed on the current
+/// tab's stack by the account menu's Configurações (`AreaScreen`).
 struct ProfileView: View {
     let me: Me
     /// owned by the shell: Dieta's gear opens the same daily goal
@@ -14,27 +15,25 @@ struct ProfileView: View {
     @Environment(AppLanguageStore.self) private var language
 
     var body: some View {
-        NavigationStack {
-            List {
-                NavigationLink {
-                    EditNameView(me: me, store: store)
-                } label: {
-                    userRow
-                }
-                .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-                .listRowBackground(Color.pageBg)
-
-                areasSection
-                goalsSection
-                appSection
-                accountSection
-                links
+        List {
+            NavigationLink {
+                EditNameView(me: me, store: store)
+            } label: {
+                userRow
             }
-            .monolitoList()
-            .navigationTitle(Text("nav.profile.title", bundle: .l10n))
-            .navigationBarTitleDisplayMode(.large)
-            .refreshable { await store.load() }
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+            .listRowBackground(Color.pageBg)
+
+            areasSection
+            goalsSection
+            appSection
+            accountSection
+            links
         }
+        .monolitoList()
+        .navigationTitle(Text("nav.profile.title", bundle: .l10n))
+        .navigationBarTitleDisplayMode(.large)
+        .refreshable { await store.load() }
         .task { await store.load() }
     }
 

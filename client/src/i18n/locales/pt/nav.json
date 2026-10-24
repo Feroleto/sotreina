@@ -76,7 +76,17 @@
     "gym": "Treino",
     "diet": "Dieta",
     "label": "Navegação principal",
-    "sections": "Seções",
-    "profile": "Perfil"
+    "sections": "Seções"
+  },
+  "profileMenu": {
+    "menu": "Menu da conta",
+    "theme": "Tema",
+    "language": "Idioma",
+    "settings": "Configurações",
+    "viaStrava": "Conectado via Strava",
+    "signOut": "Sair",
+    "hold": "Segure",
+    "keepHolding": "Continue segurando",
+    "holdHint": ", pressione e segure para confirmar"
   }
 }

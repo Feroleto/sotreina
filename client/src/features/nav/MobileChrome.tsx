@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import { avatarMediumUrl } from '@/lib/avatarUrl';
+import type { ThemePref } from '@/lib/theme';
 import { useAuth } from '@/features/auth/AuthContext';
+import { ProfileMenu } from './ProfileMenu';
 import {
   MOBILE_TABS,
   activeParentId,
@@ -18,7 +19,6 @@ interface MobileChromeProps {
 }
 
 function activeTab(page: PageId): MobileTabId | null {
-  if (page === 'profile') return 'profile';
   const parent = activeParentId(page);
   return MOBILE_TABS.some((tab) => tab.id === parent)
     ? (parent as MobileTabId)
@@ -32,20 +32,26 @@ function litTab(page: PageId, tabs: MobileTab[]): MobileTabId | null {
   return tabs.some((tab) => tab.id === id) ? id : 'overview';
 }
 
+interface MobileHeaderProps extends MobileChromeProps {
+  themePref: ThemePref;
+  onThemePref: (pref: ThemePref) => void;
+}
+
 /**
  * mobile (< md) section header, in the page flow (it scrolls away with the
- * content): large area title + avatar (→ profile), then the area's
- * sub-pages as text tabs. Redesign Corrida 17b "Monolito"
+ * content): large area title + the account menu (avatar, top right), then
+ * the area's sub-pages as text tabs. Redesign Corrida 17b "Monolito"
  */
-export function MobileHeader({ activePage, onNavigate }: MobileChromeProps) {
+export function MobileHeader({
+  activePage,
+  onNavigate,
+  themePref,
+  onThemePref,
+}: MobileHeaderProps) {
   const { t } = useTranslation('nav');
-  const { user } = useAuth();
   const tabId = activeTab(activePage);
   const tab = MOBILE_TABS.find((x) => x.id === tabId);
   const subs = tabId ? mobileSubPages(tabId) : [];
-  const initials = user?.firstName
-    ? user.firstName.slice(0, 2).toUpperCase()
-    : '—';
 
   return (
     <header className="px-[22px] pt-2 md:hidden">
@@ -53,26 +59,11 @@ export function MobileHeader({ activePage, onNavigate }: MobileChromeProps) {
         <h1 className="min-w-0 truncate text-[28px] font-semibold tracking-[-.02em] text-foreground">
           {t(tab ? tab.labelKey : 'profile.title')}
         </h1>
-        <button
-          onClick={() => onNavigate('profile')}
-          aria-label={t('profile.title')}
-          aria-current={activePage === 'profile' ? 'page' : undefined}
-          className="flex h-11 w-11 flex-none cursor-pointer items-center justify-end"
-        >
-          {user?.profileImgUrl ? (
-            <img
-              src={avatarMediumUrl(user.profileImgUrl)}
-              alt=""
-              width={34}
-              height={34}
-              className="h-[34px] w-[34px] rounded-full object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
-            />
-          ) : (
-            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-chip text-[12px] font-semibold text-foreground">
-              {initials}
-            </span>
-          )}
-        </button>
+        <ProfileMenu
+          themePref={themePref}
+          onThemePref={onThemePref}
+          onNavigate={onNavigate}
+        />
       </div>
 
       {subs.length > 0 && (
@@ -118,6 +109,7 @@ export function MobileTabBar({ activePage, onNavigate }: MobileChromeProps) {
   const { user } = useAuth();
   const tabs = mobileTabsFor(user?.enabledAreas ?? []);
   const current = litTab(activePage, tabs);
+  if (tabs.length === 0) return null;
 
   return (
     <div className="md:hidden">

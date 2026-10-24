@@ -15,25 +15,31 @@ public enum AppTab: String, Hashable, Sendable, CaseIterable {
     case run
     case gym
     case diet
-    case profile
 
     public var area: Area? {
         switch self {
         case .run: .run
         case .gym: .gym
         case .diet: .diet
-        case .today, .profile: nil
+        case .today: nil
         }
     }
 
-    /// Same rule as the web's `mobileTabsFor`: Hoje, one tab per enabled
-    /// area, Perfil. With a single area Hoje already is that area's summary,
-    /// so its own tab drops out (Hoje + Perfil).
+    /// Same rule as the web's `mobileTabsFor`: Hoje plus one tab per enabled
+    /// area. Perfil lives in the account menu (the avatar at the top right).
+    /// With a single area Hoje already is that area's summary, so its own tab
+    /// drops out and only Hoje is left — see `showsTabBar`.
     public static func tabs(for areas: [Area]) -> [AppTab] {
         allCases.filter { tab in
             guard let area = tab.area else { return true }
             return areas.count > 1 && areas.contains(area)
         }
+    }
+
+    /// A bar with only Hoje navigates nowhere: the web drops its pill, the
+    /// app hides its tab bar.
+    public static func showsTabBar(for areas: [Area]) -> Bool {
+        tabs(for: areas).count > 1
     }
 
     /// The tab bar's short names (`nav:tabs.*`).
@@ -47,19 +53,17 @@ public enum AppTab: String, Hashable, Sendable, CaseIterable {
         case (.gym, .en): "Training"
         case (.diet, .pt): "Dieta"
         case (.diet, .en): "Diet"
-        case (.profile, .pt): "Perfil"
-        case (.profile, .en): "Profile"
         }
     }
 
     /// The sub-pages shown as text tabs under the area's title (web
-    /// `mobileSubPages`); empty for Hoje and Perfil.
+    /// `mobileSubPages`); empty for Hoje.
     public var pages: [AppPage] {
         switch self {
         case .run: [.runOverview, .runActivities]
         case .gym: [.gymOverview, .gymRoutines, .gymHistory]
         case .diet: [.dietOverview, .dietHistory]
-        case .today, .profile: []
+        case .today: []
         }
     }
 
@@ -69,7 +73,7 @@ public enum AppTab: String, Hashable, Sendable, CaseIterable {
         case .run: .runActivities
         case .gym: .gymOverview
         case .diet: .dietOverview
-        case .today, .profile: nil
+        case .today: nil
         }
     }
 }

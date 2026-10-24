@@ -8,9 +8,13 @@ import Foundation
 /// values are ignored, never an error.
 public struct ValidationLaunch: Equatable, Sendable {
     public enum Destination: Equatable, Sendable {
-        /// a tab's root (`today`, `profile`, or an area's landing page)
+        /// a tab's root (`today` or an area's landing page)
         case tab(AppTab)
         case page(AppPage)
+        /// Perfil, pushed over Hoje (it isn't a tab: the account menu opens it)
+        case profile
+        /// Hoje with the account menu open
+        case accountMenu
         /// the open workout, full screen
         case session
         /// the open workout folded into the bar above the tab bar
@@ -52,6 +56,7 @@ public struct ValidationLaunch: Equatable, Sendable {
         switch destination {
         case .tab(let tab): tab
         case .page(let page): page.tab
+        case .profile, .accountMenu: .today
         case .session, .sessionMinimized, nil: nil
         }
     }
@@ -61,18 +66,20 @@ public struct ValidationLaunch: Equatable, Sendable {
     public var startsSessionMinimized: Bool {
         switch destination {
         case .session, nil: false
-        case .tab, .page, .sessionMinimized: true
+        case .tab, .page, .profile, .accountMenu, .sessionMinimized: true
         }
     }
 }
 
 extension ValidationLaunch.Destination {
-    /// `session`, `sessionMinimized`, an `AppPage` (`gymRoutines`) or an
-    /// `AppTab` (`profile`).
+    /// `session`, `sessionMinimized`, `profile`, `accountMenu`, an `AppPage`
+    /// (`gymRoutines`) or an `AppTab` (`gym`).
     public init?(name: String) {
         switch name {
         case "session": self = .session
         case "sessionMinimized": self = .sessionMinimized
+        case "profile": self = .profile
+        case "accountMenu": self = .accountMenu
         default:
             if let page = AppPage(rawValue: name) {
                 self = .page(page)

@@ -37,7 +37,10 @@ Tudo em produção.
 <!-- uma linha por ticket resolvido -->
 - [Entrar e Criar conta no visual do design](issues/01-entrar-criar-conta.md): Entrar e Criar conta (push, sem confirmar senha) no visual do design, servidor no toque longo da logo e senha num `UITextField` único. A piscada da barra de senhas ao tocar no olho foi aceita
 - [Transição "bola percorre o pulso"](issues/02-transicao-pulso.md): `EntryPulse` no Kit e overlay no `RootView` sobre o destino; espera o primeiro load do shell (timeout de 10 s), Reduzir movimento vira fade; expansão mantida depois de discutida com o usuário
+- [Verificação de email no app](issues/04-verificacao-email-app.md): cadastro pelo `register-token`, tela do código depois de Criar conta (sem voltar, "Fazer depois") e pelo Perfil › Conta, `Me.emailVerified` ausente = verificado; dado de destino vai na rota, não num `@State`
+- [Produção: Resend no Render e migration no Neon](issues/09-producao-resend-render.md): migrations no Neon antes do push, commit e merge de `login` em `main`, deploy automático; criação de conta com código funcionando em produção no app e na web
 - [Verificação de email: backend e web](issues/03-verificacao-email-backend-web.md): verificação por código (backend e web) e `register-token` prontos. O limite por conta é contado nas linhas da tabela, e o 429 devolve `retryAfterSeconds`. Migration pendente no Neon.
+- [05](issues/05-excluir-conta.md): `DELETE /users/me` e a tela no Perfil, conferidos no iPhone. A senha errada responde **403** (não 401, que deslogaria o app). O iPhone agora alcança a API local pela LAN (`ios/README.md`).
 
 ## Not yet specified
 

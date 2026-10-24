@@ -2,8 +2,9 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// Logged-in shell (spec §3, Fase S): a tab bar with Hoje, the enabled areas
-/// and Perfil (`AppTab.tabs`, the web's `mobileTabsFor`). An open workout
+/// Logged-in shell (spec §3, Fase S): a tab bar with Hoje and the enabled
+/// areas (`AppTab.tabs`, the web's `mobileTabsFor`), hidden when only Hoje is
+/// left; Perfil opens from the account menu on each tab's header. An open workout
 /// covers it full screen until minimized into the bar above the tab bar.
 /// Reloads on every return to the foreground, which is how a workout started
 /// or finished on the web shows up here.
@@ -131,10 +132,8 @@ struct AppShell: View {
     @ViewBuilder
     private func content(for tab: AppTab) -> some View {
         switch tab {
-        case .profile:
-            ProfileView(me: me, store: profile)
         case .gym:
-            AreaScreen(tab: tab) { page in
+            AreaScreen(tab: tab, me: me, profile: profile) { page in
                 switch page {
                 case .gymOverview: GymOverviewView(store: store, history: history)
                 case .gymRoutines: RoutinesView(store: store)
@@ -143,7 +142,7 @@ struct AppShell: View {
                 }
             }
         case .run:
-            AreaScreen(tab: tab) { page in
+            AreaScreen(tab: tab, me: me, profile: profile) { page in
                 switch page {
                 case .runOverview: RunOverviewView(store: runStore)
                 case .runActivities: RunActivitiesView(store: runStore)
@@ -151,14 +150,14 @@ struct AppShell: View {
                 }
             }
         case .diet:
-            AreaScreen(tab: tab) { page in
+            AreaScreen(tab: tab, me: me, profile: profile) { page in
                 switch page {
                 case .dietOverview: DietOverviewView(store: diet, profile: profile)
                 default: ComingSoonView()
                 }
             }
         case .today:
-            AreaScreen(tab: tab) { _ in ComingSoonView() }
+            AreaScreen(tab: tab, me: me, profile: profile) { _ in ComingSoonView() }
         }
     }
 }
@@ -171,7 +170,6 @@ extension AppTab {
         case .run: "figure.run"
         case .gym: "dumbbell"
         case .diet: "fork.knife"
-        case .profile: "person.crop.circle"
         }
     }
 }

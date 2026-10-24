@@ -30,6 +30,7 @@ import {
   isKnownPage,
   isPageAllowed,
   isPageDisabled,
+  mobileTabsFor,
   type PageId,
 } from '@/features/nav/navConfig';
 import { patchMe } from '@/lib/userMe';
@@ -106,6 +107,7 @@ function PageContent({
   activeWorkout,
   routinesIntent,
   onNavigate,
+  onExitProfile,
 }: {
   page: PageId;
   themePref: ThemePref;
@@ -116,6 +118,7 @@ function PageContent({
     page: PageId,
     opts?: { routinesIntent?: RoutinesIntent },
   ) => void;
+  onExitProfile: () => void;
 }) {
   const { t } = useTranslation('nav');
   switch (page) {
@@ -175,7 +178,13 @@ function PageContent({
     case 'diet/history':
       return <DietHistoryPage />;
     case 'profile':
-      return <ProfilePage themePref={themePref} onThemePref={onThemePref} />;
+      return (
+        <ProfilePage
+          themePref={themePref}
+          onThemePref={onThemePref}
+          onExit={onExitProfile}
+        />
+      );
     case 'run/activities':
     default:
       return <Dashboard />;
@@ -233,6 +242,10 @@ function App() {
   const [routinesIntent, setRoutinesIntent] = useState<RoutinesIntent | null>(
     null,
   );
+  // mobile Perfil is a full-screen drill-down off the header's account menu:
+  // its back button returns here. In-memory only — a reload straight into
+  // Perfil falls back to Hoje
+  const [profileReturn, setProfileReturn] = useState<PageId>(DEFAULT_PAGE);
   // the first page after boot appears as-is; only real navigations animate
   const [navigated, setNavigated] = useState(false);
   // a slow chunk for an earlier click must not land after a later one
@@ -308,6 +321,7 @@ function App() {
     if (isPageDisabled(next) || !isPageAllowed(next, areas)) return;
     if (opts?.collapse) setCollapsed(true);
     if (next === storedPage) return;
+    if (next === 'profile') setProfileReturn(storedPage);
     const seq = ++navSeqRef.current;
     runViewTransition(
       next,
@@ -416,6 +430,8 @@ function App() {
     !!activeWorkout.workout &&
     page !== 'gym/workouts' &&
     user.enabledAreas.includes('GYM');
+  // a single area has no pill (see mobileTabsFor)
+  const showTabBar = !chromeHidden && mobileTabsFor(areas).length > 0;
 
   return (
     <ChromeBumpContext.Provider value={bumpChrome}>
@@ -423,20 +439,20 @@ function App() {
         className={cn(
           'min-h-screen bg-page-bg max-md:pt-[env(safe-area-inset-top)] md:p-3.5',
           // mobile: clear the floating tab bar (+ the workout bar above it)
-          chromeHidden
-            ? 'max-md:pb-[env(safe-area-inset-bottom)]'
-            : showWorkoutBar
+          showTabBar
+            ? showWorkoutBar
               ? 'max-md:pb-[calc(max(20px,env(safe-area-inset-bottom)+8px)+150px)]'
-              : 'max-md:pb-[calc(max(20px,env(safe-area-inset-bottom)+8px)+86px)]',
+              : 'max-md:pb-[calc(max(20px,env(safe-area-inset-bottom)+8px)+86px)]'
+            : showWorkoutBar && !chromeHidden
+              ? 'max-md:pb-[calc(18px+env(safe-area-inset-bottom)+76px)]'
+              : 'max-md:pb-[env(safe-area-inset-bottom)]',
         )}
       >
-        {!chromeHidden && (
-          <MobileTabBar activePage={page} onNavigate={navigate} />
-        )}
+        {showTabBar && <MobileTabBar activePage={page} onNavigate={navigate} />}
         {showWorkoutBar && activeWorkout.workout && (
           <ActiveWorkoutBar
             workout={activeWorkout.workout}
-            aboveTabBar={!chromeHidden}
+            aboveTabBar={showTabBar}
             onOpen={() => navigate('gym/workouts')}
           />
         )}
@@ -451,7 +467,12 @@ function App() {
           />
           <div className="min-w-0 flex-1 md:min-h-[calc(100vh-28px)] md:rounded-2xl md:border md:border-border md:bg-card md:shadow-[0_8px_24px_rgba(8,12,20,.06)]">
             {!chromeHidden && (
-              <MobileHeader activePage={page} onNavigate={navigate} />
+              <MobileHeader
+                activePage={page}
+                onNavigate={navigate}
+                themePref={themePref}
+                onThemePref={setThemePref}
+              />
             )}
             {/* the only element captured by the section view transition —
               chrome (sidebar, mobile header, tab bar) stays live, see index.css */}
@@ -470,6 +491,7 @@ function App() {
                   activeWorkout={activeWorkout}
                   routinesIntent={routinesIntent}
                   onNavigate={navigate}
+                  onExitProfile={() => navigate(profileReturn)}
                 />
               </Suspense>
             </div>

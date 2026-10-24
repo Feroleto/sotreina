@@ -32,7 +32,9 @@ import Testing
     @Test func screenNames() {
         #expect(ValidationLaunch.Destination(name: "session") == .session)
         #expect(ValidationLaunch.Destination(name: "sessionMinimized") == .sessionMinimized)
-        #expect(ValidationLaunch.Destination(name: "profile") == .tab(.profile))
+        #expect(ValidationLaunch.Destination(name: "profile") == .profile)
+        #expect(ValidationLaunch.Destination(name: "accountMenu") == .accountMenu)
+        #expect(ValidationLaunch(destination: .profile).tab == .today)
         #expect(ValidationLaunch.Destination(name: "runActivities") == .page(.runActivities))
         // a tab name lands on the tab; its page has its own name
         #expect(ValidationLaunch.Destination(name: "gym") == .tab(.gym))
@@ -48,6 +50,7 @@ import Testing
         #expect(!ValidationLaunch(destination: .session).startsSessionMinimized)
         #expect(ValidationLaunch(destination: .sessionMinimized).startsSessionMinimized)
         #expect(ValidationLaunch(destination: .page(.runActivities)).startsSessionMinimized)
-        #expect(ValidationLaunch(destination: .tab(.profile)).startsSessionMinimized)
+        #expect(ValidationLaunch(destination: .profile).startsSessionMinimized)
+        #expect(ValidationLaunch(destination: .accountMenu).startsSessionMinimized)
     }
 }

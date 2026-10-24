@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { Check, ChevronRight, LogOut } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SegmentedControl from '@/components/SegmentedControl';
 import PasswordInput from '@/components/PasswordInput';
@@ -18,6 +18,8 @@ import { AREAS } from '@/features/areas/areas';
 import { useAreas } from '@/features/areas/useAreas';
 import { useUnits } from '@/lib/useUnits';
 import { useUserGoals } from '@/features/today/useUserGoals';
+import { useHideMobileChrome } from '@/features/nav/chromeVisibility';
+import { useIsMobile } from '@/lib/useIsMobile';
 import WeeklyGoalsPage from '@/features/today/WeeklyGoalsPage';
 import GoalPage from '@/features/diet/GoalPage';
 import EditNamePage from './EditNamePage';
@@ -27,6 +29,8 @@ import { distanceLabel, goalToDisplay } from '@/lib/units';
 interface ProfilePageProps {
   themePref: ThemePref;
   onThemePref: (pref: ThemePref) => void;
+  /** mobile back button: Perfil opens full screen from the header's menu */
+  onExit: () => void;
 }
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -110,11 +114,14 @@ type ProfileView = 'main' | 'name' | 'verifyEmail' | 'weeklyGoals' | 'dietGoal';
 /**
  * Perfil — Redesign 21d: personal data, the areas in use (same selection as
  * the first-access picker), goals of the enabled areas, app preferences and
- * the account (Strava, password, logout). Reached from the mobile tab bar
+ * the account (Strava, password, logout). On mobile it's reached from the
+ * header's account menu (Configurações) and takes the whole screen, header
+ * and pill included, with its own back button
  */
 export default function ProfilePage({
   themePref,
   onThemePref,
+  onExit,
 }: ProfilePageProps) {
   const { t } = useTranslation(['nav', 'auth', 'today']);
   const { user, logout, setUser } = useAuth();
@@ -122,6 +129,8 @@ export default function ProfilePage({
   const units = useUnits();
   const { goals, saveWeekly, saveDaily } = useUserGoals();
   const [view, setView] = useState<ProfileView>('main');
+  const mobile = useIsMobile();
+  useHideMobileChrome(mobile);
   const { language, setLanguage } = useAppLanguage();
   const initials = user?.firstName
     ? user.firstName.slice(0, 2).toUpperCase()
@@ -277,8 +286,21 @@ export default function ProfilePage({
   return (
     <DrillStack depth={detail ? 1 : 0} viewKey={detail ? view : 'main'}>
       {detail ?? (
-        <div className="px-[22px] pt-2 pb-[44px] tabular-nums md:max-w-[560px] md:px-[34px] md:pt-[30px] md:pb-[34px]">
-          {/* on mobile the section title lives in the header (MobileChrome) */}
+        <div className="px-[22px] pt-[18px] pb-[44px] tabular-nums md:max-w-[560px] md:px-[34px] md:pt-[30px] md:pb-[34px]">
+          {/* mobile: same back bar as the sub-pages (EditNamePage…) */}
+          <div className="mb-4 flex items-center gap-3 md:hidden">
+            <button
+              type="button"
+              onClick={onExit}
+              aria-label={t('profile.back')}
+              className="flex h-8 w-8 flex-none cursor-pointer items-center justify-center rounded-[9px] text-muted-foreground hover:bg-chip hover:text-foreground"
+            >
+              <ChevronLeft className="h-4.5 w-4.5" strokeWidth={1.8} />
+            </button>
+            <h1 className="text-[15px] font-semibold text-foreground">
+              {t('profile.title')}
+            </h1>
+          </div>
           <h1 className="hidden text-[19px] font-semibold tracking-[-.01em] text-foreground md:block">
             {t('profile.title')}
           </h1>

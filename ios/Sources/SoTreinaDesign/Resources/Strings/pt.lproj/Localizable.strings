@@ -175,6 +175,17 @@
 "nav.runnerFallback" = "Corredor";
 "nav.logOut" = "Sair";
 
+/* menu da conta (nav:profileMenu.*) */
+"nav.profileMenu.menu" = "Menu da conta";
+"nav.profileMenu.theme" = "Tema";
+"nav.profileMenu.language" = "Idioma";
+"nav.profileMenu.settings" = "Configurações";
+"nav.profileMenu.viaStrava" = "Conectado via Strava";
+"nav.profileMenu.signOut" = "Sair";
+"nav.profileMenu.hold" = "Segure";
+"nav.profileMenu.keepHolding" = "Continue segurando";
+"nav.profileMenu.holdHint" = "Pressione e segure para confirmar.";
+
 /* tema (common:theme.*) */
 "common.theme.auto" = "Auto";
 "common.theme.light" = "Claro";
