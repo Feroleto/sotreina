@@ -5,7 +5,7 @@ import SwiftUI
 /// The open workout (spec §6.4, tela 3; Claude Design "Treino Academia Foco"
 /// 2a; `.plans/treino-sessao-ajustes-spec.md`): one active exercise in a card
 /// with its sets — logged (tap to edit in place), the current one with its
-/// fields and "Registrar", the planned ones dimmed — and the other exercises
+/// fields and the ✓, the planned ones dimmed — and the other exercises
 /// collapsed below, tap to make one active.
 struct WorkoutSessionView: View {
     let store: WorkoutStore
@@ -276,7 +276,7 @@ private struct CollapsedExerciseRow: View {
 }
 
 /// The exercise being worked on: header (details on tap), then its sets in
-/// order — logged, unconfirmed, the current one (fields + "Registrar") and the
+/// order — logged, unconfirmed, the current one (fields + ✓) and the
 /// planned rest — and "+ Série".
 private struct ActiveExerciseCard: View {
     let exercise: WorkoutExercise
@@ -629,7 +629,7 @@ private struct SetFields: View {
 }
 
 /// The current set: empty fields whose placeholders are the proposal —
-/// tapping "Registrar" without typing logs the proposal (same as the web's grid).
+/// tapping ✓ without typing logs the proposal (same as the web's grid).
 private struct CurrentSetRow: View {
     let exercise: WorkoutExercise
     let setNumber: Int
@@ -654,16 +654,11 @@ private struct CurrentSetRow: View {
                 unit: unit, weightFocus: .weight(exercise.id), repsFocus: .reps(exercise.id), focus: focus
             )
             Spacer(minLength: 0)
-            Button {
+            ConfirmSetButton(label: Text("gym.session.log", bundle: .l10n), enabled: canLog) {
                 let values = resolved
                 focus.wrappedValue = nil
                 Task { await store.addSet(workoutExerciseId: exercise.id, weightKg: values.weightKg, reps: values.reps) }
-            } label: {
-                Text("gym.session.log", bundle: .l10n)
             }
-            .buttonStyle(.pill)
-            .fixedSize()
-            .disabled(!canLog)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -732,21 +727,11 @@ private struct EditSetRow: View {
                     onClose()
                     Task { await store.deleteSet(workoutExerciseId: exerciseId, setId: workoutSet.id) }
                 }
-                Button {
+                ConfirmSetButton(label: Text("common.save", bundle: .l10n), enabled: isValid) {
                     save()
                     focus.wrappedValue = nil
                     onClose()
-                } label: {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(Color.accFg)
-                        .frame(width: 40, height: 40)
-                        .background(Color.acc, in: Circle())
-                        .opacity(isValid ? 1 : 0.5)
                 }
-                .buttonStyle(.plain)
-                .disabled(!isValid)
-                .accessibilityLabel(Text("common.save", bundle: .l10n))
             }
             if holdHint {
                 Text("gym.session.holdToDelete", bundle: .l10n)
@@ -788,6 +773,28 @@ private struct EditSetRow: View {
         (weightText.isEmpty || SetInput.weight(weightText) != nil)
             && (repsText.isEmpty || SetInput.reps(repsText) != nil)
             && !(weightText.isEmpty && repsText.isEmpty)
+    }
+}
+
+/// The accent ✓ that commits a set, logging the current one or saving an
+/// edit; a logged set shows the green ✓ in the same spot.
+private struct ConfirmSetButton: View {
+    let label: Text
+    let enabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "checkmark")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Color.accFg)
+                .frame(width: 40, height: 40)
+                .background(Color.acc, in: Circle())
+                .opacity(enabled ? 1 : 0.5)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(label)
     }
 }
 
