@@ -19,6 +19,11 @@ public struct ValidationLaunch: Equatable, Sendable {
         case session
         /// the open workout folded into the bar above the tab bar
         case sessionMinimized
+        /// Corrida as if Strava weren't connected
+        case runConnect
+        /// Corrida's first import with a fixed status, counting or paused by
+        /// Strava's rate limit (no polling)
+        case runFirstSync(paused: Bool)
     }
 
     public var destination: Destination?
@@ -57,6 +62,7 @@ public struct ValidationLaunch: Equatable, Sendable {
         case .tab(let tab): tab
         case .page(let page): page.tab
         case .profile, .accountMenu: .today
+        case .runConnect, .runFirstSync: .run
         case .session, .sessionMinimized, nil: nil
         }
     }
@@ -66,13 +72,14 @@ public struct ValidationLaunch: Equatable, Sendable {
     public var startsSessionMinimized: Bool {
         switch destination {
         case .session, nil: false
-        case .tab, .page, .profile, .accountMenu, .sessionMinimized: true
+        case .tab, .page, .profile, .accountMenu, .sessionMinimized, .runConnect, .runFirstSync: true
         }
     }
 }
 
 extension ValidationLaunch.Destination {
-    /// `session`, `sessionMinimized`, `profile`, `accountMenu`, an `AppPage`
+    /// `session`, `sessionMinimized`, `profile`, `accountMenu`, `runConnect`,
+    /// `runFirstSync`, `runFirstSyncPaused`, an `AppPage`
     /// (`gymRoutines`) or an `AppTab` (`gym`).
     public init?(name: String) {
         switch name {
@@ -80,6 +87,9 @@ extension ValidationLaunch.Destination {
         case "sessionMinimized": self = .sessionMinimized
         case "profile": self = .profile
         case "accountMenu": self = .accountMenu
+        case "runConnect": self = .runConnect
+        case "runFirstSync": self = .runFirstSync(paused: false)
+        case "runFirstSyncPaused": self = .runFirstSync(paused: true)
         default:
             if let page = AppPage(rawValue: name) {
                 self = .page(page)

@@ -53,4 +53,13 @@ import Testing
         #expect(ValidationLaunch(destination: .profile).startsSessionMinimized)
         #expect(ValidationLaunch(destination: .accountMenu).startsSessionMinimized)
     }
+
+    @Test func stravaScreensOpenOnCorrida() {
+        #expect(ValidationLaunch.Destination(name: "runConnect") == .runConnect)
+        #expect(ValidationLaunch.Destination(name: "runFirstSync") == .runFirstSync(paused: false))
+        #expect(ValidationLaunch.Destination(name: "runFirstSyncPaused") == .runFirstSync(paused: true))
+        #expect(ValidationLaunch(destination: .runConnect).tab == .run)
+        #expect(ValidationLaunch(destination: .runFirstSync(paused: true)).tab == .run)
+        #expect(ValidationLaunch(destination: .runConnect).startsSessionMinimized)
+    }
 }

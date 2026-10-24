@@ -25,8 +25,8 @@ Custo aceito conscientemente: manter **duas interfaces completas** (web e SwiftU
 | Navegação | `TabView` nativa: Hoje + áreas ativas + Perfil (mesma regra de `mobileTabsFor` da web) |
 | Sub-páginas | Título grande da área + abas de texto no topo, trocando o conteúdo no lugar (como o header mobile da web) |
 | Sessão de treino | Tela cheia sem tab bar, **minimizável**; barra "Treino em andamento · 12:05" acima da tab bar pra voltar |
-| Entrada | Login email/senha (já existe) + **cadastro** + **esqueci a senha** + **escolha de áreas**. Sem login/conexão Strava no app |
-| Perfil | Nome, áreas, metas, tema, idioma, unidades, sair. Strava (conectar/desconectar) e "adicionar senha" ficam na web |
+| Entrada | Login email/senha (já existe) + **cadastro** + **esqueci a senha** + **escolha de áreas**. Sem login Strava no app (a conexão Strava vive na Corrida, ver `login-app-ios-spec.md` §5) |
+| Perfil | Nome, áreas, metas, tema, idioma, unidades, sair. Strava conectar/desconectar (desde 2026-10-24, `login-app-ios-spec.md` §3.5). "Adicionar senha" fica na web |
 | Tema | Auto/Claro/Escuro com seletor no Perfil (por dispositivo, como a web) |
 | Idioma | PT e EN. Padrão = idioma do iPhone (outros caem em EN, como a web); seletor no Perfil sobrescreve. `Accept-Language` acompanha |
 | Fontes | Geist + Geist Mono embutidas |
@@ -45,7 +45,7 @@ Custo aceito conscientemente: manter **duas interfaces completas** (web e SwiftU
 - **SwiftData**: era a escolha do usuário pro cache, mas **não compila com o xtool**. A macro `@Model` roda num plugin que só existe como binário de macOS (`libSwiftDataMacros.dylib`), e o `OpenAppleMacrosServer` do xtool só reimplementa macros de SwiftUI, Previews e FoundationModels. Alternativas avaliadas: GRDB (SQLite, roda no Linux) e Core Data (sem macros, mas sem testes no Linux). Escolhido JSON por endpoint, que basta pra cache de leitura; um banco (GRDB) só se vier a fila offline, e mesmo ela persiste operações pendentes, não um espelho do servidor.
 - **Offline completo**: escrita offline com fila fica de fora (fase condicional da spec anterior continua valendo só pro treino).
 - **Pílula flutuante custom da web**: a `TabView` nativa já é flutuante em vidro no iOS 26 e traz acessibilidade.
-- **Login/conexão Strava no app**: exigiria OAuth com `ASWebAuthenticationSession` e o callback do backend devolvendo Bearer. Conta só-Strava (sem senha) **não entra no app** até adicionar senha pela web.
+- **Login Strava no app**: conta só-Strava (sem senha) **não entra no app** até adicionar senha pela web. A **conexão** Strava de uma conta com senha passou a existir (2026-10-24): Corrida sem Strava mostra o "Connect with Strava", com OAuth por `ASWebAuthenticationSession` e primeiro sync no app (`login-app-ios-spec.md` §5).
 - **Botão de sync manual da Strava**: fora. Atividades novas chegam pelo cron de 6h (e o sync da web).
 - **HealthKit, comida em onças, widgets "Próximo treino" e de tela bloqueada**: fora deste plano.
 
@@ -116,7 +116,7 @@ O app grava um resumo no container do App Group a cada atualização e chama `Wi
 
 ## 4. Fora de escopo
 
-Login/conexão/desconexão Strava, adicionar senha, sync manual, Análise da corrida, HealthKit, escrita offline, comida em onças, widgets de tela bloqueada e "Próximo treino", notificações push remotas. Continuam na web o que estiver nessa lista.
+Login Strava, adicionar senha, sync manual, Análise da corrida, HealthKit, escrita offline, comida em onças, widgets de tela bloqueada e "Próximo treino", notificações push remotas. Continuam na web o que estiver nessa lista.
 
 ## 5. Arquitetura
 
@@ -138,7 +138,7 @@ Toda função pura que a web tem pra uma tela entra no Kit **com os testes da we
 
 ### 5.4 Strava
 
-Assets oficiais copiados sem alteração de `client/src/assets/strava/` pra `ios/Resources/`. "Powered by Strava" nos mesmos pontos da web (rodapé de Atividades, Visão geral e detalhe; claro/escuro conforme o tema) e "View on Strava" (texto literal, `#FC5200`, bold) no detalhe da atividade. Conta só-Strava não entra no app (§2), então o app nunca precisa do fluxo de conexão.
+Assets oficiais copiados sem alteração de `client/src/assets/strava/` pra `ios/Resources/`. "Powered by Strava" nos mesmos pontos da web (rodapé de Atividades, Visão geral e detalhe; claro/escuro conforme o tema) e "View on Strava" (texto literal, `#FC5200`, bold) no detalhe da atividade. Conta só-Strava não entra no app (§2). A conexão de uma conta com senha usa o botão oficial "Connect with Strava" (48 pt, variante laranja, a mesma da web) no estado vazio da Corrida (`login-app-ios-spec.md` §5).
 
 ## 6. Mudanças fora do app
 

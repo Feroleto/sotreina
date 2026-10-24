@@ -170,7 +170,6 @@
 "nav.profile.personalData" = "Dados pessoais";
 "nav.profile.save" = "Salvar";
 "nav.profile.saving" = "Salvando…";
-"nav.profile.manageOnWeb" = "Gerenciar na web";
 "nav.profile.goalsLoadFailed" = "Não foi possível carregar as metas. Puxe para tentar de novo.";
 "nav.runnerFallback" = "Corredor";
 "nav.logOut" = "Sair";
@@ -503,3 +502,21 @@
 "nav.profile.deleteTooManyAttempts" = "Muitas tentativas. Espere um minuto e tente de novo.";
 "nav.profile.deleteError" = "Não foi possível excluir a conta agora. Tente de novo.";
 "auth.login.accountDeleted" = "Conta excluída.";
+
+/* Corrida sem Strava e primeiro sync (spec login-app-ios §5) */
+"run.connect.title" = "Conecte a Strava para ver suas corridas";
+"run.connect.body" = "Importamos suas corridas com distância, pace, frequência cardíaca e voltas. Acesso somente leitura: nada é publicado na sua Strava.";
+"run.connect.conflict" = "Essa conta Strava já está ligada a outro usuário.";
+"run.connect.error" = "Não foi possível conectar. Tente de novo.";
+"run.firstSync.title" = "Importando da Strava…";
+"run.firstSync.finding" = "Buscando suas atividades…";
+"run.firstSync.processingYear %@" = "Processando %@…";
+"run.firstSync.rateLimited %@" = "A Strava pediu uma pausa, retomando em %@";
+"run.firstSync.leaveHint" = "Pode sair desta tela: a importação continua no servidor.";
+"run.firstSync.readOnly" = "Acesso somente leitura — nada é publicado na sua Strava.";
+"run.firstSync.notStarted" = "A importação não começou porque outra está em andamento. Tente de novo em instantes.";
+"nav.profile.stravaConnect" = "Conectar";
+"nav.profile.stravaDisconnect" = "Desconectar";
+"nav.profile.stravaDisconnectConfirm" = "Desconectar sua conta Strava? As atividades importadas do Strava serão apagadas do SoTreina.";
+"nav.profile.stravaDisconnectError" = "Não foi possível desconectar. Tente novamente.";
+"run.firstSync.eta %lld" = "Faltam cerca de %lld min";

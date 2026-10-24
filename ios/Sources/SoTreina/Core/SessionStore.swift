@@ -20,6 +20,10 @@ final class SessionStore {
     /// Why the app is back at Entrar, when it's worth saying (shown there
     /// until the next sign-in).
     private(set) var signedOutNotice: SignedOutNotice?
+    /// Set when a Strava connect came back `ok`: the callback started the
+    /// import, but skips it when another sync holds the server's lock, so
+    /// Corrida starts one itself if the status says idle (`RunStore`).
+    var stravaJustConnected = false
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "session")
 
     /// A client carrying the current token — what every feature store uses.
@@ -159,6 +163,58 @@ final class SessionStore {
     func setMe(_ me: Me) {
         guard case .loggedIn(let current) = state, current.id == me.id else { return }
         state = .loggedIn(me)
+    }
+
+    /// `GET /auth/me` again, after something the server changed about the
+    /// account (the Strava connection).
+    func refreshMe() async {
+        do {
+            if let me: Me = try await api.get("auth/me") { setMe(me) } else { expire() }
+        } catch APIError.unauthorized {
+            expire()
+        } catch {
+            log.error("auth/me refresh failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Corrida's empty state and Perfil › Conta (spec login-app-ios §5.2):
+    /// `POST /strava/connect/start`, then Strava's page in an
+    /// ASWebAuthenticationSession, then `/auth/me` on `ok`. Nil when the user
+    /// closed the sheet.
+    func connectStrava() async throws -> StravaConnectReturn? {
+        let start: StravaConnectStart?
+        do {
+            start = try await api.post("strava/connect/start")
+        } catch APIError.unauthorized {
+            expire()
+            throw APIError.unauthorized
+        }
+        guard let start, let callback = try await StravaWebAuth.run(start.url) else { return nil }
+        let result = StravaConnectReturn(url: callback)
+        log.notice("strava connect: \(String(describing: result), privacy: .public)")
+        if result == .ok {
+            stravaJustConnected = true
+            await refreshMe()
+        }
+        return result
+    }
+
+    /// Perfil › Conta (spec §5.4): `DELETE /strava/connect`, which deletes the
+    /// imported runs. An account deleted with it (no password) signs out.
+    func disconnectStrava() async throws {
+        let response: StravaDisconnectResponse?
+        do {
+            response = try await api.delete("strava/connect")
+        } catch APIError.unauthorized {
+            expire()
+            throw APIError.unauthorized
+        }
+        log.notice("strava disconnected")
+        if response?.accountDeleted == true {
+            signOutLocally()
+        } else {
+            await refreshMe()
+        }
     }
 
     /// Bumps tokenVersion on the server — logs out the web too, by design

@@ -170,7 +170,6 @@
 "nav.profile.personalData" = "Personal data";
 "nav.profile.save" = "Save";
 "nav.profile.saving" = "Saving…";
-"nav.profile.manageOnWeb" = "Manage on the web";
 "nav.profile.goalsLoadFailed" = "Couldn't load your goals. Pull to try again.";
 "nav.runnerFallback" = "Runner";
 "nav.logOut" = "Log out";
@@ -503,3 +502,21 @@
 "nav.profile.deleteTooManyAttempts" = "Too many attempts. Wait a minute and try again.";
 "nav.profile.deleteError" = "Couldn't delete the account right now. Try again.";
 "auth.login.accountDeleted" = "Account deleted.";
+
+/* Corrida without Strava and the first sync (spec login-app-ios §5) */
+"run.connect.title" = "Connect Strava to see your runs";
+"run.connect.body" = "We import your runs with distance, pace, heart rate and laps. Read-only access: nothing is posted to your Strava.";
+"run.connect.conflict" = "That Strava account is already linked to another user.";
+"run.connect.error" = "Couldn't connect. Please try again.";
+"run.firstSync.title" = "Importing from Strava…";
+"run.firstSync.finding" = "Finding your activities…";
+"run.firstSync.processingYear %@" = "Processing %@…";
+"run.firstSync.rateLimited %@" = "Strava asked for a pause, resuming in %@";
+"run.firstSync.leaveHint" = "You can leave this screen: the import keeps running on the server.";
+"run.firstSync.readOnly" = "Read-only access — nothing is posted to your Strava.";
+"run.firstSync.notStarted" = "The import didn't start because another one is running. Try again in a moment.";
+"nav.profile.stravaConnect" = "Connect";
+"nav.profile.stravaDisconnect" = "Disconnect";
+"nav.profile.stravaDisconnectConfirm" = "Disconnect your Strava account? The activities imported from Strava will be deleted from SoTreina.";
+"nav.profile.stravaDisconnectError" = "Couldn't disconnect. Please try again.";
+"run.firstSync.eta %lld" = "About %lld min left";

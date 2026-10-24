@@ -143,10 +143,18 @@ struct AppShell: View {
             }
         case .run:
             AreaScreen(tab: tab, me: me, profile: profile) { page in
-                switch page {
-                case .runOverview: RunOverviewView(store: runStore)
-                case .runActivities: RunActivitiesView(store: runStore)
-                default: ComingSoonView()
+                // spec login-app-ios §5: connect, then the first import, on
+                // both sub-pages
+                if !me.hasStravaAccount || ValidationLaunch.current.destination == .runConnect {
+                    RunConnectView()
+                } else if runStore.firstSync != nil {
+                    RunFirstSyncView(store: runStore)
+                } else {
+                    switch page {
+                    case .runOverview: RunOverviewView(store: runStore)
+                    case .runActivities: RunActivitiesView(store: runStore)
+                    default: ComingSoonView()
+                    }
                 }
             }
         case .diet:

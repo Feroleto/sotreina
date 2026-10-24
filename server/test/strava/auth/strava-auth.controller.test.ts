@@ -5,10 +5,14 @@ import { StravaAuthController } from 'src/strava/auth/strava-auth.controller';
 import { StravaAccountConflictError, StravaAuthService } from 'src/strava/auth/strava-auth.service';
 import { SessionService } from 'src/auth/session.service';
 import { AuthService } from 'src/auth/auth.service';
+import { StravaSyncService } from 'src/strava/sync/strava-sync.service';
 
 const FRONTEND_URL = 'http://localhost:5173';
 const STATE = 'a'.repeat(64);
 const USER_ID = 'user_1';
+// any JWT-shaped state goes down the app branch; validity is the mock's call
+const APP_STATE = 'header.payload.signature';
+const APP_RETURN = 'sotreina://strava/connected';
 
 describe('StravaAuthController', () => {
   let controller: StravaAuthController;
@@ -21,7 +25,9 @@ describe('StravaAuthController', () => {
     consumeOauthState: ReturnType<typeof vi.fn>;
     setCookie: ReturnType<typeof vi.fn>;
     extractSession: ReturnType<typeof vi.fn>;
+    verifyConnectState: ReturnType<typeof vi.fn>;
   };
+  let sync: { sync: ReturnType<typeof vi.fn> };
   let auth: { authenticate: ReturnType<typeof vi.fn> };
   let res: { redirect: ReturnType<typeof vi.fn> };
 
@@ -35,7 +41,9 @@ describe('StravaAuthController', () => {
       consumeOauthState: vi.fn().mockReturnValue(STATE),
       setCookie: vi.fn(),
       extractSession: vi.fn().mockReturnValue(null),
+      verifyConnectState: vi.fn().mockReturnValue(null),
     };
+    sync = { sync: vi.fn().mockResolvedValue({ synced: 0, errors: 0, rateLimited: false }) };
     auth = { authenticate: vi.fn().mockResolvedValue(null) };
     res = { redirect: vi.fn() };
 
@@ -45,6 +53,7 @@ describe('StravaAuthController', () => {
         { provide: StravaAuthService, useValue: authService },
         { provide: SessionService, useValue: session },
         { provide: AuthService, useValue: auth },
+        { provide: StravaSyncService, useValue: sync },
         {
           provide: ConfigService,
           useValue: { get: vi.fn().mockReturnValue(FRONTEND_URL) },
@@ -130,6 +139,69 @@ describe('StravaAuthController', () => {
 
       expect(authService.handleCallback).not.toHaveBeenCalled();
       expect(res.redirect).toHaveBeenCalledWith(`${FRONTEND_URL}/?auth_error=1`);
+    });
+
+    describe('from the iOS app (signed connect state)', () => {
+      beforeEach(() => {
+        session.verifyConnectState.mockReturnValue({ userId: USER_ID, tokenVersion: 2 });
+        auth.authenticate.mockResolvedValue({ id: USER_ID, hasStravaAccount: false });
+      });
+
+      it('links the account to the state\'s user, starts the sync and returns to the app', async () => {
+        await controller.callback('the-code', APP_STATE, req as any, res as any);
+
+        expect(session.verifyConnectState).toHaveBeenCalledWith(APP_STATE);
+        expect(auth.authenticate).toHaveBeenCalledWith({ userId: USER_ID, tokenVersion: 2 });
+        expect(authService.handleCallback).toHaveBeenCalledWith('the-code', USER_ID);
+        expect(sync.sync).toHaveBeenCalledWith(USER_ID);
+        expect(session.setCookie).not.toHaveBeenCalled();
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=ok`);
+      });
+
+      // bad signature, expired, other purpose: verifyConnectState says null
+      it('returns error to the app without linking when the state does not verify', async () => {
+        session.verifyConnectState.mockReturnValue(null);
+
+        await controller.callback('the-code', APP_STATE, req as any, res as any);
+
+        expect(authService.handleCallback).not.toHaveBeenCalled();
+        expect(sync.sync).not.toHaveBeenCalled();
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=error`);
+      });
+
+      it('returns error without linking when the state\'s tokenVersion is stale (logged out since)', async () => {
+        auth.authenticate.mockResolvedValue(null);
+
+        await controller.callback('the-code', APP_STATE, req as any, res as any);
+
+        expect(authService.handleCallback).not.toHaveBeenCalled();
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=error`);
+      });
+
+      it('returns conflict when the Strava account is linked to another user', async () => {
+        authService.handleCallback.mockRejectedValue(new StravaAccountConflictError('already linked'));
+
+        await controller.callback('the-code', APP_STATE, req as any, res as any);
+
+        expect(sync.sync).not.toHaveBeenCalled();
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=conflict`);
+      });
+
+      it('returns error when the token exchange fails', async () => {
+        authService.handleCallback.mockRejectedValue(new Error('exchange failed'));
+
+        await controller.callback('the-code', APP_STATE, req as any, res as any);
+
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=error`);
+      });
+
+      // denying on Strava's screen comes back with error=access_denied, no code
+      it('returns error without calling Strava when there is no code', async () => {
+        await controller.callback(undefined as any, APP_STATE, req as any, res as any);
+
+        expect(authService.handleCallback).not.toHaveBeenCalled();
+        expect(res.redirect).toHaveBeenCalledWith(`${APP_RETURN}?status=error`);
+      });
     });
 
     it('still redirects with auth_error when the token exchange itself fails', async () => {

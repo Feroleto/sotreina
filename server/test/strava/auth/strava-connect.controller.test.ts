@@ -4,6 +4,7 @@ import { StravaConnectController } from 'src/strava/auth/strava-connect.controll
 import { StravaAuthService } from 'src/strava/auth/strava-auth.service';
 import { SessionService } from 'src/auth/session.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { AccountThrottlerGuard } from 'src/auth/account-throttler.guard';
 
 // AuthGuard's own behavior is covered by test/auth/auth.guard.test.ts —
 // overridden here to a pass-through since this file is only exercising the
@@ -15,7 +16,12 @@ const USER_ID = 'user_1';
 describe('StravaConnectController', () => {
   let controller: StravaConnectController;
   let stravaAuth: { buildAuthUrl: ReturnType<typeof vi.fn>; disconnectAccount: ReturnType<typeof vi.fn> };
-  let session: { setOauthState: ReturnType<typeof vi.fn>; clearCookie: ReturnType<typeof vi.fn> };
+  let session: {
+    setOauthState: ReturnType<typeof vi.fn>;
+    clearCookie: ReturnType<typeof vi.fn>;
+    extractSession: ReturnType<typeof vi.fn>;
+    signConnectState: ReturnType<typeof vi.fn>;
+  };
   let res: { redirect: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
@@ -23,7 +29,12 @@ describe('StravaConnectController', () => {
       buildAuthUrl: vi.fn().mockReturnValue('https://www.strava.com/oauth/authorize?state=' + STATE),
       disconnectAccount: vi.fn().mockResolvedValue({ accountDeleted: false }),
     };
-    session = { setOauthState: vi.fn().mockReturnValue(STATE), clearCookie: vi.fn() };
+    session = {
+      setOauthState: vi.fn().mockReturnValue(STATE),
+      clearCookie: vi.fn(),
+      extractSession: vi.fn().mockReturnValue({ userId: USER_ID, tokenVersion: 3 }),
+      signConnectState: vi.fn().mockReturnValue('signed.connect.state'),
+    };
     res = { redirect: vi.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -34,6 +45,8 @@ describe('StravaConnectController', () => {
       ],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(AccountThrottlerGuard)
       .useValue({ canActivate: () => true })
       .compile();
 
@@ -47,6 +60,19 @@ describe('StravaConnectController', () => {
       expect(session.setOauthState).toHaveBeenCalled();
       expect(stravaAuth.buildAuthUrl).toHaveBeenCalledWith(STATE);
       expect(res.redirect).toHaveBeenCalledWith(expect.stringContaining('strava.com'));
+    });
+  });
+
+  describe('start (iOS app)', () => {
+    it('returns the Strava authorize URL with a connect state for the caller and their tokenVersion', () => {
+      const req = { headers: { authorization: 'Bearer x' } };
+
+      const result = controller.start(req as any);
+
+      expect(session.signConnectState).toHaveBeenCalledWith(USER_ID, 3);
+      expect(stravaAuth.buildAuthUrl).toHaveBeenCalledWith('signed.connect.state');
+      expect(result).toEqual({ url: 'https://www.strava.com/oauth/authorize?state=' + STATE });
+      expect(session.setOauthState).not.toHaveBeenCalled();
     });
   });
 

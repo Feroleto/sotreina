@@ -6,7 +6,8 @@ import SoTreinaKit
 
 /// Corrida's data: the whole history once (`GET /activities?limit=1000`,
 /// like the web's `useActivities`), everything else derived on the client.
-/// Read only — syncing with Strava stays on the web (spec §4).
+/// The only sync it drives is the first import after connecting Strava
+/// (spec login-app-ios §5.3); the cron keeps it up to date after that.
 @MainActor
 @Observable
 final class RunStore {
@@ -28,15 +29,39 @@ final class RunStore {
     /// kept for the rest of the launch, so the "Novo" badge doesn't vanish on a reload
     private(set) var newRecordKeys: Set<String> = []
 
+    /// The first import, shown in place of Corrida while there's no run yet
+    /// (spec login-app-ios §5.3). Nil once it ends, whatever the outcome:
+    /// Corrida then shows what arrived, and the cron fetches the rest.
+    private(set) var firstSync: FirstSync?
+
+    enum FirstSync: Equatable {
+        case running(SyncStatus)
+        /// the server's sync lock was busy (another account's import or the
+        /// cron), so nothing started for this account
+        case notStarted
+    }
+
     private let session: SessionStore
     private let log = Logger(subsystem: "com.feroleto.sotreina", category: "run")
     @ObservationIgnored private var restoredFromCache = false
     @ObservationIgnored private var restoredOverviewFromCache = false
+    /// a validation launch's fixed first-sync status: never polled
+    @ObservationIgnored private var previewing = false
 
     static let query = [URLQueryItem(name: "limit", value: "1000")]
 
     init(session: SessionStore) {
         self.session = session
+        #if DEBUG
+        if case .runFirstSync(let paused) = ValidationLaunch.current.destination {
+            previewing = true
+            firstSync = .running(SyncStatus(
+                state: .running, phase: paused ? .rateLimited : .processing, total: 184, processed: 73,
+                etaSeconds: 420, processingDate: Calendar.current.date(from: DateComponents(year: 2022, month: 5, day: 8)),
+                rateLimitResetAt: paused ? Date.now.addingTimeInterval(9 * 60 + 12) : nil
+            ))
+        }
+        #endif
     }
 
     /// Records and shoes, in parallel; the activities come from `load()`.
@@ -86,6 +111,7 @@ final class RunStore {
             let page: ActivitiesPage? = try await api.get("activities", query: Self.query)
             activities = page?.items ?? []
             loadState = .loaded
+            if activities.isEmpty { await checkFirstSync() }
         } catch APIError.unauthorized {
             session.expire()
         } catch {
@@ -95,6 +121,68 @@ final class RunStore {
                 loadState = .failed(WorkoutStore.message(for: error, lang: AppLanguageStore.shared.lang))
             }
         }
+    }
+
+    // MARK: First sync
+
+    /// No run yet: an import running on the server takes over the screen
+    /// (a reopen mid-import lands here too). Right after connecting, an idle
+    /// status means the callback's sync was skipped, so start one.
+    private func checkFirstSync() async {
+        guard let status = await syncStatus() else { return }
+        if status.state == .running {
+            firstSync = .running(status)
+        } else if session.stravaJustConnected {
+            session.stravaJustConnected = false
+            if status.state == .idle { await startFirstSync() }
+        }
+    }
+
+    /// `POST /strava/sync`; "not running" back means the lock is still busy.
+    func startFirstSync() async {
+        do {
+            let status: SyncStatus? = try await session.api.post("strava/sync")
+            if let status, status.state == .running {
+                firstSync = .running(status)
+            } else {
+                firstSync = .notStarted
+            }
+        } catch APIError.unauthorized {
+            session.expire()
+        } catch {
+            log.error("strava/sync failed: \(String(describing: error), privacy: .public)")
+            firstSync = .notStarted
+        }
+    }
+
+    /// Every 2 s while the screen is up (its `.task`); at the end, the runs
+    /// that arrived. A failed poll just waits for the next one.
+    func pollFirstSync() async {
+        guard !previewing else { return }
+        while case .running = firstSync {
+            try? await Task.sleep(for: .seconds(2))
+            if Task.isCancelled { return }
+            guard let status = await syncStatus() else { continue }
+            if status.state == .running {
+                firstSync = .running(status)
+            } else {
+                firstSync = nil
+                async let activities: Void = load()
+                async let overview: Void = loadOverview()
+                _ = await (activities, overview)
+            }
+        }
+    }
+
+    private func syncStatus() async -> SyncStatus? {
+        do {
+            return try await session.api.get("strava/sync/status")
+        } catch APIError.unauthorized {
+            session.expire()
+        } catch {
+            log.error("strava/sync/status failed: \(String(describing: error), privacy: .public)")
+        }
+        return nil
     }
 
     /// The cached detail, to draw before the fetch answers.

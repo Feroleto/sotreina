@@ -111,6 +111,15 @@ Funciona desde 2026-10-23 (usado pra conferir a exclusão de conta). O servidor 
 - **URL exata**: `http://<IP-do-PC>:3001`, **sem `s` e sem `/api`** (o `/api` é só o proxy da Vercel). Com `https` o login falha com `-1200`/`bad protocol version` no `logs.sh`.
 - Voltar pra produção: o mesmo sheet, "Usar produção".
 
+## Login web no app (ASWebAuthenticationSession)
+
+Testado em 2026-10-24 (iPhone 15), pra conexão Strava pela Corrida (spec `login-app-ios` §5.2):
+
+- `AuthenticationServices` compila e roda no build do xtool (framework comum, sem metadados do Xcode).
+- `ASWebAuthenticationSession(url:callbackURLScheme: "sotreina")`: um **302 https → `sotreina://strava/connected?status=ok`** fecha a sessão sozinho e entrega a URL no completion handler (~3 s, testado com `httpbin.org/redirect-to`). Cancelar volta como `ASWebAuthenticationSessionError.canceledLogin`.
+- `prefersEphemeralWebBrowserSession = false` aproveita o login da Strava já feito no Safari (abriu direto, logado). Com `true` cai na tela de login.
+- Precisa de `presentationContextProvider` (devolve a `keyWindow` da cena) e de manter a sessão viva numa propriedade até o completion.
+
 ## Live Activity
 
 - **Botões são links, não App Intents.** `Button(intent:)` precisa dos metadados de App Intents (`Metadata.appintents`) que o Xcode extrai no build, e o xtool não gera (PR xtool#217 com um gerador pra Linux foi fechada sem merge). Testado em 2026-10-22: o toque não faz nada, e a extensão loga `Failed to fetch metadata`. Por isso **+15s**, **Pular** e **✓** são `sotreina://` (`ActivityLink` no `SoTreinaKit`) que abrem o app na ação — com o iPhone bloqueado, pede Face ID. Se o xtool passar a gerar os metadados, dá pra voltar a botões que agem sem desbloquear.

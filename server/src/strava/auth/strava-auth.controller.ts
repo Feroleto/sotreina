@@ -5,6 +5,10 @@ import type { Request, Response } from 'express';
 import { StravaAccountConflictError, StravaAuthService } from './strava-auth.service';
 import { SessionService } from '../../auth/session.service';
 import { AuthService } from '../../auth/auth.service';
+import { StravaSyncService } from '../sync/strava-sync.service';
+
+// where the iOS app's ASWebAuthenticationSession is waiting (scheme sotreina)
+const APP_RETURN_URL = 'sotreina://strava/connected';
 
 @Controller('strava/auth')
 export class StravaAuthController {
@@ -15,6 +19,7 @@ export class StravaAuthController {
     private readonly session: SessionService,
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly syncService: StravaSyncService,
   ) {}
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -36,6 +41,13 @@ export class StravaAuthController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
+    // the app's state is a signed JWT (POST /strava/connect/start); the web's
+    // is 64 hex chars matched against the oauth_state cookie, untouched below
+    if (state?.split('.').length === 3) {
+      await this.connectFromApp(code, state, res);
+      return;
+    }
+
     const frontendUrl = this.config.get<string>(
       'FRONTEND_URL',
       'http://localhost:5173',
@@ -71,6 +83,40 @@ export class StravaAuthController {
       }
       this.logger.error(`Strava OAuth callback failed: ${err.message}`);
       res.redirect(`${frontendUrl}/?auth_error=1`);
+    }
+  }
+
+  private async connectFromApp(code: string, state: string, res: Response): Promise<void> {
+    const claim = this.session.verifyConnectState(state);
+    // same tokenVersion rule as a session: a logout since start invalidates it
+    const user = claim ? await this.auth.authenticate(claim) : null;
+    if (!user) {
+      this.logger.warn('Strava app connect rejected: invalid or stale state');
+      res.redirect(`${APP_RETURN_URL}?status=error`);
+      return;
+    }
+    // denied on Strava's screen: the callback carries error=access_denied
+    if (!code) {
+      res.redirect(`${APP_RETURN_URL}?status=error`);
+      return;
+    }
+
+    try {
+      const { userId } = await this.authService.handleCallback(code, user.id);
+      // fire-and-forget like POST /strava/sync; sync() itself skips when
+      // another run holds the isSyncing lock
+      void this.syncService.sync(userId).catch((err) => {
+        this.logger.error(`First sync after app connect failed: ${err.message}`);
+      });
+      res.redirect(`${APP_RETURN_URL}?status=ok`);
+    } catch (err: any) {
+      if (err instanceof StravaAccountConflictError) {
+        this.logger.warn(`Strava app connect rejected: ${err.message}`);
+        res.redirect(`${APP_RETURN_URL}?status=conflict`);
+        return;
+      }
+      this.logger.error(`Strava app connect failed: ${err.message}`);
+      res.redirect(`${APP_RETURN_URL}?status=error`);
     }
   }
 }

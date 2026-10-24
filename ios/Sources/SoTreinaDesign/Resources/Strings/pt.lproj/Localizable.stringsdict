@@ -378,5 +378,21 @@
 			<string>Excluir esta refeição e %1$lld alimentos registrados, de todos os dias?</string>
 		</dict>
 	</dict>
+	<key>run.firstSync.ofTotal %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>de %lld atividade</string>
+			<key>other</key>
+			<string>de %lld atividades</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

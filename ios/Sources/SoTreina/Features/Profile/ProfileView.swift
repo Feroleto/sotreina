@@ -264,11 +264,7 @@ struct ProfileView: View {
                     }
                 }
                 Spacer()
-                // connecting/disconnecting and passwords stay on the web (spec §2)
-                Link(destination: WebLinks.home) {
-                    Text("nav.profile.manageOnWeb", bundle: .l10n)
-                }
-                .buttonStyle(.chip)
+                ProfileStravaButton(connected: me.hasStravaAccount)
             }
 
             Button(role: .destructive) {
@@ -351,6 +347,75 @@ private extension Area {
         case .run: .run
         case .gym: .gym
         case .diet: .diet
+        }
+    }
+}
+
+/// Perfil › Conta's Strava line (spec login-app-ios §3.5): "Conectar" runs the
+/// same flow as Corrida's empty state; "Desconectar" asks first, with the
+/// web's text, since the imported runs are deleted.
+private struct ProfileStravaButton: View {
+    let connected: Bool
+    @Environment(SessionStore.self) private var session
+    @State private var busy = false
+    @State private var confirming = false
+    @State private var errorKey: LocalizedStringKey?
+
+    var body: some View {
+        Button {
+            if connected { confirming = true } else { connect() }
+        } label: {
+            Text(connected ? "nav.profile.stravaDisconnect" : "nav.profile.stravaConnect", bundle: .l10n)
+        }
+        .buttonStyle(.chip)
+        .disabled(busy)
+        .confirmationDialog(
+            Text("nav.profile.stravaDisconnectConfirm", bundle: .l10n),
+            isPresented: $confirming,
+            titleVisibility: .visible
+        ) {
+            Button(role: .destructive) { disconnect() } label: {
+                Text("nav.profile.stravaDisconnect", bundle: .l10n)
+            }
+            Button(role: .cancel) {} label: { Text("common.cancel", bundle: .l10n) }
+        }
+        .alert(
+            Text("app.error.title", bundle: .l10n),
+            isPresented: Binding(get: { errorKey != nil }, set: { if !$0 { errorKey = nil } })
+        ) {
+            Button(role: .cancel) {} label: { Text("common.ok", bundle: .l10n) }
+        } message: {
+            if let errorKey { Text(errorKey, bundle: .l10n) }
+        }
+    }
+
+    private func connect() {
+        busy = true
+        Task {
+            defer { busy = false }
+            do {
+                switch try await session.connectStrava() {
+                case .conflict: errorKey = "run.connect.conflict"
+                case .error: errorKey = "run.connect.error"
+                case .ok, nil: break
+                }
+            } catch APIError.unauthorized {
+            } catch {
+                errorKey = "run.connect.error"
+            }
+        }
+    }
+
+    private func disconnect() {
+        busy = true
+        Task {
+            defer { busy = false }
+            do {
+                try await session.disconnectStrava()
+            } catch APIError.unauthorized {
+            } catch {
+                errorKey = "nav.profile.stravaDisconnectError"
+            }
         }
     }
 }

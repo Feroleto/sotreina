@@ -55,6 +55,11 @@ struct APIClient {
         _ = try await sendData("POST", path, body: body)
     }
 
+    /// A POST without a body whose answer matters (`POST /strava/connect/start`).
+    func post<Response: Decodable>(_ path: String) async throws -> Response? {
+        try await send("POST", path, body: Optional<String>.none)
+    }
+
     func postEmpty(_ path: String) async throws {
         let _: EmptyResponse? = try await send("POST", path, body: Optional<String>.none)
     }

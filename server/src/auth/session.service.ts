@@ -15,6 +15,9 @@ const OAUTH_STATE_COOKIE = 'oauth_state';
 // enough that a stale state can't be replayed much later
 const OAUTH_STATE_MAX_AGE_MS = 10 * 60 * 1000;
 
+const CONNECT_STATE_PURPOSE = 'strava-connect';
+const CONNECT_STATE_TTL_SEC = 10 * 60;
+
 @Injectable()
 export class SessionService {
   constructor(
@@ -84,6 +87,32 @@ export class SessionService {
     return state ?? null;
   }
 
+  // OAuth state for the iOS app's Strava connect (spec login-app-ios §5.2):
+  // the app has no cookie to carry an oauth_state, so the state itself is a
+  // short-lived signed JWT that binds the callback to the user who asked
+  signConnectState(userId: string, tokenVersion: number): string {
+    return this.jwt.sign(
+      {
+        sub: userId,
+        tv: tokenVersion,
+        purpose: CONNECT_STATE_PURPOSE,
+        client: 'ios',
+        nonce: randomBytes(16).toString('hex'),
+      },
+      { expiresIn: CONNECT_STATE_TTL_SEC },
+    );
+  }
+
+  verifyConnectState(state: string): { userId: string; tokenVersion: number } | null {
+    try {
+      const payload = this.jwt.verify<{ sub: string; tv: number; purpose?: string; client?: string }>(state);
+      if (payload.purpose !== CONNECT_STATE_PURPOSE || payload.client !== 'ios') return null;
+      return { userId: payload.sub, tokenVersion: payload.tv };
+    } catch {
+      return null;
+    }
+  }
+
   // An Authorization header, when present, wins outright over the cookie —
   // a bad Bearer token is a failed session, never a fallback to whatever
   // cookie happens to ride along. A Bearer is never attached automatically
@@ -94,7 +123,10 @@ export class SessionService {
     if (!token) return null;
 
     try {
-      const payload = this.jwt.verify<{ sub: string; tv: number }>(token);
+      const payload = this.jwt.verify<{ sub: string; tv: number; purpose?: string }>(token);
+      // a purpose-bound token (the connect state) is not a session, even
+      // though it carries sub/tv under the same secret
+      if (payload.purpose !== undefined) return null;
       return { userId: payload.sub, tokenVersion: payload.tv };
     } catch {
       return null;

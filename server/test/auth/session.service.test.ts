@@ -182,4 +182,59 @@ describe('SessionService', () => {
       );
     });
   });
+
+  describe('Strava connect state (iOS app)', () => {
+    it('verifies a connect state back to the user and tokenVersion it was signed for', async () => {
+      const service = await makeService();
+      const state = service.signConnectState(USER_ID, TOKEN_VERSION);
+
+      expect(service.verifyConnectState(state)).toEqual({
+        userId: USER_ID,
+        tokenVersion: TOKEN_VERSION,
+      });
+    });
+
+    it('rejects a plain session token as a connect state', async () => {
+      const service = await makeService();
+
+      expect(service.verifyConnectState(service.signToken(USER_ID, TOKEN_VERSION))).toBeNull();
+    });
+
+    it('rejects a connect state older than 10 minutes', async () => {
+      vi.useFakeTimers();
+      try {
+        const service = await makeService();
+        const state = service.signConnectState(USER_ID, TOKEN_VERSION);
+
+        vi.advanceTimersByTime(9 * 60 * 1000);
+        expect(service.verifyConnectState(state)).not.toBeNull();
+        vi.advanceTimersByTime(2 * 60 * 1000);
+        expect(service.verifyConnectState(state)).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('rejects a connect state signed with another secret', async () => {
+      const service = await makeService();
+      const forged = new JwtService({ secret: 'not-the-secret' }).sign({
+        sub: USER_ID,
+        tv: TOKEN_VERSION,
+        purpose: 'strava-connect',
+        client: 'ios',
+      });
+
+      expect(service.verifyConnectState(forged)).toBeNull();
+    });
+
+    // the state travels through Strava's authorize URL (browser history,
+    // their logs) — it must never work as a session token
+    it('is not accepted as a Bearer session', async () => {
+      const service = await makeService();
+      const state = service.signConnectState(USER_ID, TOKEN_VERSION);
+      const req = { headers: { authorization: `Bearer ${state}` }, cookies: {} };
+
+      expect(service.extractSession(req as any)).toBeNull();
+    });
+  });
 });
