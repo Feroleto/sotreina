@@ -16,6 +16,7 @@ struct DietOverviewView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
+            .onPopToRoot { editingGoal = false }
             .navigationDestination(isPresented: $editingGoal) {
                 if let settings = profile.settings {
                     DietGoalView(settings: settings, store: profile)
@@ -88,6 +89,7 @@ struct DietOverviewView: View {
             async let goal: Void = profile.load()
             _ = await (day, goal)
         }
+        .floatingTabBarScroll()
     }
 }
 
@@ -305,6 +307,7 @@ private struct MealsSection: View {
                 .padding(.top, 12)
             }
         }
+        .onPopToRoot { adding = nil }
         .navigationDestination(item: $adding) { meal in
             AddMealView(meal: meal, diet: store)
         }

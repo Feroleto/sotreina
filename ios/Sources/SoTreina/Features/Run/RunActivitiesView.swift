@@ -157,6 +157,7 @@ struct RunActivitiesView: View {
             .padding(.horizontal, pageGutter)
         }
         .refreshable { await store.load() }
+        .floatingTabBarScroll()
     }
 }
 

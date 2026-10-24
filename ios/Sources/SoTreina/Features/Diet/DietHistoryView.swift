@@ -102,6 +102,7 @@ struct DietHistoryView: View {
             async let goal: Void = profile.load()
             _ = await (history, goal)
         }
+        .floatingTabBarScroll()
     }
 }
 

@@ -215,6 +215,7 @@ struct DietGoalView: View {
         }
         .monolitoList()
         .navigationTitle(Text("diet.goal.title", bundle: .l10n))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
     }
 

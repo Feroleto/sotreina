@@ -107,6 +107,8 @@
 
 "gym.activeBar.inProgress" = "Treino em andamento";
 "gym.activeBar.resume" = "Voltar ao treino em andamento";
+"tabs.label" = "Abas";
+"tabs.expand" = "Expandir abas";
 
 "gym.routines.loadFailed" = "Não carregou";
 "gym.routines.emptyTitle" = "Nenhuma rotina";

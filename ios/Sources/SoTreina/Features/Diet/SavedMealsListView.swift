@@ -50,7 +50,7 @@ struct SavedMealsListView: View {
         // "Café da manhã" doesn't fit beside this title, and the system's
         // fallback is "Back" in the iPhone's language: the chevron alone
         .toolbarRole(.editor)
-        .toolbar(.hidden, for: .tabBar)
+        .hidesFloatingTabBar()
         .task { await store.load() }
         .onDisappear { addMeal.applyError = nil }
         .fullScreenCover(item: $editing) { target in

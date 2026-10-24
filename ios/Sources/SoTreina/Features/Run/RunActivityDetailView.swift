@@ -72,6 +72,7 @@ struct RunActivityDetailView: View {
         }
         .background(Color.pageBg)
         .navigationTitle(Text(verbatim: ""))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

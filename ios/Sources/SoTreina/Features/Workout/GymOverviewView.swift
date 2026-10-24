@@ -18,6 +18,7 @@ struct GymOverviewView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
+            .onPopToRoot { viewingId = nil }
             .navigationDestination(item: $viewingId) { id in
                 if let template = store.templates.first(where: { $0.id == id }) {
                     RoutineDetailView(template: template, store: store)
@@ -75,6 +76,7 @@ struct GymOverviewView: View {
             async let routines: Void = store.load()
             _ = await (workouts, routines)
         }
+        .floatingTabBarScroll()
     }
 }
 

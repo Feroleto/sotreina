@@ -58,6 +58,7 @@ struct WorkoutHistoryDetailView: View {
         }
         .monolitoList()
         .navigationTitle(item.templateName.map { Text(verbatim: $0) } ?? Text("gym.freeWorkout", bundle: .l10n))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
         .task {
             detail = detail ?? store.cachedWorkout(item.id)
@@ -204,6 +205,7 @@ struct ExerciseSessionDetailView: View {
         }
         .background(Color.pageBg)
         .navigationTitle(Text(exercise.exerciseName))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
         .task { muscle = await store.exercise(exercise.exerciseId)?.primaryMuscles.first }
     }

@@ -78,6 +78,7 @@ struct RunOverviewView: View {
             async let overview: Void = store.loadOverview()
             _ = await (activities, overview)
         }
+        .floatingTabBarScroll()
     }
 }
 

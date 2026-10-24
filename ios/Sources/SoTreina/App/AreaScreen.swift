@@ -17,7 +17,11 @@ struct AreaScreen<Content: View>: View {
     /// the panel should be open; false starts the morph back
     @State private var menuOpen: Bool
     @State private var showsProfile: Bool
+    /// value-based pushes (a run's detail); the item-based ones are cleared by
+    /// their pages on pop-to-root
+    @State private var path = NavigationPath()
     @Environment(AppLanguageStore.self) private var language
+    @Environment(TabBarState.self) private var tabBar: TabBarState?
 
     /// Sub-pages already in the app. Landing on a placeholder every launch
     /// would be pointless, so a tab opens on its web landing page only once
@@ -45,7 +49,7 @@ struct AreaScreen<Content: View>: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 AreaHeader(title: tab.label(language.lang), pages: tab.pages, selection: $page) {
                     AccountMenuTrigger(me: me, hidden: menuMounted) {
@@ -57,9 +61,10 @@ struct AreaScreen<Content: View>: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .background(Color.pageBg)
-            // only Hoje left: no bar. On the root, not around the stack, or it
-            // would override a pushed screen's own `.hidden` (Perfil)
-            .toolbar(AppTab.showsTabBar(for: me.enabledAreas) ? .automatic : .hidden, for: .tabBar)
+            // a push covers the root (or another tab does): the pill decides
+            // between pop and scroll to top on a tap on this tab
+            .onAppear { tabBar?.setAtRoot(tab, true) }
+            .onDisappear { tabBar?.setAtRoot(tab, false) }
             .overlayPreferenceValue(AccountTriggerKey.self) { anchor in
                 if menuMounted, let anchor {
                     GeometryReader { proxy in
@@ -90,13 +95,20 @@ struct AreaScreen<Content: View>: View {
             .navigationDestination(isPresented: $showsProfile) {
                 // full screen like the web's mobile Perfil: no tab bar
                 ProfileView(me: me, store: profile)
-                    .toolbar(.hidden, for: .tabBar)
+                    .hidesFloatingTabBar()
             }
             // never shown (the header above is the title), but it's what a
             // pushed screen's back button says, in the app's language;
             // without it the system writes "Back" in the iPhone's
             .navigationTitle(tab.label(language.lang))
             .toolbar(.hidden, for: .navigationBar)
+        }
+        // around the stack, so every pushed screen hides the system bar too:
+        // the floating pill (`FloatingTabBar`) replaces it
+        .toolbar(.hidden, for: .tabBar)
+        .onChange(of: tabBar?.popTokens[tab]) {
+            path = NavigationPath()
+            showsProfile = false
         }
     }
 }

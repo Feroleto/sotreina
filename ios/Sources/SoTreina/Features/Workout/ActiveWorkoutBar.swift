@@ -2,8 +2,10 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// The minimized session above the tab bar (web ActiveWorkoutBar): what's
-/// running and for how long; one tap brings the session back.
+/// The minimized session (web ActiveWorkoutBar): what's running and for how
+/// long; one tap brings the session back. Only the content: `FloatingTabBar`
+/// puts it in a capsule of the bar's material, above the pill or beside its
+/// circle.
 struct ActiveWorkoutBar: View {
     let workout: WorkoutDetail
     let onResume: () -> Void
@@ -35,15 +37,12 @@ struct ActiveWorkoutBar: View {
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(Color.mutedFg)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.card, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.border, lineWidth: 1))
-            .contentShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.leading, 20)
+            .padding(.trailing, 18)
+            .padding(.vertical, 10)
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 12)
-        .padding(.bottom, 8)
         .accessibilityLabel(Text("gym.activeBar.resume", bundle: .l10n))
     }
 }

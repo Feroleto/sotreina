@@ -2,10 +2,12 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// Logged-in shell (spec §3, Fase S): a tab bar with Hoje and the enabled
-/// areas (`AppTab.tabs`, the web's `mobileTabsFor`), hidden when only Hoje is
-/// left; Perfil opens from the account menu on each tab's header. An open workout
-/// covers it full screen until minimized into the bar above the tab bar.
+/// Logged-in shell (spec §3, Fase S): the floating pill with Hoje and the
+/// enabled areas (`AppTab.tabs`, the web's `mobileTabsFor`), gone when only
+/// Hoje is left; Perfil opens from the account menu on each tab's header. An
+/// open workout covers it full screen until minimized into the capsule above
+/// the pill. The system tab bar stays hidden (`AreaScreen`): the `TabView` is
+/// kept for what it holds, one live navigation stack per tab.
 /// Reloads on every return to the foreground, which is how a workout started
 /// or finished on the web shows up here.
 struct AppShell: View {
@@ -22,6 +24,7 @@ struct AppShell: View {
     @State private var diet: DietStore
     @State private var dietHistory: DietHistoryStore
     @State private var profile: ProfileStore
+    @State private var tabBar = TabBarState()
     @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
     private let session: SessionStore
     @Environment(AppLanguageStore.self) private var language
@@ -59,17 +62,21 @@ struct AppShell: View {
         TabView(selection: selection) {
             ForEach(tabs, id: \.self) { tab in
                 content(for: tab)
-                    // the minimized session rides above the tab bar on every tab
-                    .safeAreaInset(edge: .bottom, spacing: 0) {
-                        if let workout = store.active, store.sessionMinimized {
-                            ActiveWorkoutBar(workout: workout) { store.sessionMinimized = false }
-                        }
-                    }
-                    .tabItem { Label(tab.label(language.lang), systemImage: tab.symbol) }
+                    .environment(\.appTab, tab)
                     .tag(tab)
             }
         }
         .tint(Color.acc)
+        .overlay {
+            FloatingTabBar(
+                tabs: tabs,
+                selection: selection,
+                showsTabs: AppTab.showsTabBar(for: me.enabledAreas),
+                workout: store.sessionMinimized ? store.active : nil
+            ) { store.sessionMinimized = false }
+        }
+        .environment(tabBar)
+        .onChange(of: selectedTab) { tabBar.expand() }
         .fullScreenCover(isPresented: sessionCovers) {
             Group {
                 if let finished = store.lastFinished {
@@ -99,6 +106,7 @@ struct AppShell: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
+                tabBar.expand()
                 Task { await store.load() }
                 Task { await runStore.load() }
                 // Registros added on the web, or a day that turned at midnight

@@ -67,6 +67,7 @@ struct RoutineExerciseDetailView: View {
         }
         .background(Color.pageBg)
         .navigationTitle(Text(exercise.exerciseName))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
         .task {
             async let fetchedDetail = store.exerciseDetail(exercise.exerciseId)

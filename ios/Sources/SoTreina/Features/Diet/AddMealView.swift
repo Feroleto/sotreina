@@ -130,7 +130,7 @@ struct AddMealView: View {
             }
         }
         // a full screen with its own bottom bar, like the web hides the pill
-        .toolbar(.hidden, for: .tabBar)
+        .hidesFloatingTabBar()
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar(lang: lang) }
         .navigationDestination(isPresented: $showingSavedMeals) {
             SavedMealsListView(store: savedMeals, addMeal: store)

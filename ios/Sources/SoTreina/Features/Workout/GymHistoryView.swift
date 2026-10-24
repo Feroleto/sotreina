@@ -16,6 +16,7 @@ struct GymHistoryView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
+            .onPopToRoot { viewingId = nil }
             .navigationDestination(item: $viewingId) { id in
                 if let item = store.items.first(where: { $0.id == id }) {
                     WorkoutHistoryDetailView(item: item, store: store)
@@ -114,6 +115,7 @@ struct GymHistoryView: View {
         }
         .monolitoList()
         .refreshable { await store.load() }
+        .floatingTabBarScroll()
     }
 
     private func decimal(_ value: Double, _ lang: Lang) -> String {

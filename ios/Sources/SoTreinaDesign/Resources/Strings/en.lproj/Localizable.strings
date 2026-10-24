@@ -107,6 +107,8 @@
 
 "gym.activeBar.inProgress" = "Workout in progress";
 "gym.activeBar.resume" = "Return to your active workout";
+"tabs.label" = "Tabs";
+"tabs.expand" = "Expand tabs";
 
 "gym.routines.loadFailed" = "Couldn't load";
 "gym.routines.emptyTitle" = "No routines";

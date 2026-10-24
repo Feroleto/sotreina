@@ -75,6 +75,7 @@ struct RoutineDetailView: View {
         }
         .monolitoList()
         .navigationTitle(Text(verbatim: summary.name))
+        .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

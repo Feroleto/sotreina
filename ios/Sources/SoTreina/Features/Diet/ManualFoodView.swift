@@ -67,7 +67,7 @@ struct ManualFoodView: View {
         .background(Color.pageBg)
         .navigationTitle(Text("diet.manual.title", bundle: .l10n))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.hidden, for: .tabBar)
+        .hidesFloatingTabBar()
         // the decimal pad has no return key, and the form is too short to drag
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {

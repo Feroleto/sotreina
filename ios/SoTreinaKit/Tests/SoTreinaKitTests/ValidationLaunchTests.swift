@@ -62,4 +62,10 @@ import Testing
         #expect(ValidationLaunch(destination: .runFirstSync(paused: true)).tab == .run)
         #expect(ValidationLaunch(destination: .runConnect).startsSessionMinimized)
     }
+
+    @Test func collapsedTabBarOpensOnTreino() {
+        #expect(ValidationLaunch.Destination(name: "tabBarCollapsed") == .tabBarCollapsed)
+        #expect(ValidationLaunch(destination: .tabBarCollapsed).tab == .gym)
+        #expect(ValidationLaunch(destination: .tabBarCollapsed).startsSessionMinimized)
+    }
 }
