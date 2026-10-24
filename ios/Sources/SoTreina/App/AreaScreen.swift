@@ -110,6 +110,12 @@ struct AreaScreen<Content: View>: View {
             path = NavigationPath()
             showsProfile = false
         }
+        // initial: the tab may be built by the request itself (first visit)
+        .onChange(of: tabBar?.pageRequests[tab], initial: true) { _, request in
+            guard let request else { return }
+            page = request
+            tabBar?.consumePageRequest(tab)
+        }
     }
 }
 

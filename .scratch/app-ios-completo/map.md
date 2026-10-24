@@ -61,6 +61,8 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Dieta: cadastro manual e scanner](issues/29-dieta-manual-scanner.md): feito e validado — `DataScannerViewController` (VisionKit funciona com xtool), `ManualFoodDraft`/`ProductBarcode` no Kit; o backend passou a achar o alimento CUSTOM ligado ao código e não dá mais 500 num segundo cadastro (deploy pendente); 404, escuro/EN e Dynamic Type ficaram pro Uso real
 - [Dieta: Refeições salvas](issues/30-dieta-refeicoes-salvas.md): feito e validado. Lista, editor (`SavedMealDraft` no Kit) e "Usar", que volta pro Adicionar com os Registros. O `apply` ganhou `clientId` sem migration (deploy pendente). O "Usar" da web nunca tinha funcionado (`mealId` errado) e foi corrigido. O reenvio sem duplicar ficou pro Uso real
 - [Dieta: histórico 7/14 dias](issues/31-dieta-historico.md): feito e validado — `DietHistory` no Kit (escala com a meta, cor por dia, datas alternadas no período de 14, seleção que sobrevive), barras à mão; o Swift Charts compila com o xtool (sem macros), mas não foi usado; datas com `fixedSize` alargavam a página em Dynamic Type grande
+- [Fatiamento da Fase H (Hoje)](issues/39-fatiamento-fase-h.md): três tarefas em fila — várias áreas (com `TodayStatus` no Kit) → uma área só → Uso real; sem esperar os Uso real das outras fases, lê as stores do shell, toques trocam de aba, o app passa a abrir no Hoje; sem backend
+- [Hoje: várias áreas](issues/40-hoje-varias-areas.md): feito e validado. `TodayStatus` no Kit, com os testes da web. A tela lê as stores do shell. Os toques abrem a página da área na raiz (`TabBarState.open`), e o app abre no Hoje. O lápis empilha as metas semanais do Perfil
 
 ## Not yet specified
 

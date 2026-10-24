@@ -548,3 +548,26 @@
 "diet.history.range14" = "14 dias";
 "diet.history.daysTitle" = "Dias";
 "diet.history.loadFailed" = "Não foi possível carregar o histórico";
+
+/* Hoje (web today.json) */
+"today.status.run" = "Corrida";
+"today.status.gym" = "Treino";
+"today.status.diet" = "Dieta";
+"today.status.done" = "feito";
+"today.status.pending" = "pendente";
+"today.status.runDone %@ %@" = "%1$@ %2$@ feitos";
+"today.status.gymDone %@" = "%@ feito";
+"today.status.gymPending %@" = "%@ pendente";
+"today.status.gymInProgress %@" = "%@ em andamento";
+"today.days.title" = "Últimos 7 dias";
+"today.days.legend" = "áreas concluídas";
+"today.days.a11y %@ %lld %lld" = "%1$@: %2$lld de %3$lld áreas concluídas";
+"today.areas.title" = "Por área";
+"today.areas.editGoals" = "Editar metas semanais";
+"today.areas.runGoal %lld %@" = "semana · meta %1$lld %2$@";
+"today.areas.dietGoal %@" = "hoje · meta %@ kcal";
+"today.feed.title" = "Atividade recente";
+"today.feed.empty" = "Nada registrado ainda. Corridas, treinos e refeições aparecem aqui.";
+"today.feed.today" = "hoje";
+"today.feed.yesterday" = "ontem";
+"today.feed.minutes %lld" = "%lld min";

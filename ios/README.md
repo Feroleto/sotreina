@@ -359,6 +359,20 @@ O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`):
 | 35 | Funcional: tocar numa linha seleciona a barra e vice-versa; dia acima da meta em vermelho na barra e no kcal; um Registro novo na Visão geral aparece ao voltar; a seleção sobrevive à troca 7 ↔ 14 enquanto o dia estiver no período | — | manual | — | ok (usuário, 2026-10-24) |
 | 36 | Dieta › Histórico | Dynamic Type máx. | `SOTREINA_SCREEN=dietHistory` | — | ok (2026-10-24; as datas sob as barras tinham `fixedSize` e alargavam a página inteira além da tela: passaram a encolher dentro da barra; subtítulo e 7/14 empilham se não couberem; "P 34g" não quebra mais no meio) |
 
+### Fase H
+
+Hoje com várias áreas (`.scratch/app-ios-completo/issues/40-hoje-varias-areas.md`): linhas 01–07. O app roda contra produção e a web contra o banco local, então o dia e os números não batem: o par compara a estrutura.
+
+| # | Tela | Estado | App | Web | Resultado |
+|---|------|--------|-----|-----|-----------|
+| 01 | Hoje (data, status por área, últimos 7 dias, Por área, início do feed) | claro · PT | `SOTREINA_SCREEN=today SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page overview` || ok (usuário, 2026-10-24; lápis em SF Symbol, a web usa o lucide: desvio aceito; a pílula com SF Symbols já era desvio aceito) |
+| 02 | Hoje | escuro · EN | `SOTREINA_SCREEN=today SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page overview --theme dark --lang en` || ok (usuário, 2026-10-24) |
+| 03 | Fim da página (feed de 5 itens, "Powered by Strava") | claro · PT | manual: rolar até o fim | `--page overview` rolada || ok (usuário, 2026-10-24, no aparelho; web em `03-web.png` por `ios/validation/H/bottom.mjs`) |
+| 04 | Metas semanais pelo lápis de "Por área" (sem a pílula) | claro · PT | manual: tocar no lápis | — (mesma tela do Perfil, já validada na Fase S) || ok (usuário, 2026-10-24) |
+| 05 | Funcional: o app abre no Hoje (sem aba salva); status, linha de "Por área" e item do feed levam à página da área (Corrida › Atividades, Treino › Visão geral, Dieta › Visão geral), na raiz mesmo com uma tela empilhada lá; treino aberto aparece como "em andamento"; salvar a meta volta ao Hoje com a meta nova | — | manual | — || ok (usuário, 2026-10-24) |
+| 06 | Hoje com duas áreas (status em 2 colunas, barras de 2 segmentos, feed sem a área desligada) | claro · PT | manual: desligar uma área no Perfil | — || ok (usuário, 2026-10-24) |
+| 07 | Hoje | Dynamic Type máx. | `SOTREINA_SCREEN=today` | — || ok (usuário, 2026-10-24) |
+
 ## Checklist da Fase 0 (go/no-go)
 
 - [x] `deploy.sh` instala e abre o app no iPhone

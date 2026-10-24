@@ -394,5 +394,95 @@
 			<string>de %lld atividades</string>
 		</dict>
 	</dict>
+	<key>today.status.gymDoneCount %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>%lld treinos feitos</string>
+			<key>one</key>
+			<string>%lld treino feito</string>
+			<key>other</key>
+			<string>%lld treinos feitos</string>
+		</dict>
+	</dict>
+	<key>today.areas.gymGoal %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>semana · meta %lld treinos</string>
+			<key>one</key>
+			<string>semana · meta %lld treino</string>
+			<key>other</key>
+			<string>semana · meta %lld treinos</string>
+		</dict>
+	</dict>
+	<key>today.feed.daysAgo %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>há %lld dias</string>
+			<key>one</key>
+			<string>há %lld dia</string>
+			<key>other</key>
+			<string>há %lld dias</string>
+		</dict>
+	</dict>
+	<key>today.feed.exercises %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>%lld exercícios</string>
+			<key>one</key>
+			<string>%lld exercício</string>
+			<key>other</key>
+			<string>%lld exercícios</string>
+		</dict>
+	</dict>
+	<key>today.feed.items %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>%lld itens</string>
+			<key>one</key>
+			<string>%lld item</string>
+			<key>other</key>
+			<string>%lld itens</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

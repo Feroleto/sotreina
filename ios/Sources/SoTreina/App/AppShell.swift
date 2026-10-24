@@ -25,7 +25,7 @@ struct AppShell: View {
     @State private var dietHistory: DietHistoryStore
     @State private var profile: ProfileStore
     @State private var tabBar = TabBarState()
-    @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
+    @SceneStorage("selectedTab") private var selectedTab: String = AppTab.today.rawValue
     private let session: SessionStore
     @Environment(AppLanguageStore.self) private var language
     @Environment(\.scenePhase) private var scenePhase
@@ -176,7 +176,17 @@ struct AppShell: View {
                 }
             }
         case .today:
-            AreaScreen(tab: tab, me: me, profile: profile) { _ in ComingSoonView() }
+            AreaScreen(tab: tab, me: me, profile: profile) { _ in
+                TodayView(
+                    me: me, workout: store, run: runStore, gymHistory: history,
+                    diet: diet, dietHistory: dietHistory, profile: profile
+                ) { page in
+                    // with one area there's no tab to switch to
+                    guard tabs.contains(page.tab) else { return }
+                    tabBar.open(page)
+                    selectedTab = page.tab.rawValue
+                }
+            }
         }
     }
 }

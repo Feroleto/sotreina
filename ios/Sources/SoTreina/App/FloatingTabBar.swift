@@ -15,6 +15,8 @@ final class TabBarState {
     private(set) var hiders = 0
     private(set) var popTokens: [AppTab: Int] = [:]
     private(set) var scrollTopTokens: [AppTab: Int] = [:]
+    /// a page another tab asked to open (Hoje's taps), until its tab applies it
+    private(set) var pageRequests: [AppTab: AppPage] = [:]
     @ObservationIgnored private var atRoot: [AppTab: Bool] = [:]
     /// height of the expanded bar above the bottom safe area, so the last
     /// row of a list can scroll above it
@@ -51,6 +53,18 @@ final class TabBarState {
         guard atRoot[tab] != value else { return }
         atRoot[tab] = value
         expand()
+    }
+
+    /// Hoje's taps: the area's tab lands on `page`, back at its root (the
+    /// web navigates to the page, which drops whatever was drilled into).
+    func open(_ page: AppPage) {
+        popTokens[page.tab, default: 0] += 1
+        pageRequests[page.tab] = page
+        expand()
+    }
+
+    func consumePageRequest(_ tab: AppTab) {
+        pageRequests[tab] = nil
     }
 
     func reselect(_ tab: AppTab) {
