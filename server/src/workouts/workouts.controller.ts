@@ -14,7 +14,7 @@ import { WorkoutsService } from './workouts.service';
 import {
   parseAddExerciseInput,
   parseFinishWorkoutInput,
-  parseReorderExerciseInput,
+  parseUpdateExerciseInput,
   parseAddSetInput,
   parseSetInput,
   parseStartWorkoutInput,
@@ -108,15 +108,15 @@ export class WorkoutsController {
   }
 
   @Patch(':id/exercises/:workoutExerciseId')
-  async reorderExercise(
+  async updateExercise(
     @CurrentUser() user: AuthenticatedUser,
     @CurrentLang() lang: Lang,
     @Param('id') workoutId: string,
     @Param('workoutExerciseId') workoutExerciseId: string,
     @Body() body: unknown,
   ) {
-    const input = parseReorderExerciseInput(body);
-    return this.service.reorderExercise(user.id, workoutId, workoutExerciseId, input.order, lang);
+    const input = parseUpdateExerciseInput(body);
+    return this.service.updateExercise(user.id, workoutId, workoutExerciseId, input, lang);
   }
 
   @Delete(':id/exercises/:workoutExerciseId')

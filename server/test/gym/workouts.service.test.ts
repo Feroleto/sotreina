@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { WorkoutsService } from 'src/workouts/workouts.service';
 import { ExercisesService } from 'src/exercises/exercises.service';
 import { WorkoutTemplatesService } from 'src/workout-templates/workout-templates.service';
@@ -30,6 +30,7 @@ const { mockPrisma } = vi.hoisted(() => {
         update: vi.fn(),
         delete: vi.fn(),
         aggregate: vi.fn(),
+        count: vi.fn(),
       },
       workoutTemplateExercise: {
         findMany: vi.fn().mockResolvedValue([]),
@@ -199,8 +200,8 @@ describe('WorkoutsService', () => {
       const data = mockPrisma.workout.create.mock.calls[0][0].data;
       expect(data.templateId).toBe('tmpl1');
       expect(data.exercises.create).toEqual([
-        { exerciseId: 'ex1', order: 1, supersetGroupId: null },
-        { exerciseId: 'ex2', order: 2, supersetGroupId: 'sg1' },
+        { exerciseId: 'ex1', order: 1, supersetGroupId: null, targetSets: 4 },
+        { exerciseId: 'ex2', order: 2, supersetGroupId: 'sg1', targetSets: 3 },
       ]);
       // no WorkoutSet is ever created from a template — series are still
       // logged live, one at a time, exactly like a free workout
@@ -240,6 +241,20 @@ describe('WorkoutsService', () => {
 
       expect(mockPrisma.workoutExercise.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ order: 4 }) }),
+      );
+    });
+
+    it('starts an exercise added mid-workout with one planned set', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({ id: 'w1' });
+      exercisesService.findById.mockResolvedValueOnce({ id: 'ex1' });
+      mockPrisma.workoutExercise.aggregate.mockResolvedValueOnce({ _max: { order: 2 } });
+      mockPrisma.workoutExercise.create.mockResolvedValueOnce({});
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB);
+
+      await service.addExercise(USER_ID, 'w1', { exerciseId: 'ex1' });
+
+      expect(mockPrisma.workoutExercise.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ targetSets: 1 }) }),
       );
     });
 
@@ -298,26 +313,52 @@ describe('WorkoutsService', () => {
     });
   });
 
-  describe('reorderExercise', () => {
+  describe('updateExercise', () => {
     it('updates the order of an owned workout exercise', async () => {
       mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' }); // ownership
       mockPrisma.workoutExercise.update.mockResolvedValueOnce({});
       mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB); // findById refetch
 
-      await service.reorderExercise(USER_ID, 'w1', 'we1', 2);
+      await service.updateExercise(USER_ID, 'w1', 'we1', { order: 2 });
 
       expect(mockPrisma.workoutExercise.update).toHaveBeenCalledWith({
         where: { id: 'we1' },
         data: { order: 2 },
       });
+      expect(mockPrisma.workoutSet.count).not.toHaveBeenCalled();
+    });
+
+    it('updates the planned sets when not below the sets already logged', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.count.mockResolvedValueOnce(2);
+      mockPrisma.workoutExercise.update.mockResolvedValueOnce({});
+      mockPrisma.workout.findFirst.mockResolvedValueOnce(DETAIL_STUB);
+
+      await service.updateExercise(USER_ID, 'w1', 'we1', { targetSets: 2 });
+
+      expect(mockPrisma.workoutSet.count).toHaveBeenCalledWith({ where: { workoutExerciseId: 'we1' } });
+      expect(mockPrisma.workoutExercise.update).toHaveBeenCalledWith({
+        where: { id: 'we1' },
+        data: { targetSets: 2 },
+      });
+    });
+
+    it('rejects planned sets below the sets already logged (400)', async () => {
+      mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce({ id: 'we1' });
+      mockPrisma.workoutSet.count.mockResolvedValueOnce(3);
+
+      await expect(
+        service.updateExercise(USER_ID, 'w1', 'we1', { targetSets: 2 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockPrisma.workoutExercise.update).not.toHaveBeenCalled();
     });
 
     it('rejects a workoutExercise belonging to another user (404, not 403)', async () => {
       mockPrisma.workoutExercise.findFirst.mockResolvedValueOnce(null);
 
-      await expect(service.reorderExercise(USER_ID, 'w1', 'not-mine', 1)).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        service.updateExercise(USER_ID, 'w1', 'not-mine', { targetSets: 4 }),
+      ).rejects.toBeInstanceOf(NotFoundException);
       expect(mockPrisma.workoutExercise.update).not.toHaveBeenCalled();
     });
   });
@@ -508,6 +549,39 @@ describe('WorkoutsService', () => {
       const result = await service.findById(USER_ID, 'w1');
 
       expect(result?.exercises[0]?.target).toBeNull();
+    });
+
+    it("the workout's planned sets win over the routine's, keeping the routine's reps and rest", async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({
+        ...DETAIL_STUB,
+        templateId: 'tmpl1',
+        template: { name: 'Push Day' },
+        exercises: [
+          { id: 'we1', order: 1, supersetGroupId: null, targetSets: 5, exerciseId: 'ex1', exercise: { name: 'Bench' }, sets: [] },
+          { id: 'we2', order: 2, supersetGroupId: null, targetSets: 2, exerciseId: 'ex-extra', exercise: { name: 'Curl' }, sets: [] },
+        ],
+      });
+      mockPrisma.workoutTemplateExercise.findMany.mockResolvedValueOnce([
+        { exerciseId: 'ex1', targetSets: 4, targetRepsMin: 8, targetRepsMax: 12, restSeconds: 120 },
+      ]);
+
+      const result = await service.findById(USER_ID, 'w1');
+
+      expect(result?.exercises[0]?.target).toStrictEqual({ sets: 5, repsMin: 8, repsMax: 12, restSeconds: 120 });
+      expect(result?.exercises[1]?.target).toStrictEqual({ sets: 2, repsMin: null, repsMax: null, restSeconds: null });
+    });
+
+    it('a free workout exercise with planned sets gets a target of its sets alone', async () => {
+      mockPrisma.workout.findFirst.mockResolvedValueOnce({
+        ...DETAIL_STUB,
+        exercises: [
+          { id: 'we1', order: 1, supersetGroupId: null, targetSets: 1, exerciseId: 'ex1', exercise: { name: 'Bench' }, sets: [] },
+        ],
+      });
+
+      const result = await service.findById(USER_ID, 'w1');
+
+      expect(result?.exercises[0]?.target).toStrictEqual({ sets: 1, repsMin: null, repsMax: null, restSeconds: null });
     });
 
     it('is null for a free workout (no template) — never queries workoutTemplateExercise', async () => {

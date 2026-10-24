@@ -370,6 +370,25 @@ final class WorkoutStore {
         await mutate("POST exercise", path: "exercises", method: .post(AddExerciseRequest(exerciseId: exerciseId)))
     }
 
+    /// Planned sets changed by "+ Série" / remove, shown before the server
+    /// answers (`WorkoutDetail.applyingTargetSets`); each one is dropped once
+    /// its exercise's latest PATCH is back, so an older answer arriving in
+    /// between can't make the count jump back.
+    private(set) var targetOverrides: [String: Int] = [:]
+    private var targetTickets: [String: Int] = [:]
+
+    func setTargetSets(workoutExerciseId: String, _ sets: Int) async {
+        targetOverrides[workoutExerciseId] = sets
+        let ticket = (targetTickets[workoutExerciseId] ?? 0) + 1
+        targetTickets[workoutExerciseId] = ticket
+        await mutate(
+            "PATCH exercise",
+            path: "exercises/\(workoutExerciseId)",
+            method: .patch(UpdateExerciseRequest(targetSets: sets))
+        )
+        if targetTickets[workoutExerciseId] == ticket { targetOverrides[workoutExerciseId] = nil }
+    }
+
     func removeExercise(workoutExerciseId: String) async {
         pendingSets.removeAll { $0.workoutExerciseId == workoutExerciseId }
         await mutate("DELETE exercise", path: "exercises/\(workoutExerciseId)", method: .delete)

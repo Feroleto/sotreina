@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { ExercisesService } from '../exercises/exercises.service';
 import { WorkoutTemplatesService } from '../workout-templates/workout-templates.service';
-import type { AddExerciseInput, AddSetInput, SetInput, StartWorkoutInput } from './dto';
+import type {
+  AddExerciseInput,
+  AddSetInput,
+  SetInput,
+  StartWorkoutInput,
+  UpdateExerciseInput,
+} from './dto';
 import type { TemplateSyncExercise } from '../workout-templates/workout-templates.service';
 import { localizedName, type Lang } from '../common/lang';
 import {
@@ -31,6 +37,23 @@ export interface ExerciseTarget {
   repsMax: number | null;
   /** seconds; null = the user's global rest default */
   restSeconds: number | null;
+}
+
+// the workout's own planned sets win over the routine's (they start as a
+// copy and are edited live); reps/rest only ever come from the routine. An
+// exercise outside the routine gets a target of its sets alone. Null
+// targetSets = a workout opened before the column existed
+function resolveTarget(
+  fromTemplate: ExerciseTarget | undefined,
+  targetSets: number | null | undefined,
+): ExerciseTarget | null {
+  if (targetSets == null) return fromTemplate ?? null;
+  return {
+    sets: targetSets,
+    repsMin: fromTemplate?.repsMin ?? null,
+    repsMax: fromTemplate?.repsMax ?? null,
+    restSeconds: fromTemplate?.restSeconds ?? null,
+  };
 }
 
 export interface WorkoutExerciseDetail {
@@ -99,6 +122,7 @@ const WORKOUT_DETAIL_SELECT = {
       id: true,
       order: true,
       supersetGroupId: true,
+      targetSets: true,
       exerciseId: true,
       exercise: { select: { name: true, namePt: true } },
       sets: {
@@ -128,6 +152,7 @@ type WorkoutWithExercises = {
     id: string;
     order: number;
     supersetGroupId: string | null;
+    targetSets?: number | null;
     exerciseId: string;
     exercise: { name: string; namePt: string | null };
     sets: {
@@ -201,7 +226,7 @@ export class WorkoutsService {
         exerciseName: localizedName(we.exercise.name, we.exercise.namePt, lang),
         order: we.order,
         supersetGroupId: we.supersetGroupId,
-        target: targetsByExerciseId.get(we.exerciseId) ?? null,
+        target: resolveTarget(targetsByExerciseId.get(we.exerciseId), we.targetSets),
         sets: we.sets.map((s) => ({
           id: s.id,
           setNumber: s.setNumber,
@@ -229,18 +254,25 @@ export class WorkoutsService {
     });
     if (existing) return this.buildDetail(existing, lang);
 
-    let seedExercises: { exerciseId: string; order: number; supersetGroupId: string | null }[] = [];
+    let seedExercises: {
+      exerciseId: string;
+      order: number;
+      supersetGroupId: string | null;
+      targetSets: number | null;
+    }[] = [];
     if (input.templateId) {
       const template = await this.templatesService.findById(userId, input.templateId);
       if (!template) {
         throw new NotFoundException(`Workout template ${input.templateId} not found`);
       }
       // structure only — no WorkoutSet is created here, series are still
-      // logged live one at a time exactly like a free workout
+      // logged live one at a time exactly like a free workout. The planned
+      // sets are copied, so editing the routine mid-workout never moves them
       seedExercises = template.exercises.map((te) => ({
         exerciseId: te.exerciseId,
         order: te.order,
         supersetGroupId: te.supersetGroupId,
+        targetSets: te.targetSets,
       }));
     }
 
@@ -480,6 +512,8 @@ export class WorkoutsService {
         workoutId,
         exerciseId: input.exerciseId,
         order: (last._max.order ?? 0) + 1,
+        // starts with one planned set; the lifter adds more as they go
+        targetSets: 1,
       },
     });
 
@@ -504,18 +538,31 @@ export class WorkoutsService {
   // reorder is one PATCH per affected exercise (no bulk endpoint), same
   // "manter simples" contract already used by WorkoutTemplatesService —
   // WorkoutSession's drag handle diffs against a pre-drag snapshot client-side
-  // and calls this once per row whose position actually changed
-  async reorderExercise(
+  // and calls this once per row whose position actually changed. The same
+  // PATCH edits the planned sets (the iOS session's "+ Série" / remove),
+  // never below the sets already logged
+  async updateExercise(
     userId: string,
     workoutId: string,
     workoutExerciseId: string,
-    order: number,
+    input: UpdateExerciseInput,
     lang: Lang = 'en',
   ): Promise<WorkoutDetail> {
     await this.assertOwnedWorkoutExercise(userId, workoutId, workoutExerciseId);
+    if (input.targetSets !== undefined) {
+      const logged = await this.prisma.workoutSet.count({ where: { workoutExerciseId } });
+      if (input.targetSets < logged) {
+        throw new BadRequestException(
+          `targetSets (${input.targetSets}) is below the ${logged} sets already logged`,
+        );
+      }
+    }
     await this.prisma.workoutExercise.update({
       where: { id: workoutExerciseId },
-      data: { order },
+      data: {
+        ...(input.order !== undefined && { order: input.order }),
+        ...(input.targetSets !== undefined && { targetSets: input.targetSets }),
+      },
     });
     return (await this.findById(userId, workoutId, lang))!;
   }

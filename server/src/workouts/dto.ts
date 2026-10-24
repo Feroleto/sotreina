@@ -88,23 +88,44 @@ export function parseFinishWorkoutInput(body: unknown): FinishWorkoutInput {
   return { syncTemplate };
 }
 
-export interface ReorderExerciseInput {
-  order: number;
+export interface UpdateExerciseInput {
+  order?: number;
+  targetSets?: number;
 }
 
-// order is the only field here — unlike workout-templates' equivalent
-// (which folds order in alongside targetSets/targetRepsMin/Max), a
-// WorkoutExercise carries no targets of its own (those live on the
-// originating WorkoutTemplateExercise, see WorkoutsService.buildDetail)
-export function parseReorderExerciseInput(body: unknown): ReorderExerciseInput {
+export const MAX_TARGET_SETS = 20;
+
+// PATCH of one exercise in an open workout: its position and/or its planned
+// sets (WorkoutExercise.targetSets, editable live — the routine's own target
+// only changes through finish's syncTemplate). At least one field; the web
+// sends only `order`
+export function parseUpdateExerciseInput(body: unknown): UpdateExerciseInput {
   if (typeof body !== 'object' || body === null) {
     throw new BadRequestException('Request body must be an object');
   }
-  const { order } = body as Record<string, unknown>;
-  if (typeof order !== 'number' || !Number.isInteger(order) || order < 1 || order > 1000) {
-    throw new BadRequestException('order must be an integer between 1 and 1000');
+  const { order, targetSets } = body as Record<string, unknown>;
+  const input: UpdateExerciseInput = {};
+  if (order !== undefined) {
+    if (typeof order !== 'number' || !Number.isInteger(order) || order < 1 || order > 1000) {
+      throw new BadRequestException('order must be an integer between 1 and 1000');
+    }
+    input.order = order;
   }
-  return { order };
+  if (targetSets !== undefined) {
+    if (
+      typeof targetSets !== 'number' ||
+      !Number.isInteger(targetSets) ||
+      targetSets < 1 ||
+      targetSets > MAX_TARGET_SETS
+    ) {
+      throw new BadRequestException(`targetSets must be an integer between 1 and ${MAX_TARGET_SETS}`);
+    }
+    input.targetSets = targetSets;
+  }
+  if (input.order === undefined && input.targetSets === undefined) {
+    throw new BadRequestException('order or targetSets is required');
+  }
+  return input;
 }
 
 export interface SetInput {

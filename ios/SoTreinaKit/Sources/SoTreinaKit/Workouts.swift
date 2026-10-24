@@ -237,6 +237,16 @@ public struct AddSetRequest: Codable, Equatable, Sendable {
     }
 }
 
+/// `PATCH /workouts/:id/exercises/:workoutExerciseId` — `parseUpdateExerciseInput`;
+/// the app only sends the planned sets (the web sends `order`).
+public struct UpdateExerciseRequest: Codable, Equatable, Sendable {
+    public var targetSets: Int
+
+    public init(targetSets: Int) {
+        self.targetSets = targetSets
+    }
+}
+
 /// `PATCH .../sets/:setId` — `parseSetInput`, a partial edit (nil = unchanged).
 public struct UpdateSetRequest: Codable, Equatable, Sendable {
     public var weightKg: Double?

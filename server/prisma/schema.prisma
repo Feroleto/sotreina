@@ -432,6 +432,10 @@ model WorkoutExercise {
   exercise        Exercise     @relation(fields: [exerciseId], references: [id])
   order           Int
   supersetGroupId String?      @map("superset_group_id")
+  // planned sets for this workout: copied from the routine on start, 1 for an
+  // exercise added mid-workout, editable live; null = workouts opened before
+  // this column existed (read falls back to the routine's targetSets)
+  targetSets      Int?         @map("target_sets")
   sets            WorkoutSet[]
   createdAt       DateTime     @default(now()) @map("created_at")
 
