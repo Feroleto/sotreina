@@ -11,6 +11,8 @@ final class TabBarState {
     /// read on every scroll frame, so only `isCollapsed` is observed
     @ObservationIgnored private var collapse: TabBarCollapse
     private(set) var isCollapsed: Bool
+    /// a page's main scroll view is moving: the pill shrinks a little
+    private(set) var isScrolling = false
     /// screens on screen that hide the bar; a counter, since pushes nest
     private(set) var hiders = 0
     private(set) var popTokens: [AppTab: Int] = [:]
@@ -42,6 +44,10 @@ final class TabBarState {
         guard !pinned else { return }
         collapse.reset()
         if isCollapsed { isCollapsed = false }
+    }
+
+    func scrolling(_ value: Bool) {
+        if isScrolling != value { isScrolling = value }
     }
 
     func hide() { hiders += 1 }
@@ -170,6 +176,11 @@ private struct FloatingTabBarScroll: ViewModifier {
             } action: { _, sample in
                 tabBar?.scrolled(to: sample.offset, maxOffset: sample.maxOffset)
             }
+            .onScrollPhaseChange { _, phase in
+                tabBar?.scrolling(phase.isScrolling)
+            }
+            // a tab switch mid-scroll never reports the idle phase
+            .onDisappear { tabBar?.scrolling(false) }
             .onChange(of: tab.flatMap { tabBar?.scrollTopTokens[$0] }) {
                 withAnimation { position.scrollTo(edge: .top) }
             }
@@ -179,9 +190,10 @@ private struct FloatingTabBarScroll: ViewModifier {
 
 /// The web's mobile pill (`MobileTabBar`): icons only, the selected tab in
 /// a chip with its name. Liquid Glass on iOS 26+, the web's solid page
-/// background with a hairline before that. Scrolling down folds it into a
-/// circle at the bottom left; an open workout rides above it, or beside the
-/// circle (spec ios-floating-tab-bar §2–5).
+/// background with a hairline before that. While a page scrolls the pill
+/// shrinks a little. With an open workout minimized, scrolling down folds it
+/// into a circle at the bottom left, the workout beside it (spec
+/// ios-floating-tab-bar §2–5).
 struct FloatingTabBar: View {
     let tabs: [AppTab]
     @Binding var selection: AppTab
@@ -196,8 +208,12 @@ struct FloatingTabBar: View {
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
     @Namespace private var namespace
 
-    /// never under VoiceOver, so no target goes away
-    private var collapsed: Bool { showsTabs && state.isCollapsed && !voiceOver }
+    /// only with a workout to make room for; never under VoiceOver, so no
+    /// target goes away
+    private var collapsed: Bool { showsTabs && workout != nil && state.isCollapsed && !voiceOver }
+
+    /// the pill while the page scrolls, without a fold
+    private var shrunk: Bool { !collapsed && state.isScrolling && !reduceMotion }
 
     /// Reduce Motion: states cross-fade instead of sliding or morphing
     private var animation: Animation {
@@ -209,6 +225,11 @@ struct FloatingTabBar: View {
             // `max(20px, safe-area + 8px)` from the screen's bottom edge
             let bottom = max(8, 20 - proxy.safeAreaInsets.bottom)
             surfaces
+                // a transform, so the reserved height never changes
+                // mid-scroll. On the whole glass container: scaled inside it,
+                // the glass shrinks but the icons on it don't
+                .scaleEffect(shrunk ? 0.9 : 1, anchor: .bottom)
+                .animation(.snappy(duration: 0.25), value: shrunk)
                 .padding(.horizontal, 16)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
                     // the expanded height only: a list must not jump when it
