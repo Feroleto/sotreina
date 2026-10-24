@@ -73,4 +73,4 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 
 - **Fase W (Widgets da Tela de Início)**: sem canal app↔widget com xtool + Apple ID grátis; o usuário preferiu tirar a remendar o xtool ([Teste: App Group com xtool e Apple ID grátis](issues/01-teste-app-group.md)).
 - [Corrida: editor de voltas](issues/36-corrida-editor-voltas.md): o usuário tirou da Fase C (2026-10-23), porque acrescenta pouco no iPhone. Corrigir voltas continua sendo na web.
-- Login/conexão/desconexão Strava, adicionar senha, sync manual, Análise da corrida, HealthKit, escrita offline, comida em onças, widgets de tela bloqueada e "Próximo treino", push remoto (spec §4).
+- Login Strava, adicionar senha, sync manual, Análise da corrida, HealthKit, escrita offline, comida em onças, widgets de tela bloqueada e "Próximo treino", push remoto (spec §4). Conexão/desconexão Strava (pela Corrida e pelo Perfil) saiu daqui e entrou no mapa `.scratch/login-app-ios/map.md` (2026-10-23).
