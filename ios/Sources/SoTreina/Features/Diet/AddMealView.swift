@@ -2,12 +2,12 @@ import SoTreinaDesign
 import SoTreinaKit
 import SwiftUI
 
-/// One meal's "Adicionar" (the web's `AddMealPage`, without Refeições salvas
-/// yet): the meal and today's date on top, the search and the scanner,
-/// "Nesta refeição" with the saved Registros and the cart, the results, the
-/// manual cadastro link, and the bottom bar with the totals and "Salvar
-/// refeição". Every food goes through the QuantitySheet, whichever way it
-/// came in; tapping a row in the meal reopens it.
+/// One meal's "Adicionar" (the web's `AddMealPage`): the meal and today's
+/// date on top, the search, the scanner and Refeições salvas, "Nesta
+/// refeição" with the saved Registros and the cart, the results, the manual
+/// cadastro link, and the bottom bar with the totals and "Salvar refeição".
+/// Every food goes through the QuantitySheet, whichever way it came in;
+/// tapping a row in the meal reopens it.
 struct AddMealView: View {
     @State private var store: AddMealStore
     @State private var query = ""
@@ -17,11 +17,18 @@ struct AddMealView: View {
     /// opens the sheet, a 404 code the manual cadastro linked to it
     @State private var scanned: ScanOutcome?
     @State private var manual: ManualTarget?
+    @State private var savedMeals: SavedMealsStore
+    @State private var showingSavedMeals = false
+    /// "Salvar como refeição salva": the editor seeded with the cart
+    @State private var savingCart: SavedMealEditTarget?
+    /// set by the editor's save; the list opens once the cover is gone
+    @State private var cartSaved = false
     @Environment(\.dismiss) private var dismiss
     @Environment(AppLanguageStore.self) private var language
 
     init(meal: Meal, diet: DietStore) {
         _store = State(initialValue: AddMealStore(meal: meal, diet: diet))
+        _savedMeals = State(initialValue: SavedMealsStore(session: diet.session))
     }
 
     /// What the sheet edits: a new food, a cart item, or a saved Registro.
@@ -73,6 +80,7 @@ struct AddMealView: View {
                 HStack(spacing: 8) {
                     SearchField(text: $query)
                     scanButton
+                    savedMealsButton
                 }
                 .padding(.top, 16)
                 if store.cart.totalItems(saved: store.saved) > 0 {
@@ -105,7 +113,7 @@ struct AddMealView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .background(Color.pageBg)
-        .task(id: query) { await store.search(query) }
+        .task(id: query) { await store.search.run(query) }
         // hidden behind the principal item; it's what the next screen's back button says
         .navigationTitle(Text(verbatim: mealLabel(store.meal.type, lang: lang)))
         .navigationBarTitleDisplayMode(.inline)
@@ -124,6 +132,18 @@ struct AddMealView: View {
         // a full screen with its own bottom bar, like the web hides the pill
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) { bottomBar(lang: lang) }
+        .navigationDestination(isPresented: $showingSavedMeals) {
+            SavedMealsListView(store: savedMeals, addMeal: store)
+        }
+        .fullScreenCover(item: $savingCart, onDismiss: {
+            // like the web: the list, where the new one now shows. A push
+            // can't start while the cover is still on screen
+            if cartSaved { showingSavedMeals = true }
+            cartSaved = false
+        }) { target in
+            SavedMealEditView(target: target, store: savedMeals) { cartSaved = true }
+                .monolitoTheme()
+        }
         .navigationDestination(item: $manual) { target in
             ManualFoodView(externalId: target.externalId) { food in
                 manual = nil
@@ -163,10 +183,18 @@ struct AddMealView: View {
         }
     }
 
-    /// The web's square button beside the search (`h-[42px] rounded-[10px] bg-chip`).
+    /// The web's square buttons beside the search (`h-[42px] rounded-[10px] bg-chip`).
     private var scanButton: some View {
-        Button { scanning = true } label: {
-            Image(systemName: "barcode.viewfinder")
+        squareButton("barcode.viewfinder", label: "diet.addMeal.scanBarcode") { scanning = true }
+    }
+
+    private var savedMealsButton: some View {
+        squareButton("bookmark", label: "diet.savedMeals.listTitle") { showingSavedMeals = true }
+    }
+
+    private func squareButton(_ icon: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
                 .font(.system(size: 18))
                 .foregroundStyle(Color.mutedFg)
                 .frame(width: 42, height: 42)
@@ -175,7 +203,7 @@ struct AddMealView: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text("diet.addMeal.scanBarcode", bundle: .l10n))
+        .accessibilityLabel(Text(label, bundle: .l10n))
     }
 
     // MARK: Nesta refeição
@@ -195,6 +223,18 @@ struct AddMealView: View {
             }
             ForEach(store.cart.items) { item in
                 cartRow(item, lang: lang)
+            }
+            let staged = store.cartAsSavedMealItems
+            if !staged.isEmpty {
+                Button { savingCart = SavedMealEditTarget(seed: staged) } label: {
+                    Text("diet.savedMeals.saveCurrentAsMeal", bundle: .l10n)
+                        .font(Font.geist(12.5, relativeTo: .footnote).weight(.medium))
+                        .foregroundStyle(Color.acc)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
             }
         }
     }
@@ -232,13 +272,13 @@ struct AddMealView: View {
             VStack(alignment: .leading, spacing: 0) {
                 CapsTitle(Text("diet.addMeal.searchResults", bundle: .l10n))
                     .padding(.bottom, 4)
-                if store.searching {
+                if store.search.searching {
                     Text("diet.addMeal.loading", bundle: .l10n)
                         .font(DSFont.meta)
                         .foregroundStyle(Color.mutedFg)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 32)
-                } else if store.results.isEmpty {
+                } else if store.search.results.isEmpty {
                     Text("diet.addMeal.noResults \(trimmed)", bundle: .l10n)
                         .font(DSFont.meta)
                         .foregroundStyle(Color.mutedFg)
@@ -246,7 +286,7 @@ struct AddMealView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 32)
                 } else {
-                    ForEach(store.results) { food in
+                    ForEach(store.search.results) { food in
                         resultRow(food, lang: lang)
                     }
                 }
@@ -310,11 +350,7 @@ struct AddMealView: View {
     // MARK: Helpers
 
     private func subtitle(_ food: FoodListItem, quantity: Double, enteredAsServing: Bool, lang: Lang) -> String {
-        let portion = Quantity.format(food, quantity: quantity, enteredAsServing: enteredAsServing, lang: lang) {
-            L10n.string($0, lang: lang)
-        }
-        let kcal = Int(Quantity.kcal(food, quantity: quantity).rounded())
-        return "\(portion) · \(kcal) \(L10n.string("diet.overview.kcal", lang: lang))"
+        foodSubtitle(food, quantity: quantity, enteredAsServing: enteredAsServing, lang: lang)
     }
 
     private func subtitleText(_ food: FoodListItem, quantity: Double, enteredAsServing: Bool, lang: Lang) -> Text {
@@ -322,6 +358,24 @@ struct AddMealView: View {
     }
 
     private func removeButton(action: @escaping () -> Void) -> some View {
+        FoodRemoveButton(action: action)
+    }
+}
+
+/// "2 unidades (100 g) · 146 kcal"
+func foodSubtitle(_ food: FoodListItem, quantity: Double, enteredAsServing: Bool, lang: Lang) -> String {
+    let portion = Quantity.format(food, quantity: quantity, enteredAsServing: enteredAsServing, lang: lang) {
+        L10n.string($0, lang: lang)
+    }
+    let kcal = Int(Quantity.kcal(food, quantity: quantity).rounded())
+    return "\(portion) · \(kcal) \(L10n.string("diet.overview.kcal", lang: lang))"
+}
+
+/// The × at the end of a food row.
+struct FoodRemoveButton: View {
+    let action: () -> Void
+
+    var body: some View {
         Button(action: action) {
             Image(systemName: "xmark")
                 .font(.system(size: 12, weight: .medium))
@@ -335,7 +389,7 @@ struct AddMealView: View {
 }
 
 /// Name over "2 unidades (100 g) · 146 kcal", a trailing control, a hairline.
-private struct FoodRow<Trailing: View>: View {
+struct FoodRow<Trailing: View>: View {
     let name: String
     let subtitle: Text
     let onTap: (() -> Void)?
@@ -374,7 +428,7 @@ private struct FoodRow<Trailing: View>: View {
 /// The web's search box (`rounded-[10px] border bg-chip`, 16 pt so it reads
 /// like the input), with a clear button. A plain field rather than
 /// `.searchable`: the scanner and Refeições salvas buttons go beside it.
-private struct SearchField: View {
+struct SearchField: View {
     @Binding var text: String
 
     var body: some View {

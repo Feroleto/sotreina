@@ -82,14 +82,22 @@ export interface ApplySavedMealInput {
   /** id of one of the user's Meal rows — ownership asserted in applyToLog */
   mealId: string;
   loggedAt: Date;
+  /**
+   * optional idempotency key for the whole apply (the iOS app sends one):
+   * a resend after a lost response returns the Registros already written
+   * instead of a second copy of the saved meal. The web never sends it.
+   */
+  clientId?: string;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // same mealId/loggedAt validation as food-logs/dto.ts parseCreateFoodLogInput
 export function parseApplySavedMealInput(body: unknown): ApplySavedMealInput {
   if (typeof body !== 'object' || body === null) {
     throw new BadRequestException('Request body must be an object');
   }
-  const { mealId, loggedAt } = body as Record<string, unknown>;
+  const { mealId, loggedAt, clientId } = body as Record<string, unknown>;
 
   if (typeof mealId !== 'string' || mealId.trim().length === 0) {
     throw new BadRequestException('mealId is required');
@@ -102,5 +110,12 @@ export function parseApplySavedMealInput(body: unknown): ApplySavedMealInput {
     throw new BadRequestException('loggedAt must be a valid ISO date string');
   }
 
-  return { mealId: mealId.trim(), loggedAt: parsedLoggedAt };
+  const result: ApplySavedMealInput = { mealId: mealId.trim(), loggedAt: parsedLoggedAt };
+  if (clientId !== undefined && clientId !== null) {
+    if (typeof clientId !== 'string' || !UUID_RE.test(clientId)) {
+      throw new BadRequestException('clientId must be a UUID');
+    }
+    result.clientId = clientId;
+  }
+  return result;
 }

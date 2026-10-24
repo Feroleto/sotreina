@@ -218,20 +218,59 @@ export class SavedMealsService {
     // the client and only ownership makes it safe to write
     await this.mealsService.assertOwned(userId, input.mealId);
 
-    return this.prisma.$transaction(
-      meal.items.map((item) =>
-        this.prisma.foodLog.create({
-          data: {
-            userId,
-            foodId: item.food.id,
-            quantity: item.quantity,
-            mealId: input.mealId,
-            loggedAt: input.loggedAt,
-          },
-          select: FOOD_LOG_ITEM_SELECT,
-        }),
-      ),
-    );
+    // A resend with the same clientId answers with what the first apply
+    // wrote. Each Registro carries `<clientId>:<n>` in FoodLog.clientId (no
+    // column of its own): POST /food-logs only accepts a bare UUID there, so
+    // the two can't collide, and the transaction below is all-or-nothing, so
+    // any match means the whole apply landed
+    const { clientId } = input;
+    if (clientId) {
+      const stored = await this.findApplied(userId, clientId);
+      if (stored.length > 0) return stored;
+    }
+
+    try {
+      return await this.prisma.$transaction(
+        meal.items.map((item, idx) =>
+          this.prisma.foodLog.create({
+            data: {
+              userId,
+              foodId: item.food.id,
+              quantity: item.quantity,
+              mealId: input.mealId,
+              loggedAt: input.loggedAt,
+              ...(clientId && { clientId: `${clientId}:${idx + 1}` }),
+            },
+            select: FOOD_LOG_ITEM_SELECT,
+          }),
+        ),
+      );
+    } catch (e) {
+      // two resends racing past the lookup: the unique [userId, clientId]
+      // lets one transaction through — same duck-typed check as
+      // FoodLogsService.create
+      if (!(clientId && (e as { code?: unknown }).code === 'P2002')) throw e;
+      const winner = await this.findApplied(userId, clientId);
+      if (winner.length === 0) throw e;
+      return winner;
+    }
+  }
+
+  // ordered by the `:<n>` suffix — as strings `:10` would sort before `:2`
+  private async findApplied(userId: string, clientId: string): Promise<FoodLogItem[]> {
+    const prefix = `${clientId}:`;
+    const rows = await this.prisma.foodLog.findMany({
+      where: { userId, clientId: { startsWith: prefix } },
+      select: { ...FOOD_LOG_ITEM_SELECT, clientId: true },
+    });
+    const position = (key: string | null) => Number((key ?? '').slice(prefix.length));
+    return rows
+      .sort((a, b) => position(a.clientId) - position(b.clientId))
+      .map((row) => {
+        const log: Partial<typeof row> = { ...row };
+        delete log.clientId;
+        return log as FoodLogItem;
+      });
   }
 
   private async assertOwned(userId: string, id: string): Promise<void> {

@@ -16,45 +16,24 @@ final class AddMealStore {
     let meal: Meal
     private(set) var saved: [FoodLogItem]
     private(set) var cart = MealCart()
-    private(set) var results: [FoodListItem] = []
-    private(set) var searching = false
+    let search: FoodSearch
     private(set) var saving = false
+    /// the saved meal whose "Usar" is in flight
+    private(set) var applying: String?
+    /// a failed "Usar", shown on the Refeições salvas list
+    var applyError: String?
     /// shown under the list, like the web's `text-neg` line
     var error: String?
 
     private let session: SessionStore
+    @ObservationIgnored private var applyKeys = SavedMealApplyKeys()
     @ObservationIgnored private let log = Logger(subsystem: "com.feroleto.sotreina", category: "diet")
-
-    static let searchDebounce: Duration = .milliseconds(250)
 
     init(meal: Meal, diet: DietStore) {
         self.meal = meal
         session = diet.session
+        search = FoodSearch(session: diet.session)
         saved = diet.logs.filter { $0.mealId == meal.id }
-    }
-
-    // MARK: Search
-
-    /// Called from `.task(id: query)`: a newer query cancels the sleep.
-    func search(_ query: String) async {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else {
-            results = []
-            searching = false
-            return
-        }
-        searching = true
-        do {
-            try await Task.sleep(for: Self.searchDebounce)
-            let found: [FoodListItem]? = try await session.api.get("foods/search", query: [URLQueryItem(name: "q", value: trimmed)])
-            results = found ?? []
-        } catch is CancellationError {
-            return
-        } catch {
-            if case APIError.unauthorized = error { session.expire() }
-            results = []
-        }
-        searching = false
     }
 
     // MARK: Cart
@@ -143,6 +122,41 @@ final class AddMealStore {
             return false
         }
         return true
+    }
+
+    // MARK: Refeições salvas
+
+    /// "Usar": one call writes a Registro per item into this meal, and they
+    /// join "Nesta refeição". A retry after a failure resends the same
+    /// clientId, so a response lost after the write doesn't add it twice.
+    func apply(_ savedMeal: SavedMealSummary) async -> Bool {
+        guard applying == nil, savedMeal.canApply else { return false }
+        applying = savedMeal.id
+        applyError = nil
+        defer { applying = nil }
+        let body = ApplySavedMealRequest(mealId: meal.id, loggedAt: .now, clientId: applyKeys.key(for: savedMeal.id))
+        do {
+            guard let created: [FoodLogItem] = try await session.api.post("saved-meals/\(savedMeal.id)/apply", body: body) else {
+                throw APIError.invalidResponse
+            }
+            applyKeys.succeeded(savedMeal.id)
+            // a resend answers with what's stored: never list a Registro twice
+            saved.append(contentsOf: created.filter { entry in !saved.contains { $0.id == entry.id } })
+            return true
+        } catch {
+            if case APIError.unauthorized = error {
+                session.expire()
+                return false
+            }
+            log.error("apply failed: \(String(describing: error), privacy: .public)")
+            applyError = L10n.string("diet.addMeal.error", lang: AppLanguageStore.shared.lang)
+            return false
+        }
+    }
+
+    /// The staged cart, for "Salvar como refeição salva" (grams only).
+    var cartAsSavedMealItems: [SavedMealDraft.Item] {
+        cart.items.filter(\.isEditable).map { SavedMealDraft.Item(food: $0.food, quantity: $0.quantity) }
     }
 
     private func fail(_ error: Error) {

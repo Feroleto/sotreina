@@ -59,6 +59,7 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Corrida: Visão geral](issues/37-corrida-visao-geral.md): feito e validado, no worktree `fase-c`: totais, calendário, recordes com sheet "Ver todos" e recorde novo (snapshot no `UserDefaults`), tênis. A aba Corrida segue abrindo em Atividades, como na web. A comemoração ficou pro Uso real
 - [Dieta: adicionar Registros](issues/28-dieta-adicionar-registros.md): feito e validado (galeria 08–13). Busca, carrinho, QuantitySheet, editar e remover Registro salvo, ⚠ com reenvio pelo `clientId` (`DietQuantity` no Kit). O backend ganhou `FoodLog.clientId`, com a migration pendente no Neon. O funcional e o Dynamic Type ficaram pro Uso real da Fase D
 - [Dieta: cadastro manual e scanner](issues/29-dieta-manual-scanner.md): feito e validado — `DataScannerViewController` (VisionKit funciona com xtool), `ManualFoodDraft`/`ProductBarcode` no Kit; o backend passou a achar o alimento CUSTOM ligado ao código e não dá mais 500 num segundo cadastro (deploy pendente); 404, escuro/EN e Dynamic Type ficaram pro Uso real
+- [Dieta: Refeições salvas](issues/30-dieta-refeicoes-salvas.md): feito e validado. Lista, editor (`SavedMealDraft` no Kit) e "Usar", que volta pro Adicionar com os Registros. O `apply` ganhou `clientId` sem migration (deploy pendente). O "Usar" da web nunca tinha funcionado (`mealId` errado) e foi corrigido. O reenvio sem duplicar ficou pro Uso real
 
 ## Not yet specified
 

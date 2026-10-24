@@ -95,4 +95,25 @@ describe('parseApplySavedMealInput', () => {
       BadRequestException,
     );
   });
+
+  it('leaves clientId out when absent or null (the web never sends it)', () => {
+    expect(parseApplySavedMealInput(validBody)).not.toHaveProperty('clientId');
+    expect(parseApplySavedMealInput({ ...validBody, clientId: null })).not.toHaveProperty(
+      'clientId',
+    );
+  });
+
+  it('accepts a UUID clientId', () => {
+    const clientId = '0f8fad5b-d9cb-469f-a165-70867728950e';
+    expect(parseApplySavedMealInput({ ...validBody, clientId }).clientId).toBe(clientId);
+  });
+
+  it('rejects a clientId that is not a UUID', () => {
+    expect(() => parseApplySavedMealInput({ ...validBody, clientId: 'abc' })).toThrow(
+      BadRequestException,
+    );
+    expect(() => parseApplySavedMealInput({ ...validBody, clientId: 42 })).toThrow(
+      BadRequestException,
+    );
+  });
 });

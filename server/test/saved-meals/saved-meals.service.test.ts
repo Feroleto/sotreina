@@ -22,6 +22,7 @@ const { mockPrisma } = vi.hoisted(() => {
       },
       foodLog: {
         create: vi.fn(),
+        findMany: vi.fn(),
       },
       // array-form $transaction (matches applyToLog and the wholesale
       // deleteMany+createMany replace in update) — real Prisma runs the
@@ -330,6 +331,117 @@ describe('SavedMealsService', () => {
       });
       expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
       expect(result).toEqual([{ id: 'log1' }, { id: 'log2' }]);
+      expect(mockPrisma.foodLog.findMany).not.toHaveBeenCalled();
+    });
+
+    describe('with a clientId (iOS resend)', () => {
+      const CLIENT_ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
+      const twoItems = () => ({
+        id: 'm1',
+        name: 'Café da manhã',
+        items: [
+          {
+            id: 'i1',
+            quantity: 100,
+            order: 1,
+            food: foodItem('food1', 'Pão francês', 300),
+          },
+          {
+            id: 'i2',
+            quantity: 50,
+            order: 2,
+            food: foodItem('food2', 'Ovo', 150),
+          },
+        ],
+      });
+
+      it('derives one clientId per Registro from the apply clientId', async () => {
+        mockPrisma.savedMeal.findFirst.mockResolvedValueOnce(twoItems());
+        mockPrisma.foodLog.findMany.mockResolvedValueOnce([]);
+        mockPrisma.foodLog.create.mockResolvedValueOnce({ id: 'log1' });
+        mockPrisma.foodLog.create.mockResolvedValueOnce({ id: 'log2' });
+
+        await service.applyToLog(USER_ID, 'm1', {
+          mealId: 'meal1',
+          loggedAt: new Date(),
+          clientId: CLIENT_ID,
+        });
+
+        expect(mockPrisma.foodLog.create.mock.calls[0][0].data.clientId).toBe(`${CLIENT_ID}:1`);
+        expect(mockPrisma.foodLog.create.mock.calls[1][0].data.clientId).toBe(`${CLIENT_ID}:2`);
+      });
+
+      it('answers a resend with the stored Registros, in item order, without writing', async () => {
+        mockPrisma.savedMeal.findFirst.mockResolvedValueOnce(twoItems());
+        // :10 sorts before :2 as a string — order must come from the suffix
+        mockPrisma.foodLog.findMany.mockResolvedValueOnce([
+          { id: 'log10', clientId: `${CLIENT_ID}:10` },
+          { id: 'log2', clientId: `${CLIENT_ID}:2` },
+          { id: 'log1', clientId: `${CLIENT_ID}:1` },
+        ]);
+
+        const result = await service.applyToLog(USER_ID, 'm1', {
+          mealId: 'meal1',
+          loggedAt: new Date(),
+          clientId: CLIENT_ID,
+        });
+
+        expect(mockPrisma.foodLog.findMany.mock.calls[0][0].where).toEqual({
+          userId: USER_ID,
+          clientId: { startsWith: `${CLIENT_ID}:` },
+        });
+        expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+        expect(result.map((l) => l.id)).toEqual(['log1', 'log2', 'log10']);
+        // the derived key is internal, never part of the response
+        expect(result[0]).not.toHaveProperty('clientId');
+      });
+
+      it('still asserts the target meal before answering a resend', async () => {
+        mockPrisma.savedMeal.findFirst.mockResolvedValueOnce(twoItems());
+        mealsService.assertOwned.mockRejectedValueOnce(new NotFoundException());
+
+        await expect(
+          service.applyToLog(USER_ID, 'm1', {
+            mealId: 'someone_elses_meal',
+            loggedAt: new Date(),
+            clientId: CLIENT_ID,
+          }),
+        ).rejects.toBeInstanceOf(NotFoundException);
+        expect(mockPrisma.foodLog.findMany).not.toHaveBeenCalled();
+      });
+
+      it('rereads the winner when two resends race into the unique index', async () => {
+        mockPrisma.savedMeal.findFirst.mockResolvedValueOnce(twoItems());
+        mockPrisma.foodLog.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+          { id: 'log1', clientId: `${CLIENT_ID}:1` },
+          { id: 'log2', clientId: `${CLIENT_ID}:2` },
+        ]);
+        mockPrisma.$transaction.mockRejectedValueOnce(
+          Object.assign(new Error('dup'), { code: 'P2002' }),
+        );
+
+        const result = await service.applyToLog(USER_ID, 'm1', {
+          mealId: 'meal1',
+          loggedAt: new Date(),
+          clientId: CLIENT_ID,
+        });
+
+        expect(result.map((l) => l.id)).toEqual(['log1', 'log2']);
+      });
+
+      it('rethrows a P2002 when there is no clientId', async () => {
+        mockPrisma.savedMeal.findFirst.mockResolvedValueOnce(twoItems());
+        mockPrisma.$transaction.mockRejectedValueOnce(
+          Object.assign(new Error('dup'), { code: 'P2002' }),
+        );
+
+        await expect(
+          service.applyToLog(USER_ID, 'm1', {
+            mealId: 'meal1',
+            loggedAt: new Date(),
+          }),
+        ).rejects.toThrow('dup');
+      });
     });
   });
 });

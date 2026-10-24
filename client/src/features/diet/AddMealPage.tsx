@@ -188,11 +188,13 @@ export default function AddMealPage({ meal, existingLogs, onBack, onSaved }: Add
   // single call — mirrors starting a workout from a routine template — that
   // creates a FoodLog per saved-meal item server-side (SavedMealsService.applyToLog)
   // instead of looping N sequential POSTs like handleSave's ad-hoc cart does
-  const applySavedMeal = async (meal: SavedMealSummary) => {
+  // `savedMeal`, not `meal`: that name is the target Meal prop, whose id is
+  // the mealId sent below
+  const applySavedMeal = async (savedMeal: SavedMealSummary) => {
     setApplyingSavedMeal(true);
     setError(null);
     try {
-      const res = await apiFetch(`/saved-meals/${meal.id}/apply`, {
+      const res = await apiFetch(`/saved-meals/${savedMeal.id}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mealId: meal.id, loggedAt: new Date().toISOString() }),

@@ -520,3 +520,22 @@
 "nav.profile.stravaDisconnectConfirm" = "Desconectar sua conta Strava? As atividades importadas do Strava serão apagadas do SoTreina.";
 "nav.profile.stravaDisconnectError" = "Não foi possível desconectar. Tente novamente.";
 "run.firstSync.eta %lld" = "Faltam cerca de %lld min";
+
+/* Dieta › Refeições salvas (web: diet.json savedMeals.*) */
+"diet.savedMeals.listTitle" = "Refeições salvas";
+"diet.savedMeals.newTitle" = "Nova refeição salva";
+"diet.savedMeals.editTitle" = "Editar refeição salva";
+"diet.savedMeals.empty" = "Nenhuma refeição salva ainda.";
+"diet.savedMeals.noItems" = "Nenhum alimento adicionado ainda.";
+"diet.savedMeals.createNew" = "Nova refeição salva";
+"diet.savedMeals.saveCurrentAsMeal" = "Salvar como refeição salva";
+"diet.savedMeals.use" = "Usar";
+"diet.savedMeals.edit" = "Editar";
+"diet.savedMeals.delete" = "Excluir";
+"diet.savedMeals.deleteConfirm" = "Excluir esta refeição salva?";
+"diet.savedMeals.discard" = "Descartar";
+"diet.savedMeals.discardConfirm" = "Descartar alterações não salvas?";
+"diet.savedMeals.nameLabel" = "Nome";
+"diet.savedMeals.namePlaceholder" = "ex. Café da manhã de sempre";
+"diet.savedMeals.itemsTitle" = "Alimentos";
+"diet.savedMeals.save" = "Salvar";
