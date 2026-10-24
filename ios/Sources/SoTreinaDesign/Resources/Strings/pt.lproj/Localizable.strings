@@ -539,3 +539,10 @@
 "diet.savedMeals.namePlaceholder" = "ex. Café da manhã de sempre";
 "diet.savedMeals.itemsTitle" = "Alimentos";
 "diet.savedMeals.save" = "Salvar";
+
+/* Dieta › Histórico (web diet:history.*) */
+"diet.history.subtitle" = "Calorias por dia";
+"diet.history.range7" = "7 dias";
+"diet.history.range14" = "14 dias";
+"diet.history.daysTitle" = "Dias";
+"diet.history.loadFailed" = "Não foi possível carregar o histórico";

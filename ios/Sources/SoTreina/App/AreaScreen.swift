@@ -22,7 +22,7 @@ struct AreaScreen<Content: View>: View {
     /// Sub-pages already in the app. Landing on a placeholder every launch
     /// would be pointless, so a tab opens on its web landing page only once
     /// that page is ported; until then, on the first one that is.
-    static var portedPages: Set<AppPage> { [.gymOverview, .gymRoutines, .gymHistory, .runOverview, .runActivities, .dietOverview] }
+    static var portedPages: Set<AppPage> { [.gymOverview, .gymRoutines, .gymHistory, .runOverview, .runActivities, .dietOverview, .dietHistory] }
 
     init(tab: AppTab, me: Me, profile: ProfileStore, @ViewBuilder content: @escaping (AppPage?) -> Content) {
         self.tab = tab

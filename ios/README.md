@@ -172,7 +172,7 @@ Testado em 2026-10-22 (`.scratch/app-ios-completo/issues/01-teste-app-group.md`)
 
 ## Validação visual
 
-Cada tela portada é comparada com a web mobile por **pares de capturas**: o app pelo cabo e a web no `run-sotreina`, na mesma largura e escala (1179×2556). O par compara **estrutura, não dados**: layout, hierarquia, cores, tipografia e estados. O app roda contra produção e a web contra o banco local, então os números não batem e não precisam bater. As regras (matriz de estados, classes de diferença, quem aprova) estão no ticket "Formato da validação visual por fase" do mapa em `.scratch/app-ios-completo/`.
+Cada tela portada é comparada com a web mobile por **pares de capturas**: o app pelo cabo e a web no `run-sotreina`, na mesma largura e escala (1179×2556). O par compara **estrutura, não dados**: layout, hierarquia, cores, tipografia e estados. Histórico (`31-dieta-historico.md`): linhas 31–36, web por `ios/validation/D/history.mjs` (só troca o período e a seleção). O app roda contra produção e a web contra o banco local, então os números não batem e não precisam bater. As regras (matriz de estados, classes de diferença, quem aprova) estão no ticket "Formato da validação visual por fase" do mapa em `.scratch/app-ios-completo/`.
 
 **O checklist de cada fase, logo abaixo, é a lista de capturas.** O agente escreve as linhas quando o ticket que constrói a tela começa. Cada linha da tabela segue este formato:
 
@@ -351,6 +351,12 @@ O dia e o modo de edição (`.scratch/app-ios-completo/issues/27-dieta-dia.md`):
 | 28 | Funcional: criar, editar (quantidade pelo QuantitySheet, remover, renomear) e excluir aparecem na web; Cancelar com alteração pergunta antes; "Salvar como refeição salva" leva o carrinho e, depois de salvar, abre a lista; "Usar" grava os alimentos na Refeição e volta pro Adicionar com eles em "Nesta refeição"; uma refeição salva vazia não deixa usar | — | manual | — |  ok (usuário, 2026-10-24) |
 | 29 | Funcional: "Usar" com o modo avião mostra o erro na lista; tocar de novo sem modo avião não duplica (mesmo `clientId`, exige o backend novo em produção) | — | manual | — |  pendente: vai pro Uso real da Fase D, depois do deploy do backend com o `clientId` no `apply` |
 | 30 | Editor de refeição salva | Dynamic Type máx. | manual | — |  ok (2026-10-24; editor em EN escuro, nada corta, a barra de cima não cresce, limite do sistema) |
+| 31 | Dieta › Histórico (subtítulo, 7/14, leitura do dia, barras, linha tracejada da meta, datas, "Dias") | claro · PT | `SOTREINA_SCREEN=dietHistory SOTREINA_THEME=light SOTREINA_LANG=pt` | `--page diet/history` | ok (usuário, 2026-10-24; o título "Histórico" da web ficou de fora, o cabeçalho de área já diz; seletor 7/14 nativo) |
+| 32 | Dieta › Histórico | escuro · EN | `SOTREINA_SCREEN=dietHistory SOTREINA_THEME=dark SOTREINA_LANG=en` | `--page diet/history --theme dark --lang en` | ok (usuário, 2026-10-24) |
+| 33 | 14 dias (data em barras alternadas) | claro · PT | manual: tocar em "14 dias" | `--page diet/history --steps ios/validation/D/history.mjs` (shot `range14`) | ok (usuário, 2026-10-24, no aparelho) |
+| 34 | Dia selecionado pela barra (barra cheia, linha em `--chip`, leitura do dia) | claro · PT | manual: tocar numa barra antiga | idem (shot `selected`) | ok (usuário, 2026-10-24, no aparelho) |
+| 35 | Funcional: tocar numa linha seleciona a barra e vice-versa; dia acima da meta em vermelho na barra e no kcal; um Registro novo na Visão geral aparece ao voltar; a seleção sobrevive à troca 7 ↔ 14 enquanto o dia estiver no período | — | manual | — | ok (usuário, 2026-10-24) |
+| 36 | Dieta › Histórico | Dynamic Type máx. | `SOTREINA_SCREEN=dietHistory` | — | ok (2026-10-24; as datas sob as barras tinham `fixedSize` e alargavam a página inteira além da tela: passaram a encolher dentro da barra; subtítulo e 7/14 empilham se não couberem; "P 34g" não quebra mais no meio) |
 
 ## Checklist da Fase 0 (go/no-go)
 

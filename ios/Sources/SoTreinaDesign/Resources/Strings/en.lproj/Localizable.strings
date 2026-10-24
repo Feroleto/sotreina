@@ -539,3 +539,10 @@
 "diet.savedMeals.namePlaceholder" = "e.g. Usual breakfast";
 "diet.savedMeals.itemsTitle" = "Foods";
 "diet.savedMeals.save" = "Save";
+
+/* Dieta › Histórico (web diet:history.*) */
+"diet.history.subtitle" = "Calories per day";
+"diet.history.range7" = "7 days";
+"diet.history.range14" = "14 days";
+"diet.history.daysTitle" = "Days";
+"diet.history.loadFailed" = "Couldn't load the history";

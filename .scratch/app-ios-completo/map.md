@@ -60,6 +60,7 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 - [Dieta: adicionar Registros](issues/28-dieta-adicionar-registros.md): feito e validado (galeria 08–13). Busca, carrinho, QuantitySheet, editar e remover Registro salvo, ⚠ com reenvio pelo `clientId` (`DietQuantity` no Kit). O backend ganhou `FoodLog.clientId`, com a migration pendente no Neon. O funcional e o Dynamic Type ficaram pro Uso real da Fase D
 - [Dieta: cadastro manual e scanner](issues/29-dieta-manual-scanner.md): feito e validado — `DataScannerViewController` (VisionKit funciona com xtool), `ManualFoodDraft`/`ProductBarcode` no Kit; o backend passou a achar o alimento CUSTOM ligado ao código e não dá mais 500 num segundo cadastro (deploy pendente); 404, escuro/EN e Dynamic Type ficaram pro Uso real
 - [Dieta: Refeições salvas](issues/30-dieta-refeicoes-salvas.md): feito e validado. Lista, editor (`SavedMealDraft` no Kit) e "Usar", que volta pro Adicionar com os Registros. O `apply` ganhou `clientId` sem migration (deploy pendente). O "Usar" da web nunca tinha funcionado (`mealId` errado) e foi corrigido. O reenvio sem duplicar ficou pro Uso real
+- [Dieta: histórico 7/14 dias](issues/31-dieta-historico.md): feito e validado — `DietHistory` no Kit (escala com a meta, cor por dia, datas alternadas no período de 14, seleção que sobrevive), barras à mão; o Swift Charts compila com o xtool (sem macros), mas não foi usado; datas com `fixedSize` alargavam a página em Dynamic Type grande
 
 ## Not yet specified
 

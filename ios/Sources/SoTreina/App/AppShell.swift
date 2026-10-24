@@ -20,6 +20,7 @@ struct AppShell: View {
     @State private var runStore: RunStore
     @State private var history: GymHistoryStore
     @State private var diet: DietStore
+    @State private var dietHistory: DietHistoryStore
     @State private var profile: ProfileStore
     @SceneStorage("selectedTab") private var selectedTab: String = AppTab.gym.rawValue
     private let session: SessionStore
@@ -40,6 +41,7 @@ struct AppShell: View {
         _runStore = State(initialValue: RunStore(session: session))
         _history = State(initialValue: GymHistoryStore(session: session))
         _diet = State(initialValue: DietStore(session: session))
+        _dietHistory = State(initialValue: DietHistoryStore(session: session))
         _profile = State(initialValue: ProfileStore(session: session))
     }
 
@@ -161,6 +163,7 @@ struct AppShell: View {
             AreaScreen(tab: tab, me: me, profile: profile) { page in
                 switch page {
                 case .dietOverview: DietOverviewView(store: diet, profile: profile)
+                case .dietHistory: DietHistoryView(store: dietHistory, profile: profile)
                 default: ComingSoonView()
                 }
             }
