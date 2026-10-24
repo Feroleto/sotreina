@@ -40,11 +40,15 @@ Tudo em produção.
 - [Verificação de email no app](issues/04-verificacao-email-app.md): cadastro pelo `register-token`, tela do código depois de Criar conta (sem voltar, "Fazer depois") e pelo Perfil › Conta, `Me.emailVerified` ausente = verificado; dado de destino vai na rota, não num `@State`
 - [Produção: Resend no Render e migration no Neon](issues/09-producao-resend-render.md): migrations no Neon antes do push, commit e merge de `login` em `main`, deploy automático; criação de conta com código funcionando em produção no app e na web
 - [Verificação de email: backend e web](issues/03-verificacao-email-backend-web.md): verificação por código (backend e web) e `register-token` prontos. O limite por conta é contado nas linhas da tabela, e o 429 devolve `retryAfterSeconds`. Migration pendente no Neon.
-- [05](issues/05-excluir-conta.md): `DELETE /users/me` e a tela no Perfil, conferidos no iPhone. A senha errada responde **403** (não 401, que deslogaria o app). O iPhone agora alcança a API local pela LAN (`ios/README.md`).
+- [Teste: OAuth da Strava por ASWebAuthenticationSession](issues/06-teste-oauth-app.md): funciona no build do xtool. O 302 https → `sotreina://` fecha a sessão e entrega a URL, cancelar vira `canceledLogin`, e com `ephemeral = false` a Strava abre já logada pelo Safari. O retorno da spec §5.2 fica como está
+- [Conexão Strava: backend](issues/07-conexao-strava-backend.md): `POST /strava/connect/start` + ramo do callback para `sotreina://…?status=ok|conflict|error`, com o sync disparado no `ok`. Além da spec, o `extractSession` recusa JWT com `purpose`, então o `state` não vale como Bearer. O teste do app no iPhone precisa do backend em produção
+- [Excluir conta](issues/05-excluir-conta.md): `DELETE /users/me` e a tela no Perfil, conferidos no iPhone. A senha errada responde **403** (não 401, que deslogaria o app). O iPhone agora alcança a API local pela LAN (`ios/README.md`).
 
 ## Not yet specified
 
 - **Ajustes visuais que o uso real trouxer** na transição (mostarda sobre o tema claro, duração percebida por quem entra e sai com frequência). Hoje vale o que a spec decidiu. Só vira ticket se o [Uso real da entrada nova](issues/10-uso-real.md) ou a [Transição "bola percorre o pulso"](issues/02-transicao-pulso.md) mostrarem um incômodo concreto.
+
+<!-- Bloqueio externo: a conexão real da Corrida espera o [Aumento do limite de atletas na Strava](issues/11-limite-atletas-strava.md) (10 de 10 ocupados em 2026-10-24) -->
 
 ## Out of scope
 
