@@ -17,6 +17,7 @@ import { FoodsModule } from './foods/foods.module';
 import { MealsModule } from './meals/meals.module';
 import { FoodLogsModule } from './food-logs/food-logs.module';
 import { SavedMealsModule } from './saved-meals/saved-meals.module';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SavedMealsModule } from './saved-meals/saved-meals.module';
     MealsModule,
     FoodLogsModule,
     SavedMealsModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

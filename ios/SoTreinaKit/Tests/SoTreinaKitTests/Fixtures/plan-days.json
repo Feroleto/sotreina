@@ -1,0 +1,211 @@
+[
+    {
+        "date": "2026-10-19",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": "cmvo0nd360001vfx0sjes7702",
+                "templateName": "Peito",
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-20",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-21",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "SKIPPED",
+                "source": "ADJUSTMENT",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-22",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-23",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-24",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-25",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "ADJUSTMENT",
+                "templateId": "cmvo0nd360001vfx0sjes7702",
+                "templateName": "Peito",
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-26",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "SKIPPED",
+                "source": "ADJUSTMENT",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": "2026-10-27"
+            }
+        ]
+    },
+    {
+        "date": "2026-10-27",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            },
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "ADJUSTMENT",
+                "templateId": "cmvo0nd360001vfx0sjes7702",
+                "templateName": "Peito",
+                "movedFrom": "2026-10-26",
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-28",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "ADJUSTMENT",
+                "templateId": "cmvo0nd360001vfx0sjes7702",
+                "templateName": "Peito",
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-29",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-30",
+        "active": true,
+        "entries": [
+            {
+                "area": "GYM",
+                "state": "PLANNED",
+                "source": "PATTERN",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-10-31",
+        "active": true,
+        "entries": [
+            {
+                "area": "RUN",
+                "state": "SKIPPED",
+                "source": "ADJUSTMENT",
+                "templateId": null,
+                "templateName": null,
+                "movedFrom": null,
+                "movedTo": null
+            }
+        ]
+    },
+    {
+        "date": "2026-11-01",
+        "active": true,
+        "entries": []
+    }
+]

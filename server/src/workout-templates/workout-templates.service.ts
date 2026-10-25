@@ -315,7 +315,9 @@ export class WorkoutTemplatesService {
     }
   }
 
-  private async assertOwnedTemplate(userId: string, templateId: string): Promise<void> {
+  // public so PlansService can check a planned routine without its own
+  // workoutTemplate.findFirst (same reason MealsService.assertOwned is)
+  async assertOwnedTemplate(userId: string, templateId: string): Promise<void> {
     const template = await this.prisma.workoutTemplate.findFirst({
       where: { id: templateId, userId },
       select: { id: true },

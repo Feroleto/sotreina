@@ -6,13 +6,13 @@ Plataforma pessoal que reúne corrida, musculação e dieta de um atleta num lug
 
 **Área**:
 Um dos domínios que o usuário acompanha: Corrida, Treino (musculação) ou Dieta. O usuário escolhe quais estão ativas.
-_Avoid_: módulo, esporte, seção
+_Avoid_: módulo, esporte, seção, Academia (é só rótulo de tela do Treino)
 
 ### Treino (musculação)
 
 **Rotina**:
 A estrutura salva de um treino: exercícios em ordem com metas de séries, repetições e descanso, nunca pesos realizados.
-_Avoid_: template, plano, ficha
+_Avoid_: template, plano de treino, ficha
 
 **Treino**:
 Uma execução de musculação num dia, criada a partir de uma Rotina ou livre.
@@ -80,4 +80,34 @@ _Avoid_: lap, split, parcial
 O alvo de kcal e macros de um dia na Dieta.
 
 **Meta semanal**:
-O alvo de km corridos e de Treinos numa semana.
+O alvo de km corridos e de Treinos numa semana. Com Plano da semana ativo, o alvo de Treinos é o número de dias de Treino planejados na semana.
+
+### Plano da semana
+
+**Plano da semana**:
+Os dias em que o usuário pretende fazer Corrida e Treino; a Dieta fica de fora, porque vale todo dia. Ele se forma do Padrão e dos Ajustes.
+_Avoid_: agenda, cronograma, planejamento
+
+**Padrão**:
+O modelo de Plano da semana que se repete toda semana: dia da semana × Área, com Rotina opcional no Treino. Mudá-lo vale de hoje em diante; o passado segue julgado pelo Padrão da época.
+_Avoid_: template semanal, modelo, recorrência
+
+**Ajuste**:
+Uma mudança do Plano da semana só para uma data: adicionar, mover, trocar a Rotina ou dar Folga. Vence o Padrão, inclusive um Padrão mais novo.
+_Avoid_: exceção, override
+
+**Dia livre**:
+Um dia em que o Padrão não prevê nenhuma Área.
+_Avoid_: descanso (é a pausa entre Séries), dia de folga
+
+**Folga**:
+Um Ajuste que tira de uma data uma Área que estava planejada.
+_Avoid_: pulo, skip, descanso
+
+**Extra**:
+Uma Área feita num Dia livre ou numa Folga. Aparece, mas não conta para a Meta semanal.
+_Avoid_: bônus, fora do plano
+
+**Perdido**:
+Um dia passado com uma Área planejada que não foi feita. Não passa para o dia seguinte.
+_Avoid_: atrasado, pendente (pendente é só o planejado de hoje)

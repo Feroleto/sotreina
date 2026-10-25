@@ -43,6 +43,8 @@ model User {
   meals               Meal[]
   foodLogs            FoodLog[]
   savedMeals          SavedMeal[]
+  weekPlanVersions    WeekPlanVersion[]
+  planAdjustments     PlanAdjustment[]
 
   @@map("users")
 }
@@ -396,6 +398,8 @@ model WorkoutTemplate {
   description String?
   exercises   WorkoutTemplateExercise[]
   workouts    Workout[]
+  planSlots   WeekPlanSlot[]
+  planAdjustments PlanAdjustment[]
   createdAt   DateTime                  @default(now()) @map("created_at")
   updatedAt   DateTime                  @updatedAt @map("updated_at")
 
@@ -596,4 +600,63 @@ model SavedMealItem {
   @@index([savedMealId])
   @@index([foodId])
   @@map("saved_meal_items")
+}
+
+// ─── Plano da semana ────────────────────────────────────────────────────────
+// The days a user means to run and train (Dieta stays out: it's every day).
+// A Padrão is versioned by the first local day it applies to, so editing it
+// mid-week never rewrites how past days are judged; an Ajuste changes one
+// area on one date and beats any Padrão. Areas are RUN/GYM only (validated)
+
+enum PlanEntryState {
+  PLANNED
+  SKIPPED
+}
+
+model WeekPlanVersion {
+  id            String         @id @default(cuid())
+  userId        String         @map("user_id")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// first local day this version applies to; a version with no slots turns the plan off
+  effectiveFrom DateTime       @map("effective_from") @db.Date
+  slots         WeekPlanSlot[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  // one version per day: saving twice on the same day replaces its slots
+  @@unique([userId, effectiveFrom])
+  @@map("week_plan_versions")
+}
+
+model WeekPlanSlot {
+  id         String           @id @default(cuid())
+  versionId  String           @map("version_id")
+  version    WeekPlanVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  /// ISO weekday, 1 = Monday … 7 = Sunday
+  weekday    Int
+  area       Area
+  // a deleted routine turns the slot into "any routine", never deletes it
+  templateId String?          @map("template_id")
+  template   WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@unique([versionId, weekday, area])
+  @@map("week_plan_slots")
+}
+
+model PlanAdjustment {
+  id            String           @id @default(cuid())
+  userId        String           @map("user_id")
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime         @db.Date
+  area          Area
+  state         PlanEntryState
+  templateId    String?          @map("template_id")
+  template      WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  /// the two halves of a move point at each other's date
+  movedFromDate DateTime?        @map("moved_from_date") @db.Date
+  movedToDate   DateTime?        @map("moved_to_date") @db.Date
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@unique([userId, date, area])
+  @@map("plan_adjustments")
 }

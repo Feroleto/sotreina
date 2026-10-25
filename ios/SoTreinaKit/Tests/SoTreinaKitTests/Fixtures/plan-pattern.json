@@ -1,0 +1,41 @@
+{
+    "effectiveFrom": "2026-10-01",
+    "slots": [
+        {
+            "weekday": 1,
+            "area": "GYM",
+            "templateId": "cmvo0nd360001vfx0sjes7702",
+            "templateName": "Peito"
+        },
+        {
+            "weekday": 2,
+            "area": "RUN",
+            "templateId": null,
+            "templateName": null
+        },
+        {
+            "weekday": 3,
+            "area": "GYM",
+            "templateId": "cmvo0nd3b0002vfx09c983dtd",
+            "templateName": "Costas"
+        },
+        {
+            "weekday": 4,
+            "area": "RUN",
+            "templateId": null,
+            "templateName": null
+        },
+        {
+            "weekday": 5,
+            "area": "GYM",
+            "templateId": null,
+            "templateName": null
+        },
+        {
+            "weekday": 6,
+            "area": "RUN",
+            "templateId": null,
+            "templateName": null
+        }
+    ]
+}

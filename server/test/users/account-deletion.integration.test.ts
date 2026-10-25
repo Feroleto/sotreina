@@ -156,6 +156,17 @@ describe.skipIf(process.env.DB_INTEGRATION !== '1')(
         },
       });
 
+      await prisma.weekPlanVersion.create({
+        data: {
+          userId,
+          effectiveFrom: new Date('2026-10-26T00:00:00.000Z'),
+          slots: { create: { weekday: 1, area: 'GYM', templateId: template.id } },
+        },
+      });
+      await prisma.planAdjustment.create({
+        data: { userId, date: new Date('2026-10-26T00:00:00.000Z'), area: 'GYM', state: 'SKIPPED' },
+      });
+
       const food = await prisma.food.create({
         data: {
           name: 'Minha comida',
