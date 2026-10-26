@@ -87,7 +87,17 @@ final class WorkoutStore {
     /// for every weight the session shows or reads (`UnitConversion`)
     var weightUnit: WeightUnit { session.weightUnit }
 
-    var nextRoutineId: String? { RoutineFormat.nextRoutine(templates)?.id }
+    /// set by the shell: with an active Plano da semana the next routine
+    /// follows it (spec §6.4)
+    @ObservationIgnored var plan: PlanStore?
+
+    /// nil without an active plan today
+    var plannedNext: PlanStatus.NextGym? { plan?.nextGym(templates: templates) }
+
+    var nextRoutineId: String? {
+        if let planned = plannedNext { return planned.template?.id }
+        return RoutineFormat.nextRoutine(templates)?.id
+    }
 
     func pendingSets(for workoutExerciseId: String) -> [PendingSet] {
         pendingSets.filter { $0.workoutExerciseId == workoutExerciseId }

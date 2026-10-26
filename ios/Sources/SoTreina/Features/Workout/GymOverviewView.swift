@@ -29,7 +29,7 @@ struct GymOverviewView: View {
                     .monolitoTheme()
             }
             // every time the page shows: a workout finished since then must count
-            .task { await history.load() }
+            .taskOnTabActivation { await history.load() }
     }
 
     @ViewBuilder private var content: some View {
@@ -139,7 +139,10 @@ private func lastDone(_ template: TemplateSummary, _ lang: Lang) -> String {
 // MARK: - Next workout
 
 /// "Próximo treino" = the routine done longest ago, with "Iniciar"; an open
-/// workout takes the slot as "Treino em andamento" with "Continuar".
+/// workout takes the slot as "Treino em andamento" with "Continuar". With a
+/// Plano da semana it's the planned day's routine, and a day other than
+/// today leads the meta ("Qua · 5 exercícios · …"); "Iniciar" still starts
+/// it now (an Extra, if today isn't planned).
 private struct NextWorkout: View {
     let store: WorkoutStore
     @Environment(AppLanguageStore.self) private var language
@@ -159,11 +162,18 @@ private struct NextWorkout: View {
             slot(
                 title: "gym.overview.next",
                 name: next.name,
-                meta: "\(L10n.string("gym.routines.exerciseCount %lld", lang: lang, next.exerciseCount)) · \(lastDone(next, lang))",
+                meta: (plannedDay(lang).map { "\($0) · " } ?? "")
+                    + "\(L10n.string("gym.routines.exerciseCount %lld", lang: lang, next.exerciseCount)) · \(lastDone(next, lang))",
                 button: "gym.overview.start",
                 busy: store.startingTemplateId == next.id
             ) { Task { await store.start(templateId: next.id) } }
         }
+    }
+
+    /// "Qua" when the next planned Treino isn't today
+    private func plannedDay(_ lang: Lang) -> String? {
+        guard let date = store.plannedNext?.date, date != PlanStore.today() else { return nil }
+        return PlanDate.weekdayShort(date, lang: lang)
     }
 
     private func slot(title: LocalizedStringKey, name: String, meta: String?, button: LocalizedStringKey, busy: Bool, action: @escaping () -> Void) -> some View {

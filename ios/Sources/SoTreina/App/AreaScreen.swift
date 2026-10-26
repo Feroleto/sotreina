@@ -6,6 +6,8 @@ import SwiftUI
 /// sub-pages as text tabs (the web's MobileHeader), then the selected page.
 /// Pushed screens get the system navigation bar; the root shows only this
 /// header. Perfil is pushed here from the account menu (it isn't a tab).
+/// Sub-pages cross-fade and start fresh (state and scroll); on a tab switch
+/// only the body rises, the header stays put (spec ios-transicoes-de-pagina).
 struct AreaScreen<Content: View>: View {
     let tab: AppTab
     let me: Me
@@ -22,6 +24,7 @@ struct AreaScreen<Content: View>: View {
     @State private var path = NavigationPath()
     @Environment(AppLanguageStore.self) private var language
     @Environment(TabBarState.self) private var tabBar: TabBarState?
+    @Environment(\.tabActivation) private var activation
 
     /// Sub-pages already in the app. Landing on a placeholder every launch
     /// would be pointless, so a tab opens on its web landing page only once
@@ -57,12 +60,19 @@ struct AreaScreen<Content: View>: View {
                         menuOpen = true
                     }
                 }
-                content(page)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // overlaid, not stacked: the cross-fade never moves the layout
+                ZStack {
+                    content(page)
+                        .id(page)
+                        .transition(.opacity)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .offset(y: activation.rise)
             }
             .background(Color.pageBg)
-            // a push covers the root (or another tab does): the pill decides
-            // between pop and scroll to top on a tap on this tab
+            // a push covers the root: the pill decides between pop and
+            // scroll to top on a tap on this tab (a hidden tab's value is
+            // never read, only the selected one's)
             .onAppear { tabBar?.setAtRoot(tab, true) }
             .onDisappear { tabBar?.setAtRoot(tab, false) }
             .overlayPreferenceValue(AccountTriggerKey.self) { anchor in
@@ -87,7 +97,7 @@ struct AreaScreen<Content: View>: View {
                     }
                 }
             }
-            // another tab or a pushed screen: never come back to an open menu
+            // a pushed screen: never come back to an open menu
             .onDisappear {
                 menuOpen = false
                 menuMounted = false
@@ -103,24 +113,32 @@ struct AreaScreen<Content: View>: View {
             .navigationTitle(tab.label(language.lang))
             .toolbar(.hidden, for: .navigationBar)
         }
-        // around the stack, so every pushed screen hides the system bar too:
-        // the floating pill (`FloatingTabBar`) replaces it
-        .toolbar(.hidden, for: .tabBar)
+        // nor after another tab (this one stays mounted, hidden)
+        .onChange(of: activation.isActive) { _, active in
+            guard !active else { return }
+            menuOpen = false
+            menuMounted = false
+        }
         .onChange(of: tabBar?.popTokens[tab]) {
             path = NavigationPath()
             showsProfile = false
         }
-        // initial: the tab may be built by the request itself (first visit)
+        // initial: the tab may be built by the request itself (first visit).
+        // Without animation: the tab switch is the only one (spec §3.3)
         .onChange(of: tabBar?.pageRequests[tab], initial: true) { _, request in
             guard let request else { return }
-            page = request
+            var instant = Transaction()
+            instant.disablesAnimations = true
+            withTransaction(instant) { page = request }
             tabBar?.consumePageRequest(tab)
         }
     }
 }
 
 /// Title 28 semibold, then text tabs with a 2px mustard underline on the
-/// active one, over a hairline (MobileChrome.tsx). Switching is instant.
+/// active one, over a hairline (MobileChrome.tsx). A switch cross-fades the
+/// page and slides the underline over, with the pill chip's curve; Reduce
+/// Motion fades the underline in place.
 struct AreaHeader<Trailing: View>: View {
     let title: String
     let pages: [AppPage]
@@ -128,6 +146,18 @@ struct AreaHeader<Trailing: View>: View {
     /// the account menu's avatar, top right
     @ViewBuilder let trailing: () -> Trailing
     @Environment(AppLanguageStore.self) private var language
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var underline
+
+    private var underlineAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: PageTransition.reducedFade) : .snappy(duration: PageTransition.underline)
+    }
+
+    private func select(_ page: AppPage) {
+        let from = PageTransition.Place(tab: page.tab, page: selection)
+        guard case .subpage(let duration) = PageTransition.between(from, .init(tab: page.tab, page: page), reduceMotion: reduceMotion) else { return }
+        withAnimation(.easeInOut(duration: duration)) { selection = page }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -149,22 +179,29 @@ struct AreaHeader<Trailing: View>: View {
                         ForEach(pages, id: \.self) { page in
                             let active = page == selection
                             Button {
-                                selection = page
+                                select(page)
                             } label: {
                                 Text(page.label(language.lang))
                                     .font(DSFont.row)
                                     .foregroundStyle(active ? Color.fg : Color.mutedFg)
                                     .frame(minHeight: 44)
                                     .overlay(alignment: .bottom) {
-                                        Rectangle()
-                                            .fill(active ? Color.acc : .clear)
-                                            .frame(height: 2)
+                                        if active {
+                                            // one underline that moves
+                                            // between tabs, not one per tab
+                                            Rectangle()
+                                                .fill(Color.acc)
+                                                .frame(height: 2)
+                                                .matchedUnderline(in: underline, enabled: !reduceMotion)
+                                        }
                                     }
                             }
                             .buttonStyle(.plain)
                             .accessibilityAddTraits(active ? .isSelected : [])
                         }
                     }
+                    // the chip's curve, not the page's cross-fade
+                    .animation(underlineAnimation, value: selection)
                     .padding(.horizontal, pageGutter)
                 }
                 .padding(.horizontal, -pageGutter)
@@ -174,6 +211,16 @@ struct AreaHeader<Trailing: View>: View {
         }
         .padding(.horizontal, pageGutter)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+extension View {
+    @ViewBuilder fileprivate func matchedUnderline(in namespace: Namespace.ID, enabled: Bool) -> some View {
+        if enabled {
+            matchedGeometryEffect(id: "underline", in: namespace)
+        } else {
+            transition(.opacity)
+        }
     }
 }
 

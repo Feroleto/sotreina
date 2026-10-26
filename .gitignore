@@ -1,5 +1,6 @@
 .env
 CLAUDE.md
+docs/claude/
 .claude/
 layout_dashboard/
 

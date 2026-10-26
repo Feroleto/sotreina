@@ -60,7 +60,7 @@ struct WorkoutHistoryDetailView: View {
         .navigationTitle(item.templateName.map { Text(verbatim: $0) } ?? Text("gym.freeWorkout", bundle: .l10n))
         .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
-        .task {
+        .taskOnTabActivation {
             detail = detail ?? store.cachedWorkout(item.id)
             switch await store.workout(item.id) {
             case .success(let fresh): detail = fresh

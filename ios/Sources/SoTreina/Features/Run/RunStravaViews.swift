@@ -74,6 +74,12 @@ struct RunConnectView: View {
 /// screen; leaving doesn't cancel anything (the sync runs on the server).
 struct RunFirstSyncView: View {
     let store: RunStore
+    @Environment(\.tabActivation) private var activation
+
+    private struct PollKey: Equatable {
+        var notStarted: Bool
+        var active: Bool
+    }
 
     var body: some View {
         ScrollView {
@@ -101,7 +107,11 @@ struct RunFirstSyncView: View {
             .padding(.bottom, 44)
         }
         .background(Color.pageBg)
-        .task(id: store.firstSync == .notStarted) { await store.pollFirstSync() }
+        // only with the tab on screen: hidden tabs stay mounted
+        .task(id: PollKey(notStarted: store.firstSync == .notStarted, active: activation.isActive)) {
+            guard activation.isActive else { return }
+            await store.pollFirstSync()
+        }
     }
 
     private func running(_ progress: FirstSyncProgress, eta: Int?) -> some View {

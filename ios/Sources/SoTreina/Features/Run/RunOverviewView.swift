@@ -17,7 +17,7 @@ struct RunOverviewView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
-            .task {
+            .taskOnTabActivation {
                 async let activities: Void = store.load()
                 async let overview: Void = store.loadOverview()
                 _ = await (activities, overview)

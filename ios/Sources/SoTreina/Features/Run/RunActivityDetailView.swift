@@ -79,7 +79,7 @@ struct RunActivityDetailView: View {
                 WorkoutTypeBadge(workoutType: item.workoutType)
             }
         }
-        .task {
+        .taskOnTabActivation {
             detail = detail ?? store.cachedDetail(item.id)
             switch await store.detail(item.id) {
             case .success(let fresh): detail = fresh

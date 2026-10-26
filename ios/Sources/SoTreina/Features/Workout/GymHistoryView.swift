@@ -22,7 +22,7 @@ struct GymHistoryView: View {
                     WorkoutHistoryDetailView(item: item, store: store)
                 }
             }
-            .task { await store.load() }
+            .taskOnTabActivation { await store.load() }
     }
 
     @ViewBuilder private var content: some View {

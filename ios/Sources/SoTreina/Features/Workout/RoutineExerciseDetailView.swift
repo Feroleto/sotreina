@@ -69,7 +69,7 @@ struct RoutineExerciseDetailView: View {
         .navigationTitle(Text(exercise.exerciseName))
         .floatingTabBarSpace()
         .navigationBarTitleDisplayMode(.inline)
-        .task {
+        .taskOnTabActivation {
             async let fetchedDetail = store.exerciseDetail(exercise.exerciseId)
             async let fetchedLast = store.lastPerformance(exerciseId: exercise.exerciseId)
             (detail, heaviestKg) = await (fetchedDetail, fetchedLast?.heaviestWeightKg)

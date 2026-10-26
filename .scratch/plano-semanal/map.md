@@ -19,7 +19,7 @@ As fases 1–3 de `.plans/plano-semanal-spec.md` **em produção e conferidas no
   - O usuário commita, e o agente não faz commit.
   - A migration vai pro Neon antes do deploy do backend.
   - Tudo que não desenha tela vai para o `SoTreinaKit`.
-  - Ao fechar cada ticket, atualizar o CLAUDE.md (Backend / App iOS).
+  - Ao fechar cada ticket, atualizar `docs/claude/backend.md` / `docs/claude/ios.md`.
 - **Skills**:
   - `tdd` para o resolver e as validações do servidor e para o `WeekPlan` do Kit.
   - `grilling` + `domain-modeling` se surgir decisão nova.
@@ -30,10 +30,15 @@ As fases 1–3 de `.plans/plano-semanal-spec.md` **em produção e conferidas no
 
 <!-- uma linha por ticket resolvido -->
 - [Backend do Plano da semana](issues/01-backend.md): `plans/` com resolver e regras puros, rotas da spec §5, `PlanAdjustment` e `source: ADJUSTMENT` (glossário), desfazer move volta ao Padrão, fixtures reais no Kit; migration só local
+- [Produção: migration no Neon e backend no Render](issues/02-producao-backend.md): `add_week_plan` no Neon, commit `9e0062e` no Render, rotas conferidas com conta descartável; `POST /plan/moves` responde 201
+- [Kit: WeekPlan e as regras do Plano da semana](issues/03-kit-weekplan.md): modelos + `PlanDate` + `PlanStatus` (estados, faixa, progresso, próximo Treino, destinos de move) + `PatternDraft` + `RoutineAbbreviation` no Kit; sem plano ativo tudo conta como planejado (o Hoje antigo); 403 testes
+- [Hoje com o Plano da semana no app](issues/04-hoje-com-plano.md): `PlanStore` no shell, status/faixa seg–dom/"Por área" seguindo o plano, próximo Treino pelo plano; área em posição fixa na faixa, linha "Dia livre" também sob a Dieta; conferência da aba Treino passou pro editor
+- [Editor do Padrão no app](issues/05-editor-padrao.md): `WeekPlanEditorView` (grade, toque longo escolhe Rotina, um `PUT`, grade vazia confirma), entradas no Hoje e em Perfil › Metas; meta de Treino sai dos steppers com plano; conferido com o plano real do usuário
+- [Folha do dia: Ajustes no app](issues/06-folha-do-dia.md): `PlanDaySheet` + `PlanChange` no Kit (ações só as que o servidor aceita, palpite otimista), `PlanDaySheetView` pela faixa do Hoje e pelo "Esta semana / Próxima" do editor, fila otimista no `PlanStore`; conferido pelo usuário no iPhone
 
 ## Not yet specified
 
-- **Ajustes visuais da faixa seg–dom e da grade do editor** depois do uso real: se o contorno do "planejado futuro" e o pontinho do Extra se leem bem nos dois temas, e se a abreviação da Rotina na bolinha colide (ex.: "Peito" e "Pernas"). Hoje vale a spec §6.3/§6.6. Só vira ticket se o [Uso real do Plano da semana](issues/07-uso-real.md) mostrar um incômodo concreto.
+- **Ajustes visuais da faixa seg–dom e da grade do editor** depois do uso real: se o contorno do "planejado futuro" e o pontinho do Extra se leem bem nos dois temas, e se a abreviação da Rotina na bolinha se lê bem (colisões já se resolvem: "Peito" → "Pi", "Pernas" → "Pr", `RoutineAbbreviation`). Hoje vale a spec §6.3/§6.6. Só vira ticket se o [Uso real do Plano da semana](issues/07-uso-real.md) mostrar um incômodo concreto.
 - **Toque longo pouco descobrível** no editor: a alternativa (lista de Rotinas abaixo da grade) só entra se o uso real mostrar que o usuário não acha o gesto.
 
 ## Out of scope

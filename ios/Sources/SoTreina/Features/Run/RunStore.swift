@@ -155,8 +155,8 @@ final class RunStore {
         }
     }
 
-    /// Every 2 s while the screen is up (its `.task`); at the end, the runs
-    /// that arrived. A failed poll just waits for the next one.
+    /// Every 2 s while the screen is up with its tab active (its `.task`);
+    /// at the end, the runs that arrived. A failed poll just waits for the next one.
     func pollFirstSync() async {
         guard !previewing else { return }
         while case .running = firstSync {

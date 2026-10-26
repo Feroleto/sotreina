@@ -11,6 +11,8 @@ struct ProfileView: View {
     let me: Me
     /// owned by the shell: Dieta's gear opens the same daily goal
     let store: ProfileStore
+    @Environment(PlanStore.self) private var plan
+    @Environment(WorkoutStore.self) private var workout
     @Environment(SessionStore.self) private var session
     @Environment(AppLanguageStore.self) private var language
 
@@ -35,6 +37,7 @@ struct ProfileView: View {
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await store.load() }
         .task { await store.load() }
+        .task { await plan.load() }
     }
 
     // MARK: User
@@ -121,13 +124,27 @@ struct ProfileView: View {
     private var goalsSection: some View {
         Section {
             header("nav.profile.goals")
+            if me.enabledAreas.contains(.run) || me.enabledAreas.contains(.gym) {
+                NavigationLink {
+                    planEditor
+                } label: {
+                    planRow
+                }
+            }
             ForEach(ProfileRules.goalAreas(me.enabledAreas), id: \.self) { area in
                 NavigationLink {
-                    if let settings = store.settings {
+                    if area == .gym && plan.isActiveToday {
+                        // the Meta of Treinos is the plan's gym days
+                        planEditor
+                    } else if let settings = store.settings {
                         if area == .diet {
                             DietGoalView(settings: settings, store: store)
                         } else {
-                            WeeklyGoalsView(settings: settings, areas: me.enabledAreas, unit: me.distanceUnit, store: store)
+                            WeeklyGoalsView(
+                                settings: settings,
+                                areas: ProfileRules.weeklyGoalAreas(me.enabledAreas, planned: plan.isActiveToday),
+                                unit: me.distanceUnit, store: store
+                            )
                         }
                     }
                 } label: {
@@ -142,6 +159,19 @@ struct ProfileView: View {
             }
         }
         .listRowBackground(Color.pageBg)
+    }
+
+    private var planEditor: some View {
+        WeekPlanEditorView(areas: me.enabledAreas, plan: plan, workout: workout, profile: store)
+    }
+
+    private var planRow: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("nav.profile.weekPlan", bundle: .l10n).font(DSFont.row)
+            Text(plan.isActiveToday ? "nav.profile.weekPlanOn" : "nav.profile.weekPlanOff", bundle: .l10n)
+                .font(DSFont.caption)
+                .foregroundStyle(Color.mutedFg)
+        }
     }
 
     private func goalRow(_ area: Area) -> some View {
@@ -161,7 +191,7 @@ struct ProfileView: View {
     private func goalDetailKey(_ area: Area) -> LocalizedStringKey {
         switch area {
         case .run: "nav.profile.goalRunDetail"
-        case .gym: "nav.profile.goalGymDetail"
+        case .gym: plan.isActiveToday ? "nav.profile.goalGymPlanDetail" : "nav.profile.goalGymDetail"
         case .diet: "nav.profile.goalDietDetail"
         }
     }

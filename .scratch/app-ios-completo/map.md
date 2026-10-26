@@ -7,7 +7,7 @@ O app iOS (`ios/`) **implementado** conforme `.plans/app-ios-completo-spec.md`: 
 ## Notes
 
 - **Este mapa carrega a execução** (exceção à regra "planejar, não fazer", decidida com o usuário em 2026-10-22): além de tickets de decisão, há tickets `task` que constroem partes do app. Um ticket `task` de construção se resolve com o código pronto, compilando, testado no Kit e conferido no iPhone, e com o `## Answer` dizendo o que foi feito e o que ficou pendente.
-- **Fonte das decisões de produto**: `.plans/app-ios-completo-spec.md`. Contornos de build e ambiente: `ios/README.md` e a seção "App iOS" do `CLAUDE.md`. Vocabulário: `GLOSSARY.md`.
+- **Fonte das decisões de produto**: `.plans/app-ios-completo-spec.md`. Contornos de build e ambiente: `ios/README.md` e `docs/claude/ios.md`. Vocabulário: `GLOSSARY.md`.
 - **Skills a consultar**: `grilling` + `domain-modeling` nos tickets de decisão; `run-sotreina` pra screenshots da web mobile; `tdd` quando portar lógica da web pro `SoTreinaKit` (os testes da web viram testes Swift).
 - **Preferências permanentes**:
   - Tudo que não desenha tela vai pro `SoTreinaKit`, com `swift test` no Linux.

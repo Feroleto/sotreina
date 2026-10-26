@@ -13,7 +13,10 @@ final class TabBarState {
     private(set) var isCollapsed: Bool
     /// a page's main scroll view is moving: the pill shrinks a little
     private(set) var isScrolling = false
-    /// screens on screen that hide the bar; a counter, since pushes nest
+    /// screens on screen that hide the bar; a counter, since pushes nest.
+    /// Counted on `onAppear`/`onDisappear`, which a tab switch no longer
+    /// sends (hidden tabs stay mounted): fine while every such screen hides
+    /// the pill, so no switch can happen under one
     private(set) var hiders = 0
     private(set) var popTokens: [AppTab: Int] = [:]
     private(set) var scrollTopTokens: [AppTab: Int] = [:]
@@ -156,6 +159,7 @@ private struct FloatingTabBarSpace: ViewModifier {
 private struct FloatingTabBarScroll: ViewModifier {
     @Environment(TabBarState.self) private var tabBar: TabBarState?
     @Environment(\.appTab) private var tab
+    @Environment(\.tabActivation) private var activation
     @State private var position = ScrollPosition(edge: .top)
 
     private struct Sample: Equatable {
@@ -174,13 +178,19 @@ private struct FloatingTabBarScroll: ViewModifier {
                     maxOffset: geometry.contentSize.height + insets.top + insets.bottom - geometry.containerSize.height
                 )
             } action: { _, sample in
+                // a hidden tab still coasting doesn't fold the pill
+                guard activation.isActive else { return }
                 tabBar?.scrolled(to: sample.offset, maxOffset: sample.maxOffset)
             }
             .onScrollPhaseChange { _, phase in
+                guard activation.isActive else { return }
                 tabBar?.scrolling(phase.isScrolling)
             }
-            // a tab switch mid-scroll never reports the idle phase
+            // a push or a tab switch mid-scroll never reports the idle phase
             .onDisappear { tabBar?.scrolling(false) }
+            .onChange(of: activation.isActive) { _, active in
+                if !active { tabBar?.scrolling(false) }
+            }
             .onChange(of: tab.flatMap { tabBar?.scrollTopTokens[$0] }) {
                 withAnimation { position.scrollTo(edge: .top) }
             }

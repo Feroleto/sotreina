@@ -19,7 +19,7 @@ struct DietHistoryView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
-            .task {
+            .taskOnTabActivation {
                 async let history: Void = store.load()
                 async let goal: Void = profile.load()
                 _ = await (history, goal)

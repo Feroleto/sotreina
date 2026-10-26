@@ -115,7 +115,7 @@ final class AddMealStore {
                 log.error("food log failed: \(String(describing: error), privacy: .public)")
             }
         }
-        // no reload here: the overview's `.task` refetches the day when it shows again
+        // no reload here: the overview's `.taskOnTabActivation` refetches the day when it shows again
         saving = false
         if cart.hasFailures {
             error = L10n.string("diet.addMeal.someFailed", lang: AppLanguageStore.shared.lang)

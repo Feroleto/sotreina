@@ -27,6 +27,14 @@ public struct ValidationLaunch: Equatable, Sendable {
         /// Treino with the floating tab bar folded into its circle (and an
         /// open workout, if any, in the same row)
         case tabBarCollapsed
+        /// Hoje with a fixed Plano da semana (no plan fetch): something
+        /// planned today, or a Dia livre
+        case todayPlan(restDay: Bool)
+        /// the Padrão editor, pushed over Hoje (the user's real plan)
+        case weekPlanEditor
+        /// Hoje's fixed plan with the day sheet open on today, or on this
+        /// week's Monday (a past day, unless today is Monday)
+        case planDaySheet(past: Bool)
     }
 
     public var destination: Destination?
@@ -64,7 +72,7 @@ public struct ValidationLaunch: Equatable, Sendable {
         switch destination {
         case .tab(let tab): tab
         case .page(let page): page.tab
-        case .profile, .accountMenu: .today
+        case .profile, .accountMenu, .todayPlan, .weekPlanEditor, .planDaySheet: .today
         case .runConnect, .runFirstSync: .run
         case .tabBarCollapsed: .gym
         case .session, .sessionMinimized, nil: nil
@@ -76,14 +84,15 @@ public struct ValidationLaunch: Equatable, Sendable {
     public var startsSessionMinimized: Bool {
         switch destination {
         case .session, nil: false
-        case .tab, .page, .profile, .accountMenu, .sessionMinimized, .runConnect, .runFirstSync, .tabBarCollapsed: true
+        case .tab, .page, .profile, .accountMenu, .sessionMinimized, .runConnect, .runFirstSync, .tabBarCollapsed, .todayPlan, .weekPlanEditor, .planDaySheet: true
         }
     }
 }
 
 extension ValidationLaunch.Destination {
     /// `session`, `sessionMinimized`, `profile`, `accountMenu`, `runConnect`,
-    /// `runFirstSync`, `runFirstSyncPaused`, `tabBarCollapsed`, an `AppPage`
+    /// `runFirstSync`, `runFirstSyncPaused`, `tabBarCollapsed`, `todayPlanned`,
+    /// `todayRestDay`, `weekPlanEditor`, `planDaySheet`, `planDaySheetPast`, an `AppPage`
     /// (`gymRoutines`) or an `AppTab` (`gym`).
     public init?(name: String) {
         switch name {
@@ -95,6 +104,11 @@ extension ValidationLaunch.Destination {
         case "runFirstSync": self = .runFirstSync(paused: false)
         case "runFirstSyncPaused": self = .runFirstSync(paused: true)
         case "tabBarCollapsed": self = .tabBarCollapsed
+        case "todayPlanned": self = .todayPlan(restDay: false)
+        case "todayRestDay": self = .todayPlan(restDay: true)
+        case "weekPlanEditor": self = .weekPlanEditor
+        case "planDaySheet": self = .planDaySheet(past: false)
+        case "planDaySheetPast": self = .planDaySheet(past: true)
         default:
             if let page = AppPage(rawValue: name) {
                 self = .page(page)

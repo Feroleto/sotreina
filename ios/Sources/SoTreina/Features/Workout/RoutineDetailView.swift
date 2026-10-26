@@ -110,7 +110,7 @@ struct RoutineDetailView: View {
             RoutineEditView(template: detail, store: store) { saved in state = .loaded(saved) }
                 .monolitoTheme()
         }
-        .task { await loadDetail() }
+        .taskOnTabActivation { await loadDetail() }
         .refreshable { await loadDetail() }
     }
 

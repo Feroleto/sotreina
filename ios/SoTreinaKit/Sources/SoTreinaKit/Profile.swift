@@ -172,6 +172,12 @@ public enum ProfileRules {
         Area.allCases.filter(enabled.contains)
     }
 
+    /// The weekly goals the steppers edit (Corrida, Treino). With an active
+    /// Plano da semana, Treino's is the plan's gym days, set in its editor.
+    public static func weeklyGoalAreas(_ enabled: [Area], planned: Bool) -> [Area] {
+        [Area.run, .gym].filter { enabled.contains($0) && !(planned && $0 == .gym) }
+    }
+
     // MARK: Weekly goals (server/src/users/dto.ts ranges)
 
     public static let runKmRange = 1...300

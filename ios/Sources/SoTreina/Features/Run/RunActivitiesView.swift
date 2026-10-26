@@ -21,7 +21,7 @@ struct RunActivitiesView: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.pageBg)
-            .task { await store.load() }
+            .taskOnTabActivation { await store.load() }
             .navigationDestination(for: ActivityListItem.self) { run in
                 RunActivityDetailView(item: run, store: store)
             }

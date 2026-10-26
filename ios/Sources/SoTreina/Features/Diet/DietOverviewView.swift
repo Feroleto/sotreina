@@ -23,7 +23,7 @@ struct DietOverviewView: View {
                 }
             }
             // every time the page shows: Registros may have come from the web
-            .task {
+            .taskOnTabActivation {
                 async let day: Void = store.load()
                 async let goal: Void = profile.load()
                 _ = await (day, goal)
