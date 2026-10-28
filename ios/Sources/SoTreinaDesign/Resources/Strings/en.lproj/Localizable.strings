@@ -120,12 +120,19 @@
 "gym.session.pendingFooter" = "Resend or discard the sets marked ⚠ before finishing.";
 "gym.session.minimize" = "Minimize workout";
 "gym.session.finishShort" = "Finish";
-"gym.session.finishConfirm" = "Finish the workout?";
-"gym.session.finish" = "Finish workout";
 "gym.session.keepTraining" = "Keep training";
-"gym.session.cancelConfirm" = "Cancel the workout?";
-"gym.session.cancelAndDelete" = "Cancel workout and delete the sets";
-"gym.session.cancelMessage" = "Everything logged in this workout will be deleted, here and on the web.";
+"gym.session.discardTitle" = "Cancel workout?";
+"gym.session.discardEmpty" = "The workout will be discarded. This can't be undone.";
+"gym.session.discardConfirm" = "Discard workout";
+"gym.session.finishTitle" = "Finish workout?";
+"gym.session.finishAllLogged" = "Every planned set was logged.";
+"gym.session.finishNoSets" = "No sets were logged. The workout goes to the history without sets.";
+"gym.session.finishSets" = "Sets";
+"gym.session.finishVolume" = "Volume";
+"gym.session.finishSave" = "Finish and save";
+"gym.session.backToWorkout" = "Back to workout";
+"gym.session.syncTemplateToggle" = "Update the routine";
+"gym.session.syncTemplateHint" = "This workout differs from its routine (exercises, sets, or order).";
 "gym.session.removeExercise" = "Remove exercise";
 "gym.session.exerciseOptions %@" = "Options for %@";
 "gym.session.removeConfirm %@" = "Remove %@?";
@@ -238,10 +245,6 @@
 /* Treino livre e atualizar rotina ao finalizar */
 "gym.routines.freeHint" = "No routine: add exercises as you go";
 "gym.routines.startFree" = "Start a free workout";
-"gym.session.syncTemplatePrompt" = "This workout differs from its routine (exercises, sets, or order). Update the routine to match?";
-"gym.session.syncTemplateBack" = "Back";
-"gym.session.syncTemplateKeep" = "Keep routine";
-"gym.session.syncTemplateUpdate" = "Update routine";
 
 "gym.routineDetail.open" = "View routine";
 "gym.routineDetail.exercises" = "Exercises";

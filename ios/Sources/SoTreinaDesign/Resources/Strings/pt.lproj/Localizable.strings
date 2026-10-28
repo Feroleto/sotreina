@@ -120,12 +120,19 @@
 "gym.session.pendingFooter" = "Envie ou descarte as séries com ⚠ antes de finalizar.";
 "gym.session.minimize" = "Minimizar treino";
 "gym.session.finishShort" = "Finalizar";
-"gym.session.finishConfirm" = "Finalizar o treino?";
-"gym.session.finish" = "Finalizar treino";
 "gym.session.keepTraining" = "Continuar treinando";
-"gym.session.cancelConfirm" = "Cancelar o treino?";
-"gym.session.cancelAndDelete" = "Cancelar treino e apagar as séries";
-"gym.session.cancelMessage" = "Tudo o que foi registrado neste treino será apagado, aqui e na web.";
+"gym.session.discardTitle" = "Cancelar treino?";
+"gym.session.discardEmpty" = "O treino será descartado. Essa ação não pode ser desfeita.";
+"gym.session.discardConfirm" = "Descartar treino";
+"gym.session.finishTitle" = "Finalizar treino?";
+"gym.session.finishAllLogged" = "Todas as séries planejadas foram registradas.";
+"gym.session.finishNoSets" = "Nenhuma série foi registrada. O treino vai para o histórico sem séries.";
+"gym.session.finishSets" = "Séries";
+"gym.session.finishVolume" = "Volume";
+"gym.session.finishSave" = "Finalizar e salvar";
+"gym.session.backToWorkout" = "Voltar ao treino";
+"gym.session.syncTemplateToggle" = "Atualizar a rotina";
+"gym.session.syncTemplateHint" = "Este treino ficou diferente da rotina (exercícios, séries ou ordem).";
 "gym.session.removeExercise" = "Remover exercício";
 "gym.session.exerciseOptions %@" = "Opções de %@";
 "gym.session.removeConfirm %@" = "Remover %@?";
@@ -238,10 +245,6 @@
 /* Treino livre e atualizar rotina ao finalizar */
 "gym.routines.freeHint" = "Sem rotina: adicione os exercícios durante o treino";
 "gym.routines.startFree" = "Começar treino livre";
-"gym.session.syncTemplatePrompt" = "Este treino ficou diferente da rotina (exercícios, séries ou ordem). Atualizar a rotina para refletir isso?";
-"gym.session.syncTemplateBack" = "Voltar";
-"gym.session.syncTemplateKeep" = "Manter rotina";
-"gym.session.syncTemplateUpdate" = "Atualizar rotina";
 
 "gym.routineDetail.open" = "Ver rotina";
 "gym.routineDetail.exercises" = "Exercícios";

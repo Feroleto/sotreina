@@ -75,5 +75,20 @@ public enum WorkoutFormat {
         return "\(tenths / 10)\(decimal)\(tenths % 10) \(UnitConversion.volumeLabel(unit))"
     }
 
+    /// Volume of the open workout in whole display units, thousands grouped
+    /// by the app's language: "60", "4.320" in PT, "4,320" in EN. No unit
+    /// suffix (the "Finalizar treino?" card sets it smaller).
+    public static func volumeWhole(_ kg: Double, unit: WeightUnit = .kg, lang: Lang = .pt) -> String {
+        let whole = Int(UnitConversion.display(kg: max(0, kg), in: unit).rounded())
+        let digits = Array(String(whole))
+        let separator: Character = lang == .pt ? "." : ","
+        var out: [Character] = []
+        for (index, digit) in digits.enumerated() {
+            if index > 0, (digits.count - index) % 3 == 0 { out.append(separator) }
+            out.append(digit)
+        }
+        return String(out)
+    }
+
     private static func pad(_ n: Int) -> String { n < 10 ? "0\(n)" : "\(n)" }
 }

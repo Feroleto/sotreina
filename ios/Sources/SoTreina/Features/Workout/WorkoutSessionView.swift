@@ -10,9 +10,8 @@ import SwiftUI
 struct WorkoutSessionView: View {
     let store: WorkoutStore
     let workout: WorkoutDetail
-    @State private var confirmingDiscard = false
-    @State private var confirmingFinish = false
-    @State private var confirmingSync = false
+    /// "Cancelar treino?" / "Finalizar treino?" (design 3a/3b)
+    @State private var closing: ClosingCard?
     @State private var addingExercise = false
     /// the logged set open for editing (one at a time)
     @State private var editingSetId: String?
@@ -39,10 +38,7 @@ struct WorkoutSessionView: View {
 
     private var active: WorkoutExercise? {
         if let selectedId, let picked = exercises.first(where: { $0.id == selectedId }) { return picked }
-        let pending = store.pendingSets.map {
-            WorkoutActivity.PendingSet(workoutExerciseId: $0.workoutExerciseId, weightKg: $0.weightKg, reps: $0.reps, failed: $0.failed)
-        }
-        return WorkoutActivity.cursor(in: shown, pending: pending)?.exercise
+        return WorkoutActivity.cursor(in: shown, pending: store.activityPending)?.exercise
     }
 
     var body: some View {
@@ -92,10 +88,7 @@ struct WorkoutSessionView: View {
                     .padding(.bottom, 16)
                     // a tap anywhere else closes (and saves) the set being edited
                     .contentShape(Rectangle())
-                    .onTapGesture {
-                        focus = nil
-                        editingSetId = nil
-                    }
+                    .onTapGesture { closeEditing() }
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .refreshable { await store.load() }
@@ -112,18 +105,20 @@ struct WorkoutSessionView: View {
                         Image(systemName: "chevron.down")
                     }
                     .accessibilityLabel(Text("gym.session.minimize", bundle: .l10n))
-                    Button(role: .destructive) { confirmingDiscard = true } label: { Text("common.cancel", bundle: .l10n) }
+                    Button {
+                        closeEditing()
+                        closing = .discard
+                    } label: { Text("common.cancel", bundle: .l10n) }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if store.isFinishing {
                         ProgressView()
                     } else {
                         Button {
+                            closeEditing()
                             Task {
-                                switch await store.finishPrompt() {
-                                case .confirm: confirmingFinish = true
-                                case .syncTemplate: confirmingSync = true
-                                }
+                                let prompt = await store.finishPrompt()
+                                closing = .finish(drifted: prompt == .syncTemplate)
                             }
                         } label: {
                             Text("gym.session.finishShort", bundle: .l10n)
@@ -135,32 +130,8 @@ struct WorkoutSessionView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     // also closes (and saves) a set being edited
-                    Button {
-                        focus = nil
-                        editingSetId = nil
-                    } label: { Text("common.ok", bundle: .l10n) }
+                    Button { closeEditing() } label: { Text("common.ok", bundle: .l10n) }
                 }
-            }
-            .confirmationDialog(Text("gym.session.finishConfirm", bundle: .l10n), isPresented: $confirmingFinish, titleVisibility: .visible) {
-                Button { Task { await store.finish() } } label: { Text("gym.session.finish", bundle: .l10n) }
-                Button(role: .cancel) {} label: { Text("gym.session.keepTraining", bundle: .l10n) }
-            }
-            // the workout drifted from its routine (web: `session.syncTemplate*`);
-            // either answer finishes, "Voltar" keeps training
-            .confirmationDialog(Text("gym.session.syncTemplatePrompt", bundle: .l10n), isPresented: $confirmingSync, titleVisibility: .visible) {
-                Button { Task { await store.finish(syncTemplate: true) } } label: { Text("gym.session.syncTemplateUpdate", bundle: .l10n) }
-                Button { Task { await store.finish(syncTemplate: false) } } label: { Text("gym.session.syncTemplateKeep", bundle: .l10n) }
-                Button(role: .cancel) {} label: { Text("gym.session.syncTemplateBack", bundle: .l10n) }
-            }
-            .confirmationDialog(Text("gym.session.cancelConfirm", bundle: .l10n), isPresented: $confirmingDiscard, titleVisibility: .visible) {
-                Button(role: .destructive) {
-                    Task { await store.discard() }
-                } label: {
-                    Text("gym.session.cancelAndDelete", bundle: .l10n)
-                }
-                Button(role: .cancel) {} label: { Text("gym.session.keepTraining", bundle: .l10n) }
-            } message: {
-                Text("gym.session.cancelMessage", bundle: .l10n)
             }
             .sheet(isPresented: $addingExercise) {
                 ExercisePickerView { await store.addExercise(exerciseId: $0.id) }
@@ -175,6 +146,16 @@ struct WorkoutSessionView: View {
                 await store.loadLastPerformance(for: workout.exercises.map(\.exerciseId))
             }
         }
+        // over the navigation bar and the rest bar too: the whole screen dims
+        .overlay {
+            WorkoutClosingOverlay(closing: $closing, store: store, workout: shown)
+        }
+    }
+
+    /// Closes (and saves) the set being edited, like a tap outside it.
+    private func closeEditing() {
+        focus = nil
+        editingSetId = nil
     }
 
     /// Elapsed time, "N de M séries" and the progress line under the bar.

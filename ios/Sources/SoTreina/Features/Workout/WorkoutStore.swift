@@ -415,6 +415,16 @@ final class WorkoutStore {
 
     // MARK: - Live Activity
 
+    /// The unconfirmed sets as the Kit's rules read them (cursor, snapshot,
+    /// the closing cards' tally).
+    var activityPending: [WorkoutActivity.PendingSet] {
+        pendingSets.map {
+            WorkoutActivity.PendingSet(
+                workoutExerciseId: $0.workoutExerciseId, weightKg: $0.weightKg, reps: $0.reps, failed: $0.failed
+            )
+        }
+    }
+
     /// Rebuilt on every change of the workout, the unconfirmed sets, the
     /// set proposals or the rest; the controller skips identical states.
     private func refreshLiveActivity() {
@@ -423,11 +433,7 @@ final class WorkoutStore {
             activityClientIds = [:]
             return
         }
-        let pending = pendingSets.map {
-            WorkoutActivity.PendingSet(
-                workoutExerciseId: $0.workoutExerciseId, weightKg: $0.weightKg, reps: $0.reps, failed: $0.failed
-            )
-        }
+        let pending = activityPending
         let key = WorkoutActivity.cursor(in: active, pending: pending).map { "\($0.exercise.id)#\($0.setNumber)" } ?? ""
         let clientId = activityClientIds[key] ?? UUID()
         activityClientIds[key] = clientId

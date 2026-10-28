@@ -484,5 +484,80 @@
 			<string>%lld itens</string>
 		</dict>
 	</dict>
+	<key>gym.session.discardMinutes %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@minutes@ Essa ação não pode ser desfeita.</string>
+		<key>minutes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>O minuto de treino será descartado.</string>
+			<key>other</key>
+			<string>Os %lld minutos de treino serão descartados.</string>
+		</dict>
+	</dict>
+	<key>gym.session.discardSets %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@sets@ Essa ação não pode ser desfeita.</string>
+		<key>sets</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>A série registrada será descartada.</string>
+			<key>other</key>
+			<string>As %lld séries registradas serão descartadas.</string>
+		</dict>
+	</dict>
+	<key>gym.session.discardSetsMinutes %lld %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@sets@ e %2$#@minutes@ de treino serão descartados. Essa ação não pode ser desfeita.</string>
+		<key>sets</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>A série registrada</string>
+			<key>other</key>
+			<string>As %1$lld séries registradas</string>
+		</dict>
+		<key>minutes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>o minuto</string>
+			<key>other</key>
+			<string>os %2$lld minutos</string>
+		</dict>
+	</dict>
+	<key>gym.session.finishRemaining %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@sets@</string>
+		<key>sets</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Ainda há %lld série sem registro. Ela não entra no histórico.</string>
+			<key>other</key>
+			<string>Ainda há %lld séries sem registro. Elas não entram no histórico.</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
